@@ -1,0 +1,14 @@
+beautifulsoup4==4.15.0
+dj-database-url==3.1.2
+Django==6.1.2
+django-rq==4.2.0
+extract-msg==0.57.0
+gunicorn==26.2.0
+nh3==0.3.7
+pillow==13.0.0
+psycopg[binary]==3.3.6
+py7zr==1.1.4
+pyzipper==0.4.0
+rarfile==4.5
+whitenoise==6.12.0
+zxing-cpp==3.1.1

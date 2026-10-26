@@ -1,0 +1,22 @@
+{% load static %}<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block tytul %}miemli{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/nord.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="pasek">
+    <a class="logo" href="{% url 'analizy:lista' %}">miemli</a>
+    {% block pasek %}{% endblock %}
+    <span class="sp"></span>
+    {% if user.is_authenticated %}
+      <span class="muted">{{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
+    {% endif %}
+  </header>
+  {% block tresc %}{% endblock %}
+</body>
+</html>

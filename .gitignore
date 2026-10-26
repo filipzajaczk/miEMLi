@@ -4,3 +4,5 @@ __pycache__/
 .env
 .superpowers/
 tests/samples/private/
+db.sqlite3
+staticfiles/
