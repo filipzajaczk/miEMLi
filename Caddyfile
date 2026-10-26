@@ -1,0 +1,16 @@
+# miemli — reverse proxy z TLS.
+#
+# Teraz: "tls internal" — certyfikat z wewnętrznego CA Caddy (dla przeglądarki: self-signed).
+# Docelowo (firmowe CA): zamontuj certyfikat w kontenerze, np. ./certs:/certs:ro,
+# i zamień linię "tls internal" na:
+#     tls /certs/cert.pem /certs/key.pem
+
+{$MIEMLI_HOST:localhost} {
+	tls internal
+
+	request_body {
+		max_size 60MB
+	}
+
+	reverse_proxy web:8000
+}
