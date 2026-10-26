@@ -108,8 +108,20 @@ def szczegoly(request, pk):
             "ioc": len(ioc),
         },
     }
+    kontekst["wzbogacenia"], kontekst["trwa"] = prezentacja.widoki_wzbogacen(analiza)
     szablon = "analizy/_glowna.html" if request.headers.get("HX-Request") else "analizy/szczegoly.html"
     return render(request, szablon, kontekst)
+
+
+@login_required
+def wzbogacenie(request, pk):
+    """Fragmenty OOB dla odpytywania htmx: panel IOC, tabela IOC i sam element odpytujący."""
+    analiza = get_object_or_404(Analiza, pk=pk)
+    wzbogacenia, trwa = prezentacja.widoki_wzbogacen(analiza)
+    return render(request, "analizy/_wzbogacenie_oob.html", {
+        "analiza": analiza, "ioc": prezentacja.drzewo_ioc(analiza), "wzbogacenia": wzbogacenia,
+        "trwa": trwa, "wid": "0",
+    })
 
 
 @login_required

@@ -1,0 +1,13 @@
+{% load miemli %}{% for i, glebokosc in ioc %}{% with wz=wzbogacenia|klucz:i.pk %}
+    <tr>
+      <td class="muted">{{ i.get_typ_display }}</td>
+      <td class="mono" style="padding-left: {% widthratio glebokosc 1 18 %}px">
+        {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
+        {% if i.typ != "plik" and i.etykieta %}<div class="muted">{{ i.etykieta }}</div>{% endif %}
+      </td>
+      <td class="komorka">{% with w=wz.gti %}{% include "analizy/_wzbogacenie_gti.html" %}{% endwith %}</td>
+      <td class="komorka">{% with w=wz.censys %}{% include "analizy/_wzbogacenie_censys.html" %}{% endwith %}</td>
+      <td></td>
+      <td class="muted">{{ i.get_zrodlo_display }}</td>
+    </tr>
+{% endwith %}{% endfor %}

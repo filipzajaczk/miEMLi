@@ -1,20 +1,8 @@
-{% load miemli %}
 <h2>IOC</h2>
 {% if ioc %}
 <table class="tabela-ioc">
-  <thead><tr><th>Typ</th><th>Wartość</th><th>Etykieta</th><th>Źródło</th></tr></thead>
-  <tbody>
-  {% for i, glebokosc in ioc %}
-    <tr>
-      <td class="muted">{{ i.get_typ_display }}</td>
-      <td class="mono" style="padding-left: {% widthratio glebokosc 1 18 %}px">
-        {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
-      </td>
-      <td>{% if i.typ != "plik" %}{{ i.etykieta|default:"" }}{% endif %}</td>
-      <td class="muted">{{ i.get_zrodlo_display }}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
+  <thead><tr><th>Typ</th><th>Wartość</th><th>GTI</th><th>Censys</th><th>JOE</th><th>Źródło</th></tr></thead>
+  <tbody id="tabela-ioc-cialo">{% include "analizy/_wiersze_ioc.html" %}</tbody>
 </table>
 {% else %}
 <p class="muted">Nie znaleziono IOC.</p>

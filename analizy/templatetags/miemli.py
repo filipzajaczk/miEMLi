@@ -56,3 +56,61 @@ def iso_data(wartosc):
 @register.filter
 def mechanizmy(uwierzytelnienie):
     return [(nazwa.upper(), uwierzytelnienie.get(nazwa)) for nazwa in ("spf", "dkim", "dmarc")]
+
+
+WERDYKTY_KLASY = {"zlosliwy": "bad", "podejrzany": "warn", "nieszkodliwy": "ok"}
+WERDYKTY_OPISY = {"zlosliwy": "złośliwy", "podejrzany": "podejrzany", "nieszkodliwy": "nieszkodliwy"}
+
+
+@register.filter
+def klasa_werdyktu(werdykt):
+    return WERDYKTY_KLASY.get(werdykt, "neutral")
+
+
+@register.filter
+def opis_werdyktu(werdykt):
+    return WERDYKTY_OPISY.get(werdykt, "niewykryty")
+
+
+def _dni(epoch) -> int | None:
+    import time
+
+    if epoch is None:
+        return None
+    try:
+        return int((time.time() - float(epoch)) // 86400)
+    except (TypeError, ValueError):
+        return None
+
+
+@register.filter
+def wiek(epoch) -> str:
+    dni = _dni(epoch)
+    if dni is None:
+        return ""
+    if dni < 30:
+        return "1 dzień" if dni == 1 else f"{dni} dni"
+    if dni < 365:
+        return f"{dni // 30} mies."
+    lata = dni // 365
+    if lata == 1:
+        return "1 rok"
+    if lata % 10 in (2, 3, 4) and lata % 100 not in (12, 13, 14):
+        return f"{lata} lata"
+    return f"{lata} lat"
+
+
+@register.filter
+def nowa_domena(epoch) -> bool:
+    dni = _dni(epoch)
+    return dni is not None and dni < 30
+
+
+@register.filter
+def pierwsze(lista, n):
+    return list(lista or [])[: int(n)]
+
+
+@register.filter
+def reszta(lista, n):
+    return max(len(lista or []) - int(n), 0)

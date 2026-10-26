@@ -1,9 +1,13 @@
 """Przekształcenie zapisanego wyniku analizy (JSON) w dane dla szablonów."""
 
 from collections.abc import Iterator
+from dataclasses import dataclass, field
 from datetime import datetime
 
-from .models import IOC, Analiza
+from django.utils import timezone
+
+from .models import IOC, Analiza, Wzbogacenie
+from .zadania import BLOKADA, DOSTAWCY, skonfigurowany
 
 SEKCJE = [
     ("wiadomosc", "Wiadomość"),
@@ -65,3 +69,42 @@ def drzewo_ioc(analiza: Analiza) -> list[tuple[IOC, int]]:
 
     odwiedz(None, 0)
     return wynik
+
+
+@dataclass
+class WidokWzbogacenia:
+    # oczekuje | gotowe | brak_danych | limit | blad | nieskonfigurowane | nie_dotyczy
+    status: str
+    skrot: dict = field(default_factory=dict)
+    link: str | None = None
+    blad: str = ""
+    sprawdzono: datetime | None = None
+
+
+def widoki_wzbogacen(analiza: Analiza) -> tuple[dict[int, dict[str, WidokWzbogacenia]], bool]:
+    """Stan wzbogacenia każdego IOC u każdego dostawcy oraz czy coś jest jeszcze w toku."""
+    iocs = list(analiza.ioc.all())
+    klucze = {
+        (i.pk, d): Wzbogacenie.klucz_dla(d, i.typ, i.wartosc)
+        for i in iocs for d, typy in DOSTAWCY.items() if i.typ in typy
+    }
+    wpisy = {w.klucz: w for w in Wzbogacenie.objects.filter(klucz__in=klucze.values())}
+    teraz = timezone.now()
+    trwa = False
+    wynik: dict[int, dict[str, WidokWzbogacenia]] = {}
+    for i in iocs:
+        wynik[i.pk] = {}
+        for d in DOSTAWCY:
+            klucz = klucze.get((i.pk, d))
+            wpis = wpisy.get(klucz) if klucz else None
+            if klucz is None:
+                widok = WidokWzbogacenia("nie_dotyczy")
+            elif wpis is None:
+                widok = WidokWzbogacenia("oczekuje" if skonfigurowany(d) else "nieskonfigurowane")
+            elif wpis.status == "oczekuje" and (not wpis.zlecono or teraz - wpis.zlecono >= BLOKADA):
+                widok = WidokWzbogacenia("blad", blad="Brak odpowiedzi workera.")
+            else:
+                widok = WidokWzbogacenia(wpis.status, wpis.skrot or {}, wpis.link, wpis.blad, wpis.sprawdzono)
+                trwa = trwa or wpis.status == "oczekuje"
+            wynik[i.pk][d] = widok
+    return wynik, trwa

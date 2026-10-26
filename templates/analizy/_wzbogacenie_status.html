@@ -1,0 +1,6 @@
+{% if w.status == "oczekuje" %}<span class="muted pulsuje" title="Sprawdzanie…">…</span>
+{% elif w.status == "brak_danych" %}<span class="muted">brak danych</span>
+{% elif w.status == "limit" %}<span class="b warn" title="Ponów odświeżeniem">limit API</span>
+{% elif w.status == "blad" %}<span class="b bad" title="{{ w.blad }}">błąd</span><span class="muted powod">{{ w.blad }}</span>
+{% elif w.status == "nieskonfigurowane" %}<span class="muted" title="brak klucza w .env">—</span><span class="ukryty">brak klucza w .env</span>
+{% endif %}

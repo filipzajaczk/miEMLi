@@ -9,4 +9,5 @@ urlpatterns = [
     path("analiza/upload/", views.upload, name="upload"),
     path("analiza/<int:pk>/", views.szczegoly, name="szczegoly"),
     path("analiza/<int:pk>/podglad/<str:wid>/", views.podglad, name="podglad"),
+    path("analiza/<int:pk>/wzbogacenie/", views.wzbogacenie, name="wzbogacenie"),
 ]

@@ -181,3 +181,10 @@ tr:hover td { background: rgba(136, 192, 208, .04); }
 .drzewo ul { margin-left: 22px; border-left: 1px solid var(--line); padding-left: 12px; }
 .zalacznik { padding: 8px 0; border-bottom: 1px solid var(--line); }
 .zalacznik .nazwa { font-weight: 500; margin-right: 8px; }
+
+/* Wzbogacenie IOC */
+.komorka { white-space: nowrap; }
+.komorka > * + * { margin-left: 6px; }
+.komorka .powod, .ukryty { display: none; }
+.pulsuje { animation: pulsuje 1.2s ease-in-out infinite; }
+@keyframes pulsuje { 50% { opacity: .3; } }
