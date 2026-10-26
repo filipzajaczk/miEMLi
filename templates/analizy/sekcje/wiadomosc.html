@@ -1,0 +1,31 @@
+{% load miemli %}
+<h1>{{ w.temat|default:"(bez tematu)" }}</h1>
+<dl class="meta">
+  <dt>Od</dt><dd>{{ w.od|default:"—" }}</dd>
+  {% with r=w|naglowek:"Reply-To" %}{% if r %}<dt>Reply-To</dt><dd>{{ r }}</dd>{% endif %}{% endwith %}
+  {% with r=w|naglowek:"Return-Path" %}{% if r %}<dt>Return-Path</dt><dd>{{ r }}</dd>{% endif %}{% endwith %}
+  <dt>Do</dt><dd>{{ w.do|join:", "|default:"—" }}</dd>
+  <dt>Data</dt><dd>{% with d=w.data|iso_data %}{% if d %}{{ d|date:"Y-m-d H:i:s" }}{% else %}—{% endif %}{% endwith %}</dd>
+</dl>
+
+<div class="odznaki">
+  {% for nazwa, wynik in a.uwierzytelnienie|mechanizmy %}
+    {% if wynik %}<span class="b {{ wynik|klasa_auth }}">{{ nazwa }} {{ wynik|upper }}</span>
+    {% else %}<span class="b neutral">{{ nazwa }}: brak danych</span>{% endif %}
+  {% endfor %}
+  {% for s in a.sygnaly %}<span class="b warn" title="{{ s.opis }}">{{ s.opis }}</span>{% endfor %}
+</div>
+
+{% if w.ostrzezenia %}
+<ul class="ostrzezenia">
+  {% for o in w.ostrzezenia %}<li>{{ o.opis }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+{% if w.html_bezpieczny %}
+  <iframe sandbox class="podglad" src="{% url 'analizy:podglad' analiza.pk wid %}" title="Podgląd wiadomości"></iframe>
+{% elif w.tekst %}
+  <pre class="tekst karta">{{ w.tekst }}</pre>
+{% else %}
+  <p class="muted">Wiadomość nie ma treści.</p>
+{% endif %}

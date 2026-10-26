@@ -144,3 +144,40 @@ tr:hover td { background: rgba(136, 192, 208, .04); }
 /* Lista analiz */
 .lista { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
 .lista .upload p { margin-top: 10px; }
+
+/* Ekran analizy — układ C: nawigacja | treść | panel IOC */
+.analiza { flex: 1; display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+.glowna { display: grid; grid-template-columns: 190px 1fr; min-height: 0; }
+.nav { padding: 18px 10px; border-right: 1px solid var(--line); background: var(--bg2); }
+.nav a {
+  display: flex; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-radius: 5px; color: var(--muted);
+}
+.nav a:hover { color: var(--fg); text-decoration: none; }
+.nav a.on { background: var(--card); color: var(--fg); }
+.nav .licznik { color: var(--muted); font-size: 12px; }
+.nav .odstep { height: 14px; }
+.srodek { padding: 22px 26px; overflow: auto; min-width: 0; }
+.panel-ioc { padding: 18px 16px; border-left: 1px solid var(--line); background: var(--bg2); overflow: auto; }
+.wiersz-ioc {
+  display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--fg);
+}
+.wiersz-ioc:hover { text-decoration: none; color: var(--accent); }
+.wiersz-ioc .typ { width: 52px; flex-shrink: 0; color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.wiersz-ioc .wartosc { overflow-wrap: anywhere; }
+
+.meta { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; margin-bottom: 14px; }
+.meta dt { color: var(--muted); }
+.meta dd { overflow-wrap: anywhere; }
+.odznaki { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.ostrzezenia { list-style: none; margin-bottom: 16px; }
+.ostrzezenia li { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; }
+.podglad { width: 100%; height: 65vh; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.tekst { white-space: pre-wrap; font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.naglowki td { overflow-wrap: anywhere; }
+.tabela-ioc td { overflow-wrap: anywhere; }
+
+.drzewo, .drzewo ul { list-style: none; }
+.drzewo ul { margin-left: 22px; border-left: 1px solid var(--line); padding-left: 12px; }
+.zalacznik { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.zalacznik .nazwa { font-weight: 500; margin-right: 8px; }

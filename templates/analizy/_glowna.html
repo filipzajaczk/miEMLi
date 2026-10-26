@@ -1,0 +1,24 @@
+{% load miemli %}
+<nav class="nav">
+  {% if wiadomosci|length > 1 %}
+    <div class="label">Wiadomości</div>
+    {% for id, x in wiadomosci.items %}
+      <a href="?sekcja={{ sekcja }}&wiadomosc={{ id }}" hx-get="?sekcja={{ sekcja }}&wiadomosc={{ id }}"
+         hx-target="#glowna" hx-push-url="true" class="{% if id == wid %}on{% endif %}"
+         title="{{ x.temat|default:'' }}">
+        <span>{% if id == "0" %}Główna{% else %}Zagnieżdżona {{ id }}{% endif %}</span>
+      </a>
+    {% endfor %}
+    <div class="odstep"></div>
+  {% endif %}
+  <div class="label">Sekcje</div>
+  {% for kod, nazwa in sekcje %}
+    <a href="?sekcja={{ kod }}&wiadomosc={{ wid }}" hx-get="?sekcja={{ kod }}&wiadomosc={{ wid }}"
+       hx-target="#glowna" hx-push-url="true" class="{% if kod == sekcja %}on{% endif %}">
+      <span>{{ nazwa }}</span>{% with n=liczniki|klucz:kod %}{% if n is not None %}<span class="licznik">{{ n }}</span>{% endif %}{% endwith %}
+    </a>
+  {% endfor %}
+</nav>
+<section class="srodek">
+  {% include "analizy/sekcje/"|add:sekcja|add:".html" %}
+</section>

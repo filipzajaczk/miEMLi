@@ -1,0 +1,17 @@
+{% load miemli %}
+<li>
+  <div class="zalacznik">
+    <span class="nazwa">{{ z.nazwa }}</span>
+    <span class="muted">{{ z.typ_mime }} · {{ z.rozmiar|rozmiar }}</span>
+    {% if z.inline %}<span class="b neutral">inline</span>{% endif %}
+    {% if z.zaszyfrowany %}<span class="b warn">zaszyfrowane, hasło nieznane</span>{% endif %}
+    {% if z.wiadomosc %}
+      <a href="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}" hx-get="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}"
+         hx-target="#glowna" hx-push-url="true">otwórz wiadomość {{ z.wiadomosc.id }}</a>
+    {% endif %}
+    <div class="mono muted">sha256 {{ z.sha256 }}</div>
+  </div>
+  {% if z.dzieci %}
+  <ul>{% for z in z.dzieci %}{% include "analizy/_zalacznik.html" %}{% endfor %}</ul>
+  {% endif %}
+</li>

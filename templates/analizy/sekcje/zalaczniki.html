@@ -1,0 +1,8 @@
+<h2>Załączniki</h2>
+{% if w.zalaczniki %}
+<ul class="drzewo">
+  {% for z in w.zalaczniki %}{% include "analizy/_zalacznik.html" %}{% endfor %}
+</ul>
+{% else %}
+<p class="muted">Brak załączników.</p>
+{% endif %}

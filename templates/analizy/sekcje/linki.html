@@ -1,0 +1,19 @@
+{% load miemli %}
+<h2>Linki</h2>
+{% if a.linki %}
+<table>
+  <thead><tr><th>Tekst</th><th>Adres docelowy</th><th></th></tr></thead>
+  <tbody>
+  {% for l in a.linki %}
+    <tr>
+      <td>{{ l.tekst|default:"—" }}</td>
+      <td class="mono">{{ l.docelowy|rozbroj:"url" }}
+        {% if l.url != l.docelowy %}<div class="muted">przez {{ l.url|rozbroj:"url"|truncatechars:90 }}</div>{% endif %}</td>
+      <td>{% if l.niezgodny %}<span class="b bad" title="Tekst linku wskazuje inną domenę niż adres docelowy">niezgodny tekst</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">Brak linków.</p>
+{% endif %}

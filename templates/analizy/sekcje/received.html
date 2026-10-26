@@ -1,0 +1,21 @@
+{% load miemli %}
+<h2>Ścieżka Received <span class="muted">(najstarszy hop pierwszy)</span></h2>
+{% if hopy %}
+<table>
+  <thead><tr><th>#</th><th>Od</th><th>Przez</th><th>IP</th><th>Czas</th><th>Opóźnienie</th></tr></thead>
+  <tbody>
+  {% for h in hopy %}
+    <tr>
+      <td class="muted">{{ h.lp }}</td>
+      <td class="mono">{{ h.od|default:"—" }}</td>
+      <td class="mono">{{ h.przez|default:"—" }}</td>
+      <td class="mono">{{ h.ip|rozbroj:"ip"|default:"—" }}</td>
+      <td class="muted">{% if h.czas_dt %}{{ h.czas_dt|date:"Y-m-d H:i:s O" }}{% else %}—{% endif %}</td>
+      <td>{% if h.opoznienie is not None %}{{ h.opoznienie }} s{% else %}—{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">Brak nagłówków Received.</p>
+{% endif %}

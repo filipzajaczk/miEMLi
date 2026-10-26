@@ -1,2 +1,11 @@
 {% extends "base.html" %}
-{% block tresc %}<main class="tresc"><h1>{{ analiza.nazwa_pliku }}</h1></main>{% endblock %}
+{% block tytul %}{{ analiza.nazwa_pliku }} · miemli{% endblock %}
+{% block pasek %}
+  <span class="muted">{% if analiza.ticket_id %}RTIR #{{ analiza.ticket_id }} · {% endif %}{{ analiza.nazwa_pliku }}</span>
+{% endblock %}
+{% block tresc %}
+<div class="analiza">
+  <div id="glowna" class="glowna">{% include "analizy/_glowna.html" %}</div>
+  <aside class="panel-ioc">{% include "analizy/_panel_ioc.html" %}</aside>
+</div>
+{% endblock %}

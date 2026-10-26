@@ -1,0 +1,9 @@
+<h2>Nagłówki</h2>
+<table class="naglowki">
+  <thead><tr><th>Nazwa</th><th>Wartość</th></tr></thead>
+  <tbody>
+  {% for nazwa, wartosc in w.naglowki %}
+    <tr><td class="mono muted">{{ nazwa }}</td><td class="mono">{{ wartosc }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
