@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import datetime
 
 from .analiza import WynikAnalizy
+from .html_bezpieczny import bezpieczny_html
 from .model import Wiadomosc, Zalacznik
 
 
@@ -36,6 +37,7 @@ def _wiadomosc(w: Wiadomosc) -> dict:
         "do": w.do,
         "data": _data(w.data),
         "tekst": w.tekst,
+        "html_bezpieczny": bezpieczny_html(w.html, w.zalaczniki) if w.html else None,
         "zalaczniki": [_zalacznik(z) for z in w.zalaczniki],
         "ostrzezenia": [asdict(o) for o in w.ostrzezenia],
     }
