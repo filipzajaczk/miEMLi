@@ -69,3 +69,8 @@ def test_wymaga_logowania(client, analiza, nazwa):
 
 def test_usuniecie_nieistniejacej_404(zalogowany):
     assert zalogowany.post(reverse("analizy:usun", args=[999])).status_code == 404
+
+
+def test_komentarz_bez_sprawdzania_pisowni(zalogowany, analiza):
+    t = zalogowany.get(reverse("analizy:opcje", args=[analiza.pk])).content.decode()
+    assert 'spellcheck="false"' in t
