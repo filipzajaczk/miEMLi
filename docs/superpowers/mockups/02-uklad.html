@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>miemli – układ ekranu</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#2e3440; --bg2:#2a2f3a; --card:#353c4a; --fg:#e5e9f0; --muted:#8892a6; --line:#3f4656;
+          --accent:#88c0d0; --on-accent:#2e3440;
+          --ok:#a3be8c; --ok-bg:#3a4639; --bad:#d08770; --bad-bg:#4a3a38; --warn:#ebcb8b; --warn-bg:#4a4535; }
+  body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; background: #242933; color: var(--fg); padding: 32px; }
+  h1 { font-weight: 500; font-size: 22px; margin-bottom: 6px; }
+  .lead { color: var(--muted); margin-bottom: 28px; font-size: 14px; max-width: 900px; line-height: 1.5; }
+  .variant { margin-bottom: 52px; }
+  .variant > h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .variant > p { font-size: 13px; color: var(--muted); margin-bottom: 12px; max-width: 900px; line-height: 1.5; }
+
+  .app { background: var(--bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); font-size: 13px; height: 440px; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+  .logo { font-weight: 600; letter-spacing: .06em; }
+  .muted { color: var(--muted); }
+  .sp { flex: 1; }
+  .btn { border: 1px solid var(--line); background: transparent; color: var(--fg); padding: 5px 11px; border-radius: 6px; font: inherit; font-size: 12px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+  .b { padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .ok { background: var(--ok-bg); color: var(--ok); } .bad { background: var(--bad-bg); color: var(--bad); } .warn { background: var(--warn-bg); color: var(--warn); }
+  .line { height: 8px; background: var(--card); border-radius: 3px; margin-bottom: 8px; }
+  .subject { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  .main { flex: 1; display: flex; min-height: 0; }
+
+  /* A: dwie kolumny */
+  .colL { flex: 1.4; padding: 18px; overflow: hidden; }
+  .colR { flex: 1; padding: 18px; background: var(--bg2); border-left: 1px solid var(--line); }
+
+  /* B: zakładki */
+  .tabs { display: flex; gap: 22px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+  .tab { padding: 10px 0; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tab.on { color: var(--fg); border-color: var(--accent); }
+  .tabbody { padding: 20px; flex: 1; }
+
+  /* C: nawigacja + treść + panel IOC */
+  .nav { width: 170px; padding: 16px 10px; border-right: 1px solid var(--line); background: var(--bg2); }
+  .nav div { padding: 7px 10px; border-radius: 5px; color: var(--muted); display: flex; justify-content: space-between; }
+  .nav div.on { background: var(--card); color: var(--fg); }
+  .center { flex: 1; padding: 18px; }
+  .side { width: 270px; padding: 16px; border-left: 1px solid var(--line); background: var(--bg2); }
+</style>
+</head>
+<body>
+<h1>Układ ekranu analizy</h1>
+<p class="lead">Wszystkie trzy w palecie Nord. Pytanie brzmi: jak rozłożyć <b>wiadomość, nagłówki, załączniki i IOC</b>, żeby analityk szybko przeszedł przez ticket. Treść poglądowa – liczy się podział przestrzeni.</p>
+
+<section class="variant">
+  <h2>A · Dwie kolumny – wszystko na jednym ekranie</h2>
+  <p>Wiadomość po lewej, IOC zawsze widoczne po prawej. Nagłówki i ścieżka Received rozwijane pod treścią. Najszybszy „rzut oka”, ale przy dużych mailach robi się ciasno.</p>
+  <div class="app">
+    <div class="top"><span class="logo">miemli</span><span class="muted">RTIR #48213 · faktura_marzec.eml</span><span class="sp"></span><button class="btn">Odśwież</button><button class="btn primary">Wyślij do RTIR</button></div>
+    <div class="main">
+      <div class="colL">
+        <div class="subject">Zaległa płatność – faktura FV/03/2026</div>
+        <div class="muted" style="margin-bottom:10px">Księgowość PKO &lt;ksiegowosc@pko-platnosci.com&gt;</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px"><span class="b bad">SPF FAIL</span><span class="b ok">DKIM PASS</span><span class="b bad">DMARC FAIL</span></div>
+        <div class="box" style="margin-bottom:12px"><div class="line" style="width:90%"></div><div class="line" style="width:75%"></div><div class="line" style="width:82%"></div><div class="line" style="width:40%"></div></div>
+        <div class="row muted">▸ Nagłówki (24)</div>
+        <div class="row muted">▸ Ścieżka Received (5 hopów)</div>
+        <div class="row muted">▸ Załączniki (1)</div>
+      </div>
+      <div class="colR">
+        <div class="label">IOC</div>
+        <div class="row"><span class="mono" style="flex:1">faktura.zip</span><span class="b warn">3/70</span></div>
+        <div class="row"><span class="mono muted" style="flex:1">└ faktura.exe</span><span class="b bad">41/70</span></div>
+        <div class="row"><span class="mono" style="flex:1">pko-platnosci[.]com</span><span class="b warn">3 dni</span></div>
+        <div class="row"><span class="mono" style="flex:1">185.243.115[.]20</span><span class="b ok">Censys</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="variant">
+  <h2>B · Zakładki</h2>
+  <p>Każdy aspekt w osobnej zakładce: Wiadomość · Nagłówki · Załączniki · IOC · Raport. Każdy widok ma cały ekran – IOC to faktycznie „osobny widok”. Minus: przełączanie się w tę i z powrotem.</p>
+  <div class="app">
+    <div class="top"><span class="logo">miemli</span><span class="muted">RTIR #48213 · faktura_marzec.eml</span><span class="sp"></span><button class="btn">Odśwież</button><button class="btn primary">Wyślij do RTIR</button></div>
+    <div class="tabs"><span class="tab">Wiadomość</span><span class="tab">Nagłówki</span><span class="tab">Załączniki <span class="b warn">1</span></span><span class="tab on">IOC <span class="b bad">7</span></span><span class="tab">Raport</span></div>
+    <div class="tabbody">
+      <div class="row muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.08em"><span style="width:70px">typ</span><span style="flex:1">wartość</span><span style="width:110px">GTI</span><span style="width:110px">Censys</span><span style="width:90px">akcje</span></div>
+      <div class="row"><span class="muted" style="width:70px">plik</span><span class="mono" style="flex:1">faktura.zip · sha256 1ab3…</span><span style="width:110px"><span class="b warn">3/70</span></span><span style="width:110px" class="muted">—</span><span style="width:90px"><button class="btn">JOE</button></span></div>
+      <div class="row"><span class="muted" style="width:70px"></span><span class="mono muted" style="flex:1">└ faktura.exe · sha256 9f2c…</span><span style="width:110px"><span class="b bad">41/70</span></span><span style="width:110px" class="muted">—</span><span style="width:90px"><button class="btn">JOE</button></span></div>
+      <div class="row"><span class="muted" style="width:70px">url</span><span class="mono" style="flex:1">hxxps://pko-platnosci[.]com/fv</span><span style="width:110px"><span class="b bad">12/90</span></span><span style="width:110px" class="muted">—</span><span style="width:90px"><button class="btn">JOE</button></span></div>
+      <div class="row"><span class="muted" style="width:70px">domena</span><span class="mono" style="flex:1">pko-platnosci[.]com</span><span style="width:110px"><span class="b warn">nowa</span></span><span style="width:110px" class="muted">—</span><span style="width:90px"></span></div>
+      <div class="row"><span class="muted" style="width:70px">ip</span><span class="mono" style="flex:1">185.243.115[.]20</span><span style="width:110px"><span class="b ok">0/90</span></span><span style="width:110px"><span class="b warn">RU · AS20473</span></span><span style="width:90px"></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="variant">
+  <h2>C · Nawigacja + treść + stały panel IOC</h2>
+  <p>Lewa kolumna przełącza sekcje (jak zakładki), środek pokazuje wybraną sekcję, a po prawej <b>zawsze</b> widać skrót IOC z wynikami. Klik w IOC otwiera szczegóły (GTI / Censys / JOE). Najwięcej informacji naraz, potrzebuje szerokiego monitora.</p>
+  <div class="app">
+    <div class="top"><span class="logo">miemli</span><span class="muted">RTIR #48213 · faktura_marzec.eml</span><span class="sp"></span><button class="btn">Odśwież</button><button class="btn primary">Wyślij do RTIR</button></div>
+    <div class="main">
+      <div class="nav">
+        <div class="on">Wiadomość</div>
+        <div>Nagłówki <span>24</span></div>
+        <div>Received <span>5</span></div>
+        <div>Załączniki <span>1</span></div>
+        <div>Linki <span>3</span></div>
+        <div>Raport</div>
+      </div>
+      <div class="center">
+        <div class="subject">Zaległa płatność – faktura FV/03/2026</div>
+        <div class="muted" style="margin-bottom:10px">Księgowość PKO &lt;ksiegowosc@pko-platnosci.com&gt;</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px"><span class="b bad">SPF FAIL</span><span class="b ok">DKIM PASS</span><span class="b bad">DMARC FAIL</span></div>
+        <div class="box"><div class="line" style="width:90%"></div><div class="line" style="width:75%"></div><div class="line" style="width:82%"></div><div class="line" style="width:60%"></div><div class="line" style="width:40%"></div></div>
+      </div>
+      <div class="side">
+        <div class="label">IOC · 7</div>
+        <div class="row"><span class="mono" style="flex:1">faktura.zip</span><span class="b warn">3/70</span></div>
+        <div class="row"><span class="mono muted" style="flex:1">└ faktura.exe</span><span class="b bad">41/70</span></div>
+        <div class="row"><span class="mono" style="flex:1">pko-platnosci[.]com</span><span class="b warn">nowa</span></div>
+        <div class="row"><span class="mono" style="flex:1">185.243.115[.]20</span><span class="b ok">0/90</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>
