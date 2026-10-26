@@ -51,14 +51,15 @@ def czy_wiadomosc(z: Zalacznik) -> bool:
     )
 
 
-def _limit_glebokosci(rodzic: Wiadomosc, limity: Limity) -> None:
-    if not any(o.kod == "LIMIT_GLEBOKOSC" for o in rodzic.ostrzezenia):
-        rodzic.ostrzezenia.append(
-            Ostrzezenie(
-                "LIMIT_GLEBOKOSC",
-                f"Przerwano analizę zagnieżdżeń powyżej {limity.max_glebokosc} poziomów.",
+def _limit_glebokosci(wiadomosci: list[Wiadomosc], limity: Limity) -> None:
+    for w in wiadomosci:
+        if not any(o.kod == "LIMIT_GLEBOKOSC" for o in w.ostrzezenia):
+            w.ostrzezenia.append(
+                Ostrzezenie(
+                    "LIMIT_GLEBOKOSC",
+                    f"Przerwano analizę zagnieżdżeń powyżej {limity.max_glebokosc} poziomów.",
+                )
             )
-        )
 
 
 class _Parser:
@@ -67,9 +68,11 @@ class _Parser:
     def __init__(self, limity: Limity):
         self.limity = limity
         self.budzet = Budzet(limity.max_rozpakowane)
+        self.glowna: Wiadomosc | None = None
 
     def wiadomosc(self, dane: bytes, id: str, glebokosc: int) -> Wiadomosc:
         w = _parsuj_poziom(dane, id)
+        self.glowna = self.glowna or w
         hasla = hasla_z_tekstu(" ".join(filter(None, [w.tekst, w.html and tekst_z_html(w.html)])))
         licznik = [0]
         for z in w.zalaczniki:
@@ -81,7 +84,7 @@ class _Parser:
     ) -> None:
         if czy_wiadomosc(z):
             if glebokosc + 1 > self.limity.max_glebokosc:
-                _limit_glebokosci(rodzic, self.limity)
+                _limit_glebokosci([rodzic, self.glowna], self.limity)
                 return
             licznik[0] += 1
             try:
@@ -92,7 +95,7 @@ class _Parser:
                 )
         elif jest_archiwum(z):
             if glebokosc + 1 > self.limity.max_glebokosc:
-                _limit_glebokosci(rodzic, self.limity)
+                _limit_glebokosci([rodzic, self.glowna], self.limity)
                 return
             rodzic.ostrzezenia.extend(rozpakuj(z, hasla, self.budzet))
             for dziecko in z.dzieci:

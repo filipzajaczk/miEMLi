@@ -17,6 +17,7 @@ from .qr import odczytaj_qr
 if TYPE_CHECKING:
     from . import AnalizaWiadomosci
 
+MAKS_OBRAZOW_QR = 20
 NAGLOWKI_NADAWCY = ("From", "Reply-To", "Return-Path", "Sender")
 _IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
@@ -47,6 +48,7 @@ class _Budowniczy:
         self.lista: list[IOC] = []
         self.indeks: dict[tuple[str, str], int] = {}
         self.kolejka: deque[tuple[Wiadomosc, int | None]] = deque()
+        self.qr: dict[str, list[str]] = {}  # sha256 → odczytane kody
 
     def ignorowana(self, domena: str) -> bool:
         return any(domena == d or domena.endswith("." + d) for d in self.ignorowane)
@@ -108,7 +110,9 @@ class _Budowniczy:
             {"md5": z.md5, "sha1": z.sha1, "sha256": z.sha256},
         )
         if z.typ_mime.startswith("image/"):
-            for tresc in odczytaj_qr(z.dane):
+            if z.sha256 not in self.qr and len(self.qr) < MAKS_OBRAZOW_QR:
+                self.qr[z.sha256] = odczytaj_qr(z.dane)
+            for tresc in self.qr.get(z.sha256, []):
                 if re.match(r"https?://", tresc, re.IGNORECASE):
                     self.url(tresc, None, plik_id, "qr")
         if jest_archiwum(z):

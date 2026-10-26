@@ -8,7 +8,7 @@ from django.db import transaction
 from mailcore.analiza import analizuj
 from mailcore.model import Limity
 from mailcore.parsuj import parsuj
-from mailcore.serializacja import do_json
+from mailcore.serializacja import bez_nul, do_json
 
 from .models import IOC, Analiza, Zdarzenie
 
@@ -45,8 +45,8 @@ def utworz_lub_otworz(
                 analiza=analiza,
                 numer=i.id,
                 typ=i.typ,
-                wartosc=i.wartosc,
-                etykieta=i.etykieta,
+                wartosc=bez_nul(i.wartosc),
+                etykieta=bez_nul(i.etykieta),
                 zrodlo=i.zrodlo,
                 hashe=i.hashe,
                 rodzic=po_numerze.get(i.rodzic_id),

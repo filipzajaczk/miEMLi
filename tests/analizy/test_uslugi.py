@@ -40,3 +40,20 @@ def test_ignorowane_domeny_z_ustawien(probka, analityk, settings):
     settings.MIEMLI_IGNOROWANE_DOMENY = frozenset({"evil.example"})
     analiza, _ = utworz_lub_otworz(probka("zip_exe"), "a.eml", analityk)
     assert not analiza.ioc.filter(typ="domena").exists()
+
+
+def test_nul_w_tresci_i_naglowkach(analityk):
+    dane = (b"From: a@x.pl\r\nSubject: a\x00b\r\nContent-Type: text/plain; charset=utf-8\r\n"
+            b"Content-Transfer-Encoding: base64\r\n\r\naGkAdGhlcmU=\r\n")
+    analiza, _ = utworz_lub_otworz(dane, "nul.eml", analityk)
+    analiza.refresh_from_db()
+    assert analiza.wynik["wiadomosc"]["tekst"].startswith("hi")
+
+
+def test_bardzo_dlugi_url(analityk, zbuduj_mail):
+    import base64
+    import os
+
+    url = "http://evil.example/?t=" + base64.b64encode(os.urandom(3000)).decode()
+    analiza, _ = utworz_lub_otworz(zbuduj_mail(tekst=url), "dlugi.eml", analityk)
+    assert analiza.ioc.filter(typ="url").count() == 1

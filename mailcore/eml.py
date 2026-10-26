@@ -1,6 +1,8 @@
 """Parser .eml — jeden poziom. Zagnieżdżone wiadomości zostają bajtami w Zalacznik.dane."""
 
 import email
+import email.header
+import email.parser
 import email.policy
 import email.utils
 from email.message import EmailMessage
@@ -8,6 +10,7 @@ from email.message import EmailMessage
 from .model import Ostrzezenie, Wiadomosc, Zalacznik, zalacznik_z_danych
 
 TYP_EML = "message/rfc822"
+MAKS_ZALACZNIKOW = 1000
 
 
 def dekoduj_tekst(dane: bytes, charset: str | None, ostrzezenia: list[Ostrzezenie]) -> str:
@@ -43,13 +46,27 @@ def _naglowki(msg: EmailMessage, ostrzezenia: list[Ostrzezenie]) -> list[tuple[s
         try:
             h = msg.policy.header_fetch_parse(nazwa, surowa)
             wartosc = str(h)
-            if getattr(h, "defects", None) or "\ufffd" in wartosc:
+            if getattr(h, "defects", None) or "\ufffd" in wartosc or not _encoded_words_poprawne(surowa):
                 ostrzezenia.append(Ostrzezenie("NAGLOWEK", f"Nagłówek {nazwa} jest nieprawidłowy."))
         except Exception:
             wartosc = str(surowa)
             ostrzezenia.append(Ostrzezenie("NAGLOWEK", f"Nie udało się zdekodować nagłówka {nazwa}."))
         wynik.append((nazwa, " ".join(wartosc.split())))
     return wynik
+
+
+def _encoded_words_poprawne(surowa) -> bool:
+    """Python po cichu pomija błędne =?...?= — sprawdzamy je ściśle."""
+    surowa = str(surowa)
+    if "=?" not in surowa:
+        return True
+    try:
+        for bajty, charset in email.header.decode_header(surowa):
+            if charset and isinstance(bajty, bytes):
+                bajty.decode(charset)
+    except Exception:
+        return False
+    return True
 
 
 def _nazwa_pliku(czesc: EmailMessage, numer: int) -> str | None:
@@ -102,7 +119,26 @@ def _zalacznik(czesc: EmailMessage, numer: int) -> Zalacznik:
     )
 
 
+def _tylko_naglowki(dane: bytes, id: str) -> Wiadomosc:
+    """Awaryjnie, gdy struktura MIME jest zbyt głęboka dla parsera: same nagłówki."""
+    ostrzezenia = [
+        Ostrzezenie("USZKODZONA_WIADOMOSC", "Struktura MIME jest zbyt głęboka — pokazano tylko nagłówki.")
+    ]
+    sekcja = dane.split(b"\r\n\r\n", 1)[0].split(b"\n\n", 1)[0]
+    msg = email.parser.BytesHeaderParser(policy=email.policy.default).parsebytes(sekcja)
+    w = Wiadomosc(id, _naglowki(msg, ostrzezenia), None, None, [], None, None, None, [], ostrzezenia)
+    uzupelnij_pola(w)
+    return w
+
+
 def parsuj_eml(dane: bytes, id: str) -> Wiadomosc:
+    try:
+        return _parsuj_eml(dane, id)
+    except RecursionError:
+        return _tylko_naglowki(dane, id)
+
+
+def _parsuj_eml(dane: bytes, id: str) -> Wiadomosc:
     msg = email.message_from_bytes(dane, policy=email.policy.default)
     ostrzezenia: list[Ostrzezenie] = []
     naglowki = _naglowki(msg, ostrzezenia)
@@ -110,6 +146,11 @@ def parsuj_eml(dane: bytes, id: str) -> Wiadomosc:
     tekst = html = None
     zalaczniki: list[Zalacznik] = []
     for numer, czesc in enumerate(_liscie(msg), start=1):
+        if len(zalaczniki) >= MAKS_ZALACZNIKOW:
+            ostrzezenia.append(
+                Ostrzezenie("LIMIT_ROZPAKOWANIE", f"Wiadomość ma ponad {MAKS_ZALACZNIKOW} części — pokazano pierwsze.")
+            )
+            break
         if _czy_zalacznik(czesc):
             zalaczniki.append(_zalacznik(czesc, numer))
             continue

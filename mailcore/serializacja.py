@@ -50,9 +50,20 @@ def _analiza(a) -> dict:
     return wynik
 
 
+def bez_nul(obj):
+    """Postgres nie przyjmuje \x00 w tekście ani w jsonb."""
+    if isinstance(obj, str):
+        return obj.replace("\x00", "")
+    if isinstance(obj, dict):
+        return {bez_nul(k): bez_nul(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [bez_nul(v) for v in obj]
+    return obj
+
+
 def do_json(w: Wiadomosc, wynik: WynikAnalizy) -> dict:
-    return {
+    return bez_nul({
         "wiadomosc": _wiadomosc(w),
         "analiza": {id: _analiza(a) for id, a in wynik.wiadomosci.items()},
         "ioc": [asdict(i) for i in wynik.ioc],
-    }
+    })

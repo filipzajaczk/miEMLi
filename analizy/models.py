@@ -47,8 +47,9 @@ class IOC(models.Model):
     rodzic = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="dzieci")
 
     class Meta:
+        # Bez unikalnego indeksu na wartosc: długie URL-e przekraczają limit indeksu btree
+        # w Postgresie. Unikalność (typ, wartosc) zapewnia mailcore.analiza.ioc.
         ordering = ["numer"]
-        constraints = [models.UniqueConstraint(fields=["analiza", "typ", "wartosc"], name="ioc_unikalny_w_analizie")]
         verbose_name = "IOC"
         verbose_name_plural = "IOC"
 

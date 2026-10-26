@@ -10,6 +10,7 @@ from ..domeny import domena_bazowa
 from ..model import Wiadomosc
 from ..tekst import tekst_z_html
 
+MAKS_LINKOW = 500
 _URL = re.compile(r"https?://[^\s<>\"'\]\)]+", re.IGNORECASE)
 _WYGLADA_JAK_ADRES = re.compile(
     r"^(?:https?://)?(?:www\.)?((?:[a-z0-9-]+\.)+[a-z]{2,})(?:[/:?#]\S*)?$", re.IGNORECASE
@@ -100,7 +101,7 @@ def wyciagnij_linki(w: Wiadomosc) -> list[Link]:
     widziane: set[str] = set()
 
     def dodaj(url: str, tekst: str | None, zrodlo: str) -> None:
-        if not re.match(r"https?://", url, re.IGNORECASE):
+        if len(wynik) >= MAKS_LINKOW or not re.match(r"https?://", url, re.IGNORECASE):
             return
         klucz = url if zrodlo == "tekst" else f"{url}\x00{tekst}"
         if klucz in widziane or (zrodlo == "tekst" and any(l.url == url for l in wynik)):
