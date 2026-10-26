@@ -11,9 +11,9 @@
   - analiza SPF/DKIM/DMARC, Received, podszywanie, linki (SafeLinks, Proofpoint), QR;
   - IOC z relacjami, rozbrajanie, bezpieczny podgląd HTML (iframe sandbox + CSP);
   - ekran analizy w układzie C, ręczny upload, deduplikacja.
-- Testy: 144 (pytest); testy Django przechodzą też na Postgresie. Próbka `.msg` jest prywatna (`tests/samples/private/`) — na innej maszynie testy `.msg` są pomijane.
+- Testy: 240 (pytest); testy Django przechodzą też na Postgresie. Próbka `.msg` jest prywatna (`tests/samples/private/`) — na innej maszynie testy `.msg` są pomijane.
 
-- Etap 4 zrobiony (branch `etap-4`): wzbogacenie IOC w GTI i Censys przez worker RQ (cache 24 h,
+- Etap 4 zrobiony: wzbogacenie IOC w GTI i Censys przez worker RQ (cache 24 h,
   ponowienia, odpytywanie htmx co 2 s), kolumny GTI/Censys/JOE, rozwijane szczegóły, „Odśwież
   wzbogacenie”, `manage.py sprawdz_api`. JOE = tylko link do strony Joe Sandbox.
 - Censys: z `CENSYS_ORG_ID` obecny token dostaje 403 — usunąć zmienną z `.env` albo poprosić
@@ -31,6 +31,16 @@
 
 - Następny: etapy 6–7 — integracja z RTIR (link z ticketu, pobieranie załącznika przez REST2,
   raport jako Comment, Custom Fields). Potem Joe Sandbox (sekcja „ODŁOŻONE” poniżej).
+- Do decyzji / drobne poprawki zgłoszone 2026-10-26:
+  - Fałszywy IOC z tekstu linku: adres widoczny jako tekst `<a>` (np. „https://www.pko.pl/weryfikacja”)
+    trafia do IOC, choć prawdziwy cel jest inny — do raportu RTIR trafiłaby domena banku.
+    Propozycja: tekst linku pokazywać w sekcji Linki, ale nie dodawać do IOC.
+  - Podgląd HTML: (1) zachować wygląd przycisków (kolory/tło z `<a>` na zastępczy `<span>`),
+    (2) w miejscu zablokowanego zewnętrznego obrazka ramka z jego domeną (podpowiedź IOC).
+  - Odłożone drobiazgi z przeglądu etapu 4: kolizje łańcuchów ponowień (podwójny „Odśwież” = 2× limit),
+    odpytywanie zwija otwarty wiersz szczegółów, przyszła `creation_date` → „-3 dni”, nazwy/tagi z GTI
+    nierozbrajane, `httpx.InvalidURL` w workerze, brak sprzątania tabeli `Wzbogacenie`.
+- Plik demonstracyjny „wszystko na czerwono”: `/home/kali/Desktop/fifi/czerwony.eml` (poza repo, EICAR).
 
 ### ODŁOŻONE: Joe Sandbox — robimy na samym końcu projektu (decyzja 2026-10-26)
 
