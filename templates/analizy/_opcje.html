@@ -1,0 +1,16 @@
+<div class="opcje-analizy">
+  <form hx-post="{% url 'analizy:notatka' analiza.pk %}" hx-target="#opcje-{{ analiza.pk }}">
+    {% csrf_token %}
+    <label for="notatka-{{ analiza.pk }}">Komentarz do analizy</label>
+    <textarea id="notatka-{{ analiza.pk }}" name="notatka" rows="4" maxlength="10000"
+              placeholder="np. potwierdzony phishing, zgłoszone do RTIR #…">{% if tresc is not None %}{{ tresc }}{% else %}{{ analiza.notatka }}{% endif %}</textarea>
+    {% if blad %}<div class="blad">{{ blad }}</div>{% endif %}
+    <button class="btn primary" type="submit">Zapisz komentarz</button>
+    {% if zapisano %}<span class="b ok">Zapisano</span>{% endif %}
+  </form>
+  <form method="post" action="{% url 'analizy:usun' analiza.pk %}"
+        onsubmit="return confirm('Usunąć analizę {{ analiza.nazwa_pliku|escapejs }} z bazy? Tej operacji nie można cofnąć.')">
+    {% csrf_token %}
+    <button class="btn usun" type="submit">Usuń analizę</button>
+  </form>
+</div>

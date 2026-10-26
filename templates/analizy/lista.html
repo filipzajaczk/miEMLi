@@ -19,13 +19,15 @@
       <thead><tr><th>Data</th><th>Plik</th><th>Temat</th><th>Ticket</th><th>Analityk</th></tr></thead>
       <tbody>
       {% for a in analizy %}
-        <tr>
+        <tr class="klikalny" data-szczegoly="{% url 'analizy:opcje' a.pk %}" data-cel="opcje-{{ a.pk }}"
+            title="Kliknij, aby dodać komentarz lub usunąć analizę">
           <td class="muted">{{ a.utworzono|date:"Y-m-d H:i" }}</td>
           <td><a href="{% url 'analizy:szczegoly' a.pk %}">{{ a.nazwa_pliku }}</a></td>
           <td>{{ a.temat|default:"—" }}</td>
           <td class="muted">{% if a.ticket_id %}#{{ a.ticket_id }}{% else %}—{% endif %}</td>
-          <td class="muted">{{ a.utworzyl.username }}</td>
+          <td class="muted">{{ a.utworzyl.username }}{% if a.notatka %} <span class="b neutral" title="{{ a.notatka|truncatechars:200 }}">komentarz</span>{% endif %}</td>
         </tr>
+        <tr class="wiersz-szczegolow"><td colspan="5" id="opcje-{{ a.pk }}"></td></tr>
       {% endfor %}
       </tbody>
     </table>

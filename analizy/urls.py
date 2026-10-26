@@ -12,4 +12,7 @@ urlpatterns = [
     path("analiza/<int:pk>/wzbogacenie/", views.wzbogacenie, name="wzbogacenie"),
     path("analiza/<int:pk>/ioc/<int:ioc_pk>/", views.szczegoly_ioc, name="szczegoly_ioc"),
     path("analiza/<int:pk>/odswiez/", views.odswiez, name="odswiez"),
+    path("analiza/<int:pk>/opcje/", views.opcje, name="opcje"),
+    path("analiza/<int:pk>/notatka/", views.notatka, name="notatka"),
+    path("analiza/<int:pk>/usun/", views.usun, name="usun"),
 ]

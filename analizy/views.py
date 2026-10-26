@@ -113,6 +113,44 @@ def szczegoly(request, pk):
     return render(request, szablon, kontekst)
 
 
+MAKS_NOTATKA = 10000
+
+
+@login_required
+def opcje(request, pk):
+    """Rozwinięcie wiersza na liście analiz: komentarz i usuwanie."""
+    analiza = get_object_or_404(Analiza, pk=pk)
+    return render(request, "analizy/_opcje.html", {"analiza": analiza})
+
+
+@login_required
+@require_POST
+def notatka(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    tresc = request.POST.get("notatka", "").replace("\x00", "")
+    if len(tresc) > MAKS_NOTATKA:
+        return render(request, "analizy/_opcje.html", {
+            "analiza": analiza, "tresc": tresc, "blad": f"Komentarz może mieć maksymalnie {MAKS_NOTATKA} znaków.",
+        })
+    analiza.notatka = tresc
+    analiza.save(update_fields=["notatka"])
+    Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="notatka")
+    return render(request, "analizy/_opcje.html", {"analiza": analiza, "zapisano": True})
+
+
+@login_required
+@require_POST
+def usun(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    # zdarzenie bez powiązania — analiza (i jej zdarzenia) znika z bazy
+    Zdarzenie.objects.create(uzytkownik=request.user, typ="usuniecie", szczegoly={
+        "plik": analiza.nazwa_pliku, "sha256": analiza.sha256, "ticket_id": analiza.ticket_id,
+        "utworzono": analiza.utworzono.isoformat(),
+    })
+    analiza.delete()
+    return redirect("analizy:lista")
+
+
 @login_required
 def szczegoly_ioc(request, pk, ioc_pk):
     analiza = get_object_or_404(Analiza, pk=pk)
