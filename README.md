@@ -1,4 +1,4 @@
-# miemli
+# miEMLi
 
 Wewnętrzne narzędzie zespołu CSIRT do analizy podejrzanych wiadomości `.eml` / `.msg`
 dołączanych do incydentów w RTIR: czytelny podgląd wiadomości, analiza nagłówków
