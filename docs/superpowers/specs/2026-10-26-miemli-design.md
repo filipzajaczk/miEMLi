@@ -240,7 +240,15 @@ nawet gdy wszystkie API są niedostępne.
 
 Każdy etap kończy się działającym stanem, commitem i wpisem w `NOTES.md`.
 
-## 12. Otwarte kwestie (do rozstrzygnięcia w trakcie)
+## 12. Zmiany po rozpoczęciu realizacji
+
+- **2026-10-26: Joe Sandbox odłożony na sam koniec projektu** (po RTIR). Do tego czasu przycisk JOE
+  to zwykły link do strony Joe Sandbox. Szczegóły i otwarta kwestia bajtów załączników: `NOTES.md`.
+  Punkty §5.4 (JOE), §6 (`ZgloszenieJoe`, klucz Joe w profilu) i §11 etap 5 obowiązują dopiero
+  przy tej integracji.
+- **Etap 4 (GTI, Censys):** szczegóły w `docs/superpowers/specs/2026-10-26-miemli-etap4-wzbogacenie-design.md`.
+
+## 13. Otwarte kwestie (do rozstrzygnięcia w trakcie)
 
 - Dokładne pola zwracane przez API GTI, Censys i Joe do pokazania w skrócie — ustalimy na
   etapach 4–5 na podstawie realnych odpowiedzi.
