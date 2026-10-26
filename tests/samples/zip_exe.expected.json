@@ -1,0 +1,21 @@
+{
+  "ioc": [
+    [
+      "email",
+      "faktury@evil.example"
+    ],
+    [
+      "domena",
+      "evil.example"
+    ],
+    [
+      "plik",
+      "faktura.zip"
+    ],
+    [
+      "plik",
+      "faktura.exe"
+    ]
+  ],
+  "ostrzezenia": []
+}

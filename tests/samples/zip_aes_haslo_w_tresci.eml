@@ -1,0 +1,27 @@
+From: Faktury <faktury@evil.example>
+To: jan.kowalski@firma.example
+Subject: Faktura zabezpieczona
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <84396634@generator.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7475278023313496937=="
+
+--===============7475278023313496937==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+W załączniku faktura.
+Hasło do archiwum: Faktura2026!
+
+--===============7475278023313496937==
+Content-Type: application/zip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="faktura.zip"
+MIME-Version: 1.0
+
+UEsDBBQAAQBjAJprWl0AAAAAKgAAAEQAAAALAAsAZmFrdHVyYS5leGUBmQcAAgBBRQMIAE+i5jcT
+0zuzbsVO3duBLof3Zvk6X645uiNNKIr5Xi1yzbk2lfiUWrC7IFBLAQIUAxQAAQBjAJprWl0AAAAA
+KgAAAEQAAAALAAsAAAAAAAAAAACAAQAAAABmYWt0dXJhLmV4ZQGZBwACAEFFAwgAUEsFBgAAAAAB
+AAEARAAAAF4AAAAAAA==
+
+--===============7475278023313496937==--

@@ -1,0 +1,23 @@
+{
+  "ioc": [
+    [
+      "email",
+      "biuro@nadawca.example"
+    ],
+    [
+      "domena",
+      "nadawca.example"
+    ],
+    [
+      "plik",
+      "dokument.pdf"
+    ]
+  ],
+  "uwierzytelnienie": {
+    "spf": null,
+    "dkim": null,
+    "dmarc": null
+  },
+  "sygnaly": [],
+  "ostrzezenia": []
+}

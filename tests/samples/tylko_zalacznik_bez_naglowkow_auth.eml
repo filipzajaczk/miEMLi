@@ -1,0 +1,16 @@
+From: Biuro <biuro@nadawca.example>
+To: jan.kowalski@firma.example
+Subject: Dokument
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <28950180@generator.example>
+Content-Type: multipart/mixed; boundary="===============4033304108004572939=="
+
+--===============4033304108004572939==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="dokument.pdf"
+MIME-Version: 1.0
+
+JVBERi0xLjQKJXRlc3QK
+
+--===============4033304108004572939==--

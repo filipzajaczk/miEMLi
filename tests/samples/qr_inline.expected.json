@@ -1,0 +1,21 @@
+{
+  "ioc": [
+    [
+      "email",
+      "kadry@evil.example"
+    ],
+    [
+      "domena",
+      "evil.example"
+    ],
+    [
+      "plik",
+      "qr.png"
+    ],
+    [
+      "url",
+      "https://evil.example/qr"
+    ]
+  ],
+  "ostrzezenia": []
+}

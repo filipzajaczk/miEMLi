@@ -1,0 +1,15 @@
+{
+  "ioc": [
+    [
+      "email",
+      "nadawca@nadawca.example"
+    ],
+    [
+      "domena",
+      "nadawca.example"
+    ]
+  ],
+  "ostrzezenia": [
+    "KODOWANIE"
+  ]
+}

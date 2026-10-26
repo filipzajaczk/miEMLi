@@ -1,0 +1,26 @@
+From: Faktury <faktury@evil.example>
+To: jan.kowalski@firma.example
+Subject: Faktura
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <45467937@generator.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============2043623753420854646=="
+
+--===============2043623753420854646==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+W załączniku faktura.
+
+--===============2043623753420854646==
+Content-Type: application/zip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="faktura.zip"
+MIME-Version: 1.0
+
+UEsDBBQAAAAAAABIWF09wW40RAAAAEQAAAALAAAAZmFrdHVyYS5leGVNWpAAAwAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUEUAAFBLAQIU
+AxQAAAAAAABIWF09wW40RAAAAEQAAAALAAAAAAAAAAAAAACAAQAAAABmYWt0dXJhLmV4ZVBLBQYA
+AAAAAQABADkAAABtAAAAAAA=
+
+--===============2043623753420854646==--

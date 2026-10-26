@@ -1,0 +1,17 @@
+{
+  "ioc": [
+    [
+      "email",
+      "it@evil.example"
+    ],
+    [
+      "domena",
+      "evil.example"
+    ],
+    [
+      "url",
+      "https://evil.example/login"
+    ]
+  ],
+  "ostrzezenia": []
+}

@@ -1,0 +1,29 @@
+{
+  "ioc": [
+    [
+      "email",
+      "jan@partner.example"
+    ],
+    [
+      "domena",
+      "partner.example"
+    ],
+    [
+      "plik",
+      "zgloszenie.eml"
+    ],
+    [
+      "email",
+      "oszust@evil.example"
+    ],
+    [
+      "domena",
+      "evil.example"
+    ],
+    [
+      "url",
+      "https://evil.example/login"
+    ]
+  ],
+  "ostrzezenia": []
+}

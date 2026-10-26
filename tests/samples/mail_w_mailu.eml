@@ -1,0 +1,32 @@
+From: Jan Partner <jan@partner.example>
+To: jan.kowalski@firma.example
+Subject: Fwd: Blokada konta
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <12117297@generator.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7874880355711499402=="
+
+--===============7874880355711499402==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Przesyłam podejrzaną wiadomość.
+
+--===============7874880355711499402==
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="zgloszenie.eml"
+MIME-Version: 1.0
+
+From: Bank <oszust@evil.example>
+To: jan.kowalski@firma.example
+Subject: Blokada konta
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <11927560@generator.example>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Odblokuj: https://evil.example/login
+
+--===============7874880355711499402==--

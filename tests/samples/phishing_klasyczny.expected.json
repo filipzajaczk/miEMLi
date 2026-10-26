@@ -1,0 +1,42 @@
+{
+  "ioc": [
+    [
+      "email",
+      "ksiegowosc@pko-platnosci.example"
+    ],
+    [
+      "domena",
+      "pko-platnosci.example"
+    ],
+    [
+      "email",
+      "pko.rozliczenia@gmail.com"
+    ],
+    [
+      "domena",
+      "gmail.com"
+    ],
+    [
+      "ip",
+      "185.243.115.20"
+    ],
+    [
+      "url",
+      "https://pko-platnosci.example/login"
+    ],
+    [
+      "url",
+      "https://pko-platnosci.example/fv"
+    ]
+  ],
+  "uwierzytelnienie": {
+    "spf": "fail",
+    "dkim": "none",
+    "dmarc": "fail"
+  },
+  "sygnaly": [
+    "REPLY_TO_INNA_DOMENA",
+    "DARMOWA_POCZTA"
+  ],
+  "ostrzezenia": []
+}

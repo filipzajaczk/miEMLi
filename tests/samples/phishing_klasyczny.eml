@@ -1,0 +1,31 @@
+Received: from mx1.firma.example (mx1.firma.example [10.0.0.5]) by
+ mx2.firma.example; Tue, 24 Oct 2026 09:14:00 +0200
+Received: from pko-platnosci.example (unknown [185.243.115.20]) by
+ mx1.firma.example; Tue, 24 Oct 2026 09:13:58 +0200
+Authentication-Results: mx.firma.example; spf=fail
+ smtp.mailfrom=pko-platnosci.example; dkim=none; dmarc=fail
+Reply-To: pko.rozliczenia@gmail.com
+From: =?utf-8?b?S3NpxJlnb3dvxZvEhw==?= PKO <ksiegowosc@pko-platnosci.example>
+To: jan.kowalski@firma.example
+Subject: =?utf-8?b?WmFsZWfFgmEgcMWCYXRub8WbxIcg4oCT?= faktura FV/03/2026
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <66996650@generator.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============7211607479125435160=="
+
+--===============7211607479125435160==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Prosimy o płatność. Szczegóły: https://pko-platnosci.example/fv
+
+--===============7211607479125435160==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<p>Prosimy o p=C5=82atno=C5=9B=C4=87.</p><p><a href=3D"https://pko-platnosci.=
+example/login">pko.pl</a></p>
+
+--===============7211607479125435160==--

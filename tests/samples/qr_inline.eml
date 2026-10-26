@@ -1,0 +1,43 @@
+From: Kadry <kadry@evil.example>
+To: jan.kowalski@firma.example
+Subject: Zeskanuj kod
+Date: Sat, 24 Oct 2026 09:14:00 +0200
+Message-ID: <64010072@generator.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+ boundary="===============0019443084983174631=="
+
+--===============0019443084983174631==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Zeskanuj kod
+
+--===============0019443084983174631==
+MIME-Version: 1.0
+Content-Type: multipart/related;
+ boundary="===============8903044829513626942=="
+
+--===============8903044829513626942==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+<p>Zeskanuj kod:</p><img src="cid:qr1">
+
+--===============8903044829513626942==
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Disposition: inline; filename="qr.png"
+Content-ID: <qr1>
+MIME-Version: 1.0
+
+iVBORw0KGgoAAAANSUhEUgAAAMYAAADGAQAAAACh4MLwAAABBUlEQVR42u1YwQ3EMAhDxwCM1NUZ
+KQNE4rCprq8+e/KjKI9EfCyMDa3VTWx7M2/mkYwhjr54ZS08vDMfu4t/ZYyQqtbhjSrS14CUwbas
+Ie0Awj5dQzVszaYstoa0zeSw1clmY1Prt9GprzlaOj3tJLLP9VTpt8OH0wCbcDmdurUWKsFjlFy/
+RRoV6uw9yFbJQ7rTunSt043hlUr91kUDqsFGnCrYKIE0ihQOHFLzlKMqALK4ikjVDTyCVlPzEBjI
+jNTgjAgh750YJ3Fe1OZpXdVLuT2EImXd5PZecHr2W8rtvZwLMDp+16jtvT+K9fZeTlWSW2I6tZhF
+zqpSbe99/yy8meczX313H+77coVsAAAAAElFTkSuQmCC
+
+--===============8903044829513626942==--
+
+--===============0019443084983174631==--
