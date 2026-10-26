@@ -13,6 +13,7 @@ from . import prezentacja
 from .forms import UploadForm
 from .models import Analiza, Zdarzenie
 from .uslugi import utworz_lub_otworz
+from .zadania import zaplanuj
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,7 @@ def _zapisz_otwarcie(request, analiza: Analiza) -> None:
     if not request.session.get(klucz):
         Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="otwarcie")
         request.session[klucz] = True
+        zaplanuj(analiza, tylko_brakujace=True)  # np. klucz API dodany po utworzeniu analizy
 
 
 @login_required

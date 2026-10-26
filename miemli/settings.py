@@ -116,3 +116,8 @@ LOGGING = {
     "handlers": {"stdout": {"class": "logging.StreamHandler", "formatter": "prosty"}},
     "root": {"handlers": ["stdout"], "level": "INFO"},
 }
+
+# Wzbogacenie IOC — klucze tylko w .env
+GTI_API_KEY = os.environ.get("GTI_API_KEY", "").strip()
+CENSYS_API_TOKEN = os.environ.get("CENSYS_API_TOKEN", "").strip()
+CENSYS_ORG_ID = os.environ.get("CENSYS_ORG_ID", "").strip()  # opcjonalne

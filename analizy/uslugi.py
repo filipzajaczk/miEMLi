@@ -11,6 +11,7 @@ from mailcore.parsuj import parsuj
 from mailcore.serializacja import bez_nul, do_json
 
 from .models import IOC, Analiza, Zdarzenie
+from .zadania import zaplanuj
 
 
 def utworz_lub_otworz(
@@ -52,4 +53,5 @@ def utworz_lub_otworz(
                 rodzic=po_numerze.get(i.rodzic_id),
             )
         Zdarzenie.objects.create(uzytkownik=uzytkownik, analiza=analiza, typ="utworzenie", szczegoly={"plik": nazwa})
+        transaction.on_commit(lambda: zaplanuj(analiza))
     return analiza, True

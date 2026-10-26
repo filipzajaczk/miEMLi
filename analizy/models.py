@@ -1,3 +1,5 @@
+import hashlib
+
 from django.conf import settings
 from django.db import models
 
@@ -71,3 +73,39 @@ class Zdarzenie(models.Model):
 
     def __str__(self):
         return f"{self.czas:%Y-%m-%d %H:%M} {self.uzytkownik} {self.typ}"
+
+
+class Wzbogacenie(models.Model):
+    """Wynik lookupu IOC u dostawcy (GTI, Censys). Wspólny dla wszystkich analiz — pełni rolę cache."""
+
+    STATUSY = [
+        ("oczekuje", "Oczekuje"),
+        ("gotowe", "Gotowe"),
+        ("brak_danych", "Brak danych"),
+        ("limit", "Limit API"),
+        ("blad", "Błąd"),
+    ]
+
+    # sha256 z "dostawca:typ:wartosc" — bez indeksu na długiej wartości (limit btree w Postgresie)
+    klucz = models.CharField(max_length=64, unique=True)
+    dostawca = models.CharField(max_length=10)
+    typ = models.CharField(max_length=10)
+    wartosc = models.TextField()
+    status = models.CharField(max_length=12, choices=STATUSY)
+    skrot = models.JSONField(default=dict, blank=True)
+    surowe = models.JSONField(null=True, blank=True)
+    link = models.TextField(null=True, blank=True)
+    blad = models.TextField(blank=True, default="")
+    zlecono = models.DateTimeField(null=True, blank=True)
+    sprawdzono = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "wzbogacenie"
+        verbose_name_plural = "wzbogacenia"
+
+    def __str__(self):
+        return f"{self.dostawca} {self.typ}: {self.status}"
+
+    @staticmethod
+    def klucz_dla(dostawca: str, typ: str, wartosc: str) -> str:
+        return hashlib.sha256(f"{dostawca}:{typ}:{wartosc}".encode()).hexdigest()
