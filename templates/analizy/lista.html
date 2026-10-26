@@ -1,9 +1,37 @@
 {% extends "base.html" %}
 {% block tresc %}
-<main class="tresc">
-  <h1>Ostatnie analizy</h1>
-  <div class="karta">
+<main class="tresc lista">
+  <section class="karta upload">
+    <h2>Nowa analiza</h2>
+    {% if blad %}<div class="blad">{{ blad }}</div>{% endif %}
+    <form method="post" action="{% url 'analizy:upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="file" name="plik" accept=".eml,.msg" required>
+      <button class="btn primary" type="submit">Analizuj</button>
+    </form>
+    <p class="muted">Pliki .eml i .msg do 50 MB. Plik nie jest zapisywany — tylko wynik analizy.</p>
+  </section>
+
+  <section>
+    <h2>Ostatnie analizy</h2>
+    {% if analizy %}
+    <table>
+      <thead><tr><th>Data</th><th>Plik</th><th>Temat</th><th>Ticket</th><th>Analityk</th></tr></thead>
+      <tbody>
+      {% for a in analizy %}
+        <tr>
+          <td class="muted">{{ a.utworzono|date:"Y-m-d H:i" }}</td>
+          <td><a href="{% url 'analizy:szczegoly' a.pk %}">{{ a.nazwa_pliku }}</a></td>
+          <td>{{ a.temat|default:"—" }}</td>
+          <td class="muted">{% if a.ticket_id %}#{{ a.ticket_id }}{% else %}—{% endif %}</td>
+          <td class="muted">{{ a.utworzyl.username }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
     <p class="muted">Brak analiz.</p>
-  </div>
+    {% endif %}
+  </section>
 </main>
 {% endblock %}

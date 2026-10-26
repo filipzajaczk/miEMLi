@@ -140,3 +140,7 @@ th {
 }
 td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 tr:hover td { background: rgba(136, 192, 208, .04); }
+
+/* Lista analiz */
+.lista { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
+.lista .upload p { margin-top: 10px; }
