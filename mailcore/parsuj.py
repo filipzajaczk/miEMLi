@@ -2,7 +2,9 @@
 
 import re
 
+from .archiwa import Budzet, hasla_z_tekstu, jest_archiwum, rozpakuj
 from .eml import TYP_EML, parsuj_eml
+from .tekst import tekst_z_html
 from .model import (
     BladParsowania,
     Limity,
@@ -49,36 +51,52 @@ def czy_wiadomosc(z: Zalacznik) -> bool:
     )
 
 
+def _limit_glebokosci(rodzic: Wiadomosc, limity: Limity) -> None:
+    if not any(o.kod == "LIMIT_GLEBOKOSC" for o in rodzic.ostrzezenia):
+        rodzic.ostrzezenia.append(
+            Ostrzezenie(
+                "LIMIT_GLEBOKOSC",
+                f"Przerwano analizę zagnieżdżeń powyżej {limity.max_glebokosc} poziomów.",
+            )
+        )
+
+
 class _Parser:
+    """Każdy poziom zagnieżdżenia (mail w mailu, archiwum w archiwum) liczy się do limitu głębokości."""
+
     def __init__(self, limity: Limity):
         self.limity = limity
+        self.budzet = Budzet(limity.max_rozpakowane)
 
     def wiadomosc(self, dane: bytes, id: str, glebokosc: int) -> Wiadomosc:
         w = _parsuj_poziom(dane, id)
+        hasla = hasla_z_tekstu(" ".join(filter(None, [w.tekst, w.html and tekst_z_html(w.html)])))
         licznik = [0]
         for z in w.zalaczniki:
-            self.zalacznik(z, w, glebokosc, licznik)
+            self.zalacznik(z, w, glebokosc, licznik, hasla)
         return w
 
-    def zalacznik(self, z: Zalacznik, rodzic: Wiadomosc, glebokosc: int, licznik: list[int]) -> None:
-        if not czy_wiadomosc(z):
-            return
-        if glebokosc + 1 > self.limity.max_glebokosc:
-            if not any(o.kod == "LIMIT_GLEBOKOSC" for o in rodzic.ostrzezenia):
+    def zalacznik(
+        self, z: Zalacznik, rodzic: Wiadomosc, glebokosc: int, licznik: list[int], hasla: list[str]
+    ) -> None:
+        if czy_wiadomosc(z):
+            if glebokosc + 1 > self.limity.max_glebokosc:
+                _limit_glebokosci(rodzic, self.limity)
+                return
+            licznik[0] += 1
+            try:
+                z.wiadomosc = self.wiadomosc(z.dane, f"{rodzic.id}.{licznik[0]}", glebokosc + 1)
+            except BladParsowania:
                 rodzic.ostrzezenia.append(
-                    Ostrzezenie(
-                        "LIMIT_GLEBOKOSC",
-                        f"Przerwano analizę zagnieżdżeń powyżej {self.limity.max_glebokosc} poziomów.",
-                    )
+                    Ostrzezenie("USZKODZONA_WIADOMOSC", f"Załącznik {z.nazwa} nie jest prawidłową wiadomością.")
                 )
-            return
-        licznik[0] += 1
-        try:
-            z.wiadomosc = self.wiadomosc(z.dane, f"{rodzic.id}.{licznik[0]}", glebokosc + 1)
-        except BladParsowania:
-            rodzic.ostrzezenia.append(
-                Ostrzezenie("USZKODZONA_WIADOMOSC", f"Załącznik {z.nazwa} nie jest prawidłową wiadomością.")
-            )
+        elif jest_archiwum(z):
+            if glebokosc + 1 > self.limity.max_glebokosc:
+                _limit_glebokosci(rodzic, self.limity)
+                return
+            rodzic.ostrzezenia.extend(rozpakuj(z, hasla, self.budzet))
+            for dziecko in z.dzieci:
+                self.zalacznik(dziecko, rodzic, glebokosc + 1, licznik, hasla)
 
 
 def parsuj(dane: bytes, nazwa: str, limity: Limity = Limity()) -> Wiadomosc:
