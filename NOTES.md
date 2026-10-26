@@ -27,6 +27,17 @@
   klucz Joe w profilu użytkownika). Najpierw sprawdzić realne odpowiedzi API.
 - Potem etapy 6–7: integracja z RTIR (link z ticketu, raport jako Comment, Custom Fields).
 
+### Do decyzji przed etapem 5 (Joe Sandbox): skąd wziąć bajty załącznika
+
+Załączniki żyją tylko w RAM przez czas jednego żądania; w bazie są hashe i metadane, nie zawartość.
+Przycisk JOE klikany jest później, w osobnym żądaniu — bajtów już nie ma.
+
+- Analizy z RTIR: po kliknięciu JOE pobrać plik ponownie z RTIR (REST2), sparsować i wybrać
+  załącznik po SHA256. Zgodne ze specyfikacją („źródłem prawdy zostaje RTIR”).
+- Ręczny upload: do wyboru — (a) poprosić o ponowne wgranie pliku przy kliknięciu JOE,
+  (b) trzymać oryginał krótko (np. 24 h), zaszyfrowany, w bazie lub Redisie.
+- Rekomendacja: RTIR → ponowne pobranie; ręczny upload → (a), żeby nigdzie nie przechowywać załączników.
+
 ## Odłożone drobiazgi z przeglądu
 
 - Lista analiz ładuje cały JSON wyniku (wydajność przy wielu obrazkach inline).
