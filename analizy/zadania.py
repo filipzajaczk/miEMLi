@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 CACHE = timedelta(hours=24)
 BLOKADA = timedelta(minutes=10)  # tyle czekamy na worker, zanim uznamy zadanie za zagubione
+OPOZNIENIA_LIMIT = (30, 120, 300)  # sekundy przed kolejnymi próbami przy HTTP 429
+OPOZNIENIA_BLAD = (10, 60)  # przy 5xx, timeoucie i błędzie sieci
 DOSTAWCY = {"gti": ("plik", "url", "domena", "ip"), "censys": ("ip",)}
 
 
@@ -94,7 +96,21 @@ def _zapisz(dostawca: str, typ: str, wartosc: str, wynik: WynikDostawcy) -> None
     )
 
 
+def _ponow(opoznienie_s: int, *args, **kwargs) -> None:
+    django_rq.get_queue("default").enqueue_in(timedelta(seconds=opoznienie_s), wzbogac, *args, **kwargs)
+
+
 def wzbogac(dostawca: str, typ: str, wartosc: str, proba: int = 0) -> None:
     wynik = _klient(dostawca)(typ, wartosc)
-    logger.info("wzbogacenie %s %s %s", dostawca, typ, wynik.status)
+    logger.info("wzbogacenie %s %s %s (próba %s)", dostawca, typ, wynik.status, proba)
+    opoznienia = OPOZNIENIA_LIMIT if wynik.status == "limit" else OPOZNIENIA_BLAD
+    if wynik.ponawiac and proba < len(opoznienia):
+        # wpis zostaje "oczekuje"; odświeżone zlecono chroni przed uznaniem za zagubiony
+        Wzbogacenie.objects.update_or_create(
+            klucz=Wzbogacenie.klucz_dla(dostawca, typ, wartosc),
+            defaults={"dostawca": dostawca, "typ": typ, "wartosc": wartosc,
+                      "status": "oczekuje", "zlecono": timezone.now()},
+        )
+        _ponow(opoznienia[proba], dostawca, typ, wartosc, proba=proba + 1)
+        return
     _zapisz(dostawca, typ, wartosc, wynik)

@@ -142,3 +142,39 @@ def test_otwarcie_istniejacej_kolejkuje_tylko_brakujace(phishing, kolejka, zalog
         ("gti", "url", "https://pko-platnosci.example/login"),
         ("gti", "url", "https://pko-platnosci.example/fv"),
     }
+
+
+@pytest.fixture
+def ponowienia(monkeypatch):
+    wywolania = []
+    monkeypatch.setattr(zadania, "_ponow", lambda opoznienie, *a, **kw: wywolania.append((opoznienie, a, kw)))
+    return wywolania
+
+
+def test_limit_ponawia_30s(klienci, ponowienia):
+    klienci["wynik"] = WynikDostawcy("limit", ponawiac=True)
+    wpis("gti", "ip", "1.1.1.1", status="oczekuje", zlecono=timezone.now() - timedelta(minutes=1))
+    zadania.wzbogac("gti", "ip", "1.1.1.1", proba=0)
+    assert ponowienia == [(30, ("gti", "ip", "1.1.1.1"), {"proba": 1})]
+    w = Wzbogacenie.objects.get()
+    assert w.status == "oczekuje" and timezone.now() - w.zlecono < timedelta(seconds=5)
+
+
+def test_limit_wyczerpany(klienci, ponowienia):
+    klienci["wynik"] = WynikDostawcy("limit", ponawiac=True)
+    zadania.wzbogac("gti", "ip", "1.1.1.1", proba=3)
+    assert ponowienia == [] and Wzbogacenie.objects.get().status == "limit"
+
+
+def test_blad_przejsciowy(klienci, ponowienia):
+    klienci["wynik"] = WynikDostawcy("blad", blad="Błąd serwera (HTTP 502).", ponawiac=True)
+    zadania.wzbogac("gti", "ip", "1.1.1.1", proba=1)
+    assert ponowienia == [(60, ("gti", "ip", "1.1.1.1"), {"proba": 2})]
+    zadania.wzbogac("gti", "ip", "1.1.1.1", proba=2)
+    assert Wzbogacenie.objects.get().status == "blad"
+
+
+def test_403_bez_ponowien(klienci, ponowienia):
+    klienci["wynik"] = WynikDostawcy("blad", blad="Odmowa dostępu (HTTP 403).")
+    zadania.wzbogac("gti", "ip", "1.1.1.1")
+    assert ponowienia == [] and Wzbogacenie.objects.get().status == "blad"

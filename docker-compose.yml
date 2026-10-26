@@ -30,7 +30,7 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
-    command: ["python", "manage.py", "rqworker", "default"]
+    command: ["python", "manage.py", "rqworker", "default", "--with-scheduler"]
     depends_on:
       postgres:
         condition: service_healthy
