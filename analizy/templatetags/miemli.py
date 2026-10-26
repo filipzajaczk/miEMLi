@@ -133,3 +133,13 @@ def z_archiwum(ioc) -> bool:
     if ioc.typ != "plik" or rodzic is None or rodzic.typ != "plik":
         return False
     return not (rodzic.etykieta or "").lower().endswith((".eml", ".msg"))
+
+
+@register.filter
+def pliki(n) -> str:
+    n = int(n)
+    if n == 1:
+        return "1 plik"
+    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
+        return f"{n} pliki"
+    return f"{n} plików"

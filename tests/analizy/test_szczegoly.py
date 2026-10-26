@@ -119,3 +119,27 @@ def test_zdarzenie_otwarcia_raz_na_sesje(zalogowany, analiza):
     zalogowany.get(url(a))
     zalogowany.get(url(a, sekcja="ioc"))
     assert Zdarzenie.objects.filter(analiza=a, typ="otwarcie").count() == 1
+
+
+def sekcja_zalacznikow(tresc: str) -> str:
+    start = tresc.find('class="zalaczniki-wiadomosci"')
+    return tresc[start:tresc.find("</section>", start)] if start >= 0 else ""
+
+
+def test_zalaczniki_pod_wiadomoscia(zalogowany, analiza):
+    s = sekcja_zalacznikow(zalogowany.get(url(analiza("zip_aes_haslo_w_tresci"))).content.decode())
+    assert "Załączniki (1)" in s and "faktura.zip" in s and "1 plik w środku" in s
+
+
+def test_zalaczniki_pod_wiadomoscia_inline_osobno(zalogowany, analiza):
+    s = sekcja_zalacznikow(zalogowany.get(url(analiza("qr_inline"))).content.decode())
+    assert "qr.png" in s and "w treści" in s
+
+
+def test_brak_zalacznikow_pod_wiadomoscia(zalogowany, analiza):
+    assert sekcja_zalacznikow(zalogowany.get(url(analiza("phishing_klasyczny"))).content.decode()) == ""
+
+
+def test_zagniezdzona_wiadomosc_jako_zalacznik(zalogowany, analiza):
+    s = sekcja_zalacznikow(zalogowany.get(url(analiza("mail_w_mailu"))).content.decode())
+    assert "zgloszenie.eml" in s and "wiadomosc=0.1" in s

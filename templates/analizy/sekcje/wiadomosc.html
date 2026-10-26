@@ -29,3 +29,22 @@
 {% else %}
   <p class="muted">Wiadomość nie ma treści.</p>
 {% endif %}
+
+{% if w.zalaczniki %}
+<section class="zalaczniki-wiadomosci">
+  <div class="label">Załączniki ({{ w.zalaczniki|length }})</div>
+  <ul>
+  {% for z in w.zalaczniki %}
+    <li>
+      <span class="ikona">📎</span>
+      <span class="nazwa">{{ z.nazwa }}</span>
+      <span class="muted">{{ z.typ_mime }} · {{ z.rozmiar|rozmiar }}</span>
+      {% if z.inline %}<span class="b neutral" title="Obrazek osadzony w treści wiadomości">w treści</span>{% endif %}
+      {% if z.dzieci %}<span class="b neutral">archiwum: {{ z.dzieci|length|pliki }} w środku</span>{% endif %}
+      {% if z.zaszyfrowany %}<span class="b warn">zaszyfrowane, hasło nieznane</span>{% elif z.haslo %}<span class="b neutral" title="Hasło użyte do rozpakowania">hasło: {{ z.haslo }}</span>{% endif %}
+      {% if z.wiadomosc %}<a href="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}" hx-get="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}" hx-target="#glowna" hx-push-url="true">otwórz wiadomość ↗</a>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}

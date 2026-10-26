@@ -208,3 +208,8 @@ tr.klikalny.otwarty td { background: rgba(136, 192, 208, .06); }
 .opcje-analizy textarea { resize: vertical; }
 .btn.usun { border-color: var(--bad); color: var(--bad); }
 .btn.usun:hover { background: var(--bad-bg); }
+.zalaczniki-wiadomosci { margin-top: 14px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg2); }
+.zalaczniki-wiadomosci ul { list-style: none; }
+.zalaczniki-wiadomosci li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 5px 0; }
+.zalaczniki-wiadomosci .nazwa { font-weight: 500; }
+.podglad { height: 55vh; }
