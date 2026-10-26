@@ -10,6 +10,7 @@ from django.utils import timezone
 from integracje.censys import KlientCensys
 from integracje.gti import KlientGTI
 from integracje.wspolne import WynikDostawcy
+from mailcore.serializacja import bez_nul
 
 from .models import Analiza, Wzbogacenie
 
@@ -34,8 +35,16 @@ def dostawcy_dla(typ: str) -> list[str]:
     return [d for d, typy in DOSTAWCY.items() if typ in typy and skonfigurowany(d)]
 
 
-def _kolejkuj(funkcja, *args, **kwargs) -> None:
-    django_rq.enqueue(funkcja, *args, **kwargs)
+def _kolejkuj_redis(funkcja, *args, **kwargs) -> None:
+    """Niedostępny Redis nie może psuć uploadu ani otwierania analizy: wpis zostaje "oczekuje",
+    a po BLOKADA ekran pokaże go jako błąd."""
+    try:
+        django_rq.enqueue(funkcja, *args, **kwargs)
+    except Exception:
+        logger.warning("Nie udało się zakolejkować zadania (Redis niedostępny?)")
+
+
+_kolejkuj = _kolejkuj_redis
 
 
 def _klient(dostawca: str):
@@ -86,18 +95,22 @@ def zaplanuj(analiza: Analiza, wymus: bool = False, tylko_brakujace: bool = Fals
 
 
 def _zapisz(dostawca: str, typ: str, wartosc: str, wynik: WynikDostawcy) -> None:
-    Wzbogacenie.objects.update_or_create(
-        klucz=Wzbogacenie.klucz_dla(dostawca, typ, wartosc),
-        defaults={
-            "dostawca": dostawca, "typ": typ, "wartosc": wartosc, "status": wynik.status,
-            "skrot": wynik.skrot, "surowe": wynik.surowe, "link": wynik.link, "blad": wynik.blad,
-            "sprawdzono": timezone.now(),
-        },
-    )
+    klucz = Wzbogacenie.klucz_dla(dostawca, typ, wartosc)
+    dane = {"dostawca": dostawca, "typ": typ, "wartosc": wartosc, "status": wynik.status,
+            "blad": bez_nul(wynik.blad)}
+    poprzedni = Wzbogacenie.objects.filter(klucz=klucz).first()
+    if not (wynik.status in ("limit", "blad") and poprzedni and poprzedni.skrot):
+        # nieudane odświeżenie nie kasuje ostatniego dobrego wyniku (cache jest wspólny dla analiz)
+        dane.update(skrot=bez_nul(wynik.skrot), surowe=bez_nul(wynik.surowe), link=wynik.link,
+                    sprawdzono=timezone.now())
+    Wzbogacenie.objects.update_or_create(klucz=klucz, defaults=dane)
 
 
 def _ponow(opoznienie_s: int, *args, **kwargs) -> None:
-    django_rq.get_queue("default").enqueue_in(timedelta(seconds=opoznienie_s), wzbogac, *args, **kwargs)
+    try:
+        django_rq.get_queue("default").enqueue_in(timedelta(seconds=opoznienie_s), wzbogac, *args, **kwargs)
+    except Exception:
+        logger.warning("Nie udało się zaplanować ponowienia (Redis niedostępny?)")
 
 
 def wzbogac(dostawca: str, typ: str, wartosc: str, proba: int = 0) -> None:

@@ -178,3 +178,47 @@ def test_403_bez_ponowien(klienci, ponowienia):
     klienci["wynik"] = WynikDostawcy("blad", blad="Odmowa dostępu (HTTP 403).")
     zadania.wzbogac("gti", "ip", "1.1.1.1")
     assert ponowienia == [] and Wzbogacenie.objects.get().status == "blad"
+
+
+# --- z końcowego przeglądu ---
+
+def test_nul_w_odpowiedzi_api_usuniety(klienci):
+    klienci["wynik"] = WynikDostawcy("gotowe", {"nazwy": ["a\x00b"]}, {"x": "c\x00d"}, "L")
+    zadania.wzbogac("gti", "plik", "f" * 64)
+    w = Wzbogacenie.objects.get()
+    assert w.skrot == {"nazwy": ["ab"]} and w.surowe == {"x": "cd"}
+
+
+def test_nieudane_odswiezenie_zachowuje_poprzedni_wynik(klienci, ponowienia):
+    stary = timezone.now() - timedelta(hours=2)
+    wpis("gti", "domena", "evil.example", status="oczekuje", zlecono=timezone.now(),
+         skrot={"werdykt": "zlosliwy"}, surowe={"a": 1}, link="L", sprawdzono=stary)
+    klienci["wynik"] = WynikDostawcy("limit", blad="Przekroczono limit zapytań API.", ponawiac=True)
+    zadania.wzbogac("gti", "domena", "evil.example", proba=3)
+    w = Wzbogacenie.objects.get()
+    assert w.status == "limit" and w.blad
+    assert w.skrot == {"werdykt": "zlosliwy"} and w.surowe == {"a": 1} and w.sprawdzono == stary
+
+
+def test_redis_niedostepny_nie_psuje_planowania(phishing, monkeypatch):
+    import django_rq
+    from redis.exceptions import ConnectionError as RedisConnectionError
+
+    def pada(*a, **kw):
+        raise RedisConnectionError("brak redisa")
+
+    monkeypatch.setattr(django_rq, "enqueue", pada)
+    monkeypatch.setattr(zadania, "_kolejkuj", zadania._kolejkuj_redis)
+    assert zadania.zaplanuj(phishing, wymus=True) >= 0
+    assert Wzbogacenie.objects.filter(status="oczekuje").exists()
+
+
+def test_ponowne_otwarcie_w_tej_samej_sesji_dociaga_brakujace(phishing, kolejka, zalogowany, settings):
+    settings.CENSYS_API_TOKEN = ""
+    url = reverse("analizy:szczegoly", args=[phishing.pk])
+    Wzbogacenie.objects.filter(dostawca="censys").delete()
+    zalogowany.get(url)
+    kolejka.clear()
+    settings.CENSYS_API_TOKEN = "t"  # klucz dodany po pierwszym otwarciu
+    zalogowany.get(url)
+    assert ("censys", "ip", "185.243.115.20") in pary(kolejka)

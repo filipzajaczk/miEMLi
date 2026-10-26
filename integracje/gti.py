@@ -71,6 +71,11 @@ class KlientGTI:
         sciezka, link = self._cel(typ, wartosc)
         naglowki = {"x-apikey": self.klucz, "x-tool": "miemli"}  # bez x-tool brak gti_assessment
         if self.klient is not None:
-            return wykonaj(self.klient, BAZA + sciezka, naglowki, skrot_gti, link)
-        with nowy_klient() as klient:
-            return wykonaj(klient, BAZA + sciezka, naglowki, skrot_gti, link)
+            wynik = wykonaj(self.klient, BAZA + sciezka, naglowki, skrot_gti, link)
+        else:
+            with nowy_klient() as klient:
+                wynik = wykonaj(klient, BAZA + sciezka, naglowki, skrot_gti, link)
+        if typ == "url" and wynik.surowe:
+            # GTI kanonizuje URL przed hashowaniem — link z id z odpowiedzi zamiast sha256 surowego adresu
+            wynik.link = f"{GUI}/url/{wynik.surowe.get('data', {}).get('id') or link.rsplit('/', 1)[1]}"
+        return wynik

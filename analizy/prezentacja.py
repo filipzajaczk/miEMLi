@@ -79,6 +79,7 @@ class WidokWzbogacenia:
     link: str | None = None
     blad: str = ""
     sprawdzono: datetime | None = None
+    ostrzezenie: str = ""  # ostatni dobry wynik pokazany mimo nieudanego odświeżenia
 
 
 def widoki_wzbogacen(analiza: Analiza) -> tuple[dict[int, dict[str, WidokWzbogacenia]], bool]:
@@ -103,6 +104,9 @@ def widoki_wzbogacen(analiza: Analiza) -> tuple[dict[int, dict[str, WidokWzbogac
                 widok = WidokWzbogacenia("oczekuje" if skonfigurowany(d) else "nieskonfigurowane")
             elif wpis.status == "oczekuje" and (not wpis.zlecono or teraz - wpis.zlecono >= BLOKADA):
                 widok = WidokWzbogacenia("blad", blad="Brak odpowiedzi workera.")
+            elif wpis.status in ("limit", "blad") and wpis.skrot:
+                widok = WidokWzbogacenia("gotowe", wpis.skrot, wpis.link, "", wpis.sprawdzono,
+                                         ostrzezenie=wpis.blad or "Nie udało się odświeżyć.")
             else:
                 widok = WidokWzbogacenia(wpis.status, wpis.skrot or {}, wpis.link, wpis.blad, wpis.sprawdzono)
                 trwa = trwa or wpis.status == "oczekuje"

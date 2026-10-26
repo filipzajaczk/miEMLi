@@ -83,3 +83,12 @@ def test_skrot_niepelny():
 def test_zly_typ():
     with pytest.raises(ValueError):
         KlientGTI("k").sprawdz("email", "a@b.pl")
+
+
+@respx.mock
+def test_link_url_z_id_odpowiedzi(nagranie):
+    # GTI kanonizuje URL (dodaje "/"), więc link musi brać id z odpowiedzi, nie sha256 surowego adresu
+    status, cialo = nagranie("gti_url_google")
+    respx.get(f"{BAZA}/urls/{id_url('https://www.google.com')}").respond(status, json=cialo)
+    w = KlientGTI("k").sprawdz("url", "https://www.google.com")
+    assert w.link == f"{GUI}/url/{cialo['data']['id']}"

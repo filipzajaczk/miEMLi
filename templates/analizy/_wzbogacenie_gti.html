@@ -2,4 +2,4 @@
 <span class="b {{ s.werdykt|klasa_werdyktu }}">{{ s.werdykt|opis_werdyktu }}{% if s.ocena is not None %} · {{ s.ocena }}{% endif %}{% if s.wykrycia %} · {{ s.wykrycia.0 }}/{{ s.wykrycia.1 }}{% endif %}</span>
 {% if i.typ == "domena" and s.utworzono %}<span class="{% if s.utworzono|nowa_domena %}b warn{% else %}muted{% endif %}">{{ s.utworzono|wiek }}</span>{% endif %}
 {% if i.typ == "ip" and s.kraj %}<span class="muted">{{ s.kraj }}</span>{% endif %}
-{% endwith %}{% elif w.status != "nie_dotyczy" %}{% include "analizy/_wzbogacenie_status.html" %}{% endif %}
+{% endwith %}{% if w.ostrzezenie %}<span class="b warn" title="{{ w.ostrzezenie }}">nieaktualne</span>{% endif %}{% elif w.status != "nie_dotyczy" %}{% include "analizy/_wzbogacenie_status.html" %}{% endif %}

@@ -2,4 +2,4 @@
 {% if s.uslugi %}<span class="mono">{% for u in s.uslugi|pierwsze:5 %}{{ u.0 }} {{ u.1 }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>{% with n=s.uslugi|reszta:5 %}{% if n %} <span class="muted">+{{ n }}</span>{% endif %}{% endwith %}
 {% else %}<span class="muted">brak otwartych usług</span>{% endif %}
 {% if s.asn %}<span class="muted">AS{{ s.asn }}</span>{% endif %}
-{% endwith %}{% elif w.status != "nie_dotyczy" %}{% include "analizy/_wzbogacenie_status.html" %}{% endif %}
+{% endwith %}{% if w.ostrzezenie %}<span class="b warn" title="{{ w.ostrzezenie }}">nieaktualne</span>{% endif %}{% elif w.status != "nie_dotyczy" %}{% include "analizy/_wzbogacenie_status.html" %}{% endif %}

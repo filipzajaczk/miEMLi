@@ -72,7 +72,6 @@ def _zapisz_otwarcie(request, analiza: Analiza) -> None:
     if not request.session.get(klucz):
         Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="otwarcie")
         request.session[klucz] = True
-        zaplanuj(analiza, tylko_brakujace=True)  # np. klucz API dodany po utworzeniu analizy
 
 
 @login_required
@@ -86,6 +85,7 @@ def szczegoly(request, pk):
     if wid not in wiadomosci:
         raise Http404("Nie ma takiej wiadomości")
     _zapisz_otwarcie(request, analiza)
+    zaplanuj(analiza, tylko_brakujace=True)  # np. klucz API dodany po utworzeniu analizy
 
     w = wiadomosci[wid]
     analiza_w = analiza.wynik["analiza"][wid]

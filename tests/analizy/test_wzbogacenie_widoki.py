@@ -224,3 +224,11 @@ def test_kropka_w_panelu(zalogowany, analiza):
     wszystkie_gotowe(analiza)
     wpis("gti", "url", "https://pko-platnosci.example/login", skrot={"werdykt": "zlosliwy"})
     assert 'class="kropka bad"' in strona(zalogowany, analiza)
+
+
+def test_nieaktualny_wynik_widoczny_z_ostrzezeniem(zalogowany, analiza):
+    wszystkie_gotowe(analiza)
+    wpis("gti", "url", "https://pko-platnosci.example/login", status="limit",
+         blad="Przekroczono limit zapytań API.", skrot={"werdykt": "zlosliwy", "ocena": 80})
+    t = strona(zalogowany, analiza, sekcja="ioc")
+    assert "złośliwy · 80" in t and "nieaktualne" in t
