@@ -27,7 +27,16 @@
   klucz Joe w profilu użytkownika). Najpierw sprawdzić realne odpowiedzi API.
 - Potem etapy 6–7: integracja z RTIR (link z ticketu, raport jako Comment, Custom Fields).
 
-### Do decyzji przed etapem 5 (Joe Sandbox): skąd wziąć bajty załącznika
+### ODŁOŻONE: Joe Sandbox — robimy na samym końcu projektu (decyzja 2026-10-26)
+
+- Pełna integracja z Joe (lookup po hashu, wysyłka pliku/URL-a kluczem użytkownika, Live Interaction,
+  klucz Joe w profilu) przesunięta na koniec, po RTIR. Powód: brak dobrego rozwiązania dla bajtów
+  załączników (poniżej).
+- Do tego czasu w aplikacji przycisk JOE jest **zwykłym linkiem** otwierającym stronę Joe Sandbox
+  w nowej karcie — bez wysyłania czegokolwiek i bez API.
+- Wracając do tematu: przeczytać tę sekcję, sekcję poniżej oraz spec §5 pkt 4 i §6 (`ZgloszenieJoe`).
+
+### Do decyzji przy integracji Joe Sandbox: skąd wziąć bajty załącznika
 
 Załączniki żyją tylko w RAM przez czas jednego żądania; w bazie są hashe i metadane, nie zawartość.
 Przycisk JOE klikany jest później, w osobnym żądaniu — bajtów już nie ma.
