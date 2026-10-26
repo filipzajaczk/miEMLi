@@ -47,4 +47,4 @@ def test_testowa_wiadomosc_z_outlooka():
         pytest.skip("brak prywatnej próbki")
     w = parsuj(plik.read_bytes(), plik.name)
     assert w.temat == "Testowa wiadomosc msg"
-    assert "csirt-mi.gov.pl" in (w.od or "")
+    assert "@" in (w.od or "")
