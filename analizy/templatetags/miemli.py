@@ -124,3 +124,12 @@ def z_epoch(epoch):
         return datetime.fromtimestamp(float(epoch), tz=UTC)
     except (TypeError, ValueError, OverflowError, OSError):
         return None
+
+
+@register.filter
+def z_archiwum(ioc) -> bool:
+    """Plik, którego rodzicem jest inny plik niebędący wiadomością — czyli wyodrębniony z archiwum."""
+    rodzic = ioc.rodzic
+    if ioc.typ != "plik" or rodzic is None or rodzic.typ != "plik":
+        return False
+    return not (rodzic.etykieta or "").lower().endswith((".eml", ".msg"))

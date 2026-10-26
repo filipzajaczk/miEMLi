@@ -56,7 +56,7 @@ def hopy(received: list[dict]) -> list[dict]:
 
 def drzewo_ioc(analiza: Analiza) -> list[tuple[IOC, int]]:
     """IOC w kolejności drzewa pochodzenia, z głębokością do wcięcia."""
-    wszystkie = list(analiza.ioc.all())
+    wszystkie = list(analiza.ioc.select_related("rodzic"))
     dzieci: dict[int | None, list[IOC]] = {}
     for i in wszystkie:
         dzieci.setdefault(i.rodzic_id, []).append(i)

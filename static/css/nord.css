@@ -200,3 +200,6 @@ tr:hover td { background: rgba(136, 192, 208, .04); }
 .kropka.neutral { background: var(--muted); }
 .wiersz-ioc .kropka-miejsce { width: 8px; flex-shrink: 0; padding-top: 1px; }
 .wiersz-ioc .kropka { margin-right: 0; }
+tr.klikalny td:first-child::before { content: "▸ "; color: var(--muted); }
+tr.klikalny.otwarty td:first-child::before { content: "▾ "; }
+tr.klikalny.otwarty td { background: rgba(136, 192, 208, .06); }

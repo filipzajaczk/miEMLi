@@ -210,7 +210,8 @@ def test_odswiez_wymaga_logowania(client, analiza, srodowisko):
 
 def test_przycisk_odswiez(zalogowany, analiza):
     t = strona(zalogowany, analiza)
-    assert reverse("analizy:odswiez", args=[analiza.pk]) in t and "Odśwież wzbogacenie" in t
+    assert reverse("analizy:odswiez", args=[analiza.pk]) in t
+    assert ">Odśwież</button>" in t and "Odśwież wzbogacenie" not in t
 
 
 def test_link_joe(zalogowany, analiza):
@@ -232,3 +233,24 @@ def test_nieaktualny_wynik_widoczny_z_ostrzezeniem(zalogowany, analiza):
          blad="Przekroczono limit zapytań API.", skrot={"werdykt": "zlosliwy", "ocena": 80})
     t = strona(zalogowany, analiza, sekcja="ioc")
     assert "złośliwy · 80" in t and "nieaktualne" in t
+
+
+def test_wiersz_ioc_przelacza_szczegoly(zalogowany, analiza):
+    wszystkie_gotowe(analiza)
+    t = strona(zalogowany, analiza, sekcja="ioc")
+    i = analiza.ioc.first()
+    assert f'data-szczegoly="{reverse("analizy:szczegoly_ioc", args=[analiza.pk, i.pk])}"' in t
+    assert f'data-cel="szczegoly-{i.pk}"' in t
+    assert "js/miemli.js" in t
+
+
+def test_plik_z_archiwum_oznaczony(zalogowany, probka, analityk):
+    a = utworz_lub_otworz(probka("zip_exe"), "z.eml", analityk)[0]
+    t = strona(zalogowany, a, sekcja="ioc")
+    assert "wyodrębniony z archiwum faktura.zip" in t
+    assert t.count(">wyodrębniony z archiwum") == 1  # tylko exe; sam zip nie jest oznaczony
+
+
+def test_plik_z_wiadomosci_nie_jako_archiwum(zalogowany, probka, analityk):
+    a = utworz_lub_otworz(probka("mail_w_mailu"), "m.eml", analityk)[0]
+    assert "wyodrębniony z archiwum" not in strona(zalogowany, a, sekcja="ioc")

@@ -6,6 +6,7 @@
   <title>{% block tytul %}miemli{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/nord.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/miemli.js' %}" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="pasek">

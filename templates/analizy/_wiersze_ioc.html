@@ -1,9 +1,9 @@
 {% load miemli %}{% for i, glebokosc in ioc %}{% with wz=wzbogacenia|klucz:i.pk %}
-    <tr class="klikalny" hx-get="{% url 'analizy:szczegoly_ioc' analiza.pk i.pk %}" hx-target="#szczegoly-{{ i.pk }}"
-        title="Kliknij, aby zobaczyć szczegóły">
+    <tr class="klikalny" data-szczegoly="{% url 'analizy:szczegoly_ioc' analiza.pk i.pk %}" data-cel="szczegoly-{{ i.pk }}"
+        title="Kliknij, aby rozwinąć lub zwinąć szczegóły">
       <td class="muted">{{ i.get_typ_display }}</td>
       <td class="mono" style="padding-left: {% widthratio glebokosc 1 18 %}px">
-        {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
+        {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% if i|z_archiwum %} <span class="b neutral" title="Plik wyodrębniony z archiwum {{ i.rodzic.etykieta }}">wyodrębniony z archiwum {{ i.rodzic.etykieta }}</span>{% endif %}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
         {% if i.typ != "plik" and i.etykieta %}<div class="muted">{{ i.etykieta }}</div>{% endif %}
       </td>
       <td class="komorka">{% with w=wz.gti %}{% include "analizy/_wzbogacenie_gti.html" %}{% endwith %}</td>
