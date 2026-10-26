@@ -1,5 +1,14 @@
 {% load miemli %}
 <div class="szczegoly-ioc">
+  {% if i|z_archiwum %}
+  <section>
+    <div class="label">Archiwum</div>
+    <dl class="meta">
+      <dt>Wyodrębniony z</dt><dd>{{ i.rodzic.etykieta }}</dd>
+      <dt>Hasło</dt><dd>{% if i.haslo_archiwum %}<span class="mono">{{ i.haslo_archiwum }}</span>{% else %}<span class="muted">bez hasła</span>{% endif %}</dd>
+    </dl>
+  </section>
+  {% endif %}
   {% with w=wz.gti %}{% if w.status != "nie_dotyczy" %}
   <section>
     <div class="label">GTI</div>

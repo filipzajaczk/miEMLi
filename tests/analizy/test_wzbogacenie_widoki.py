@@ -254,3 +254,17 @@ def test_plik_z_archiwum_oznaczony(zalogowany, probka, analityk):
 def test_plik_z_wiadomosci_nie_jako_archiwum(zalogowany, probka, analityk):
     a = utworz_lub_otworz(probka("mail_w_mailu"), "m.eml", analityk)[0]
     assert "wyodrębniony z archiwum" not in strona(zalogowany, a, sekcja="ioc")
+
+
+def test_szczegoly_pokazuja_haslo_archiwum(zalogowany, probka, analityk):
+    a = utworz_lub_otworz(probka("zip_aes_haslo_w_tresci"), "z.eml", analityk)[0]
+    exe = a.ioc.get(etykieta="faktura.exe")
+    t = zalogowany.get(reverse("analizy:szczegoly_ioc", args=[a.pk, exe.pk])).content.decode()
+    assert "faktura.zip" in t and "Faktura2026!" in t
+
+
+def test_szczegoly_archiwum_bez_hasla(zalogowany, probka, analityk):
+    a = utworz_lub_otworz(probka("zip_exe"), "z.eml", analityk)[0]
+    exe = a.ioc.get(etykieta="faktura.exe")
+    t = zalogowany.get(reverse("analizy:szczegoly_ioc", args=[a.pk, exe.pk])).content.decode()
+    assert "bez hasła" in t

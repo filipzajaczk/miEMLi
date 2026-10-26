@@ -119,3 +119,15 @@ def test_analiza_per_wiadomosc(zbuduj_mail):
     wewn = zbuduj_mail(temat="W")
     wynik = analizuj(parsuj(zbuduj_mail(zagniezdzone=[wewn]), "a.eml"))
     assert set(wynik.wiadomosci) == {"0", "0.1"}
+
+
+def test_haslo_archiwum_w_ioc_dziecka(zbuduj_mail):
+    buf = io.BytesIO()
+    with pyzipper.AESZipFile(buf, "w", encryption=pyzipper.WZ_AES) as zf:
+        zf.setpassword(b"Faktura2026!")
+        zf.writestr("faktura.exe", EXE)
+    lista = ioc(zbuduj_mail, tekst="Hasło: Faktura2026!",
+                zalaczniki=[("faktura.zip", "application/zip", buf.getvalue())])
+    pliki = {i.etykieta: i for i in lista if i.typ == "plik"}
+    assert pliki["faktura.exe"].haslo_archiwum == "Faktura2026!"
+    assert pliki["faktura.zip"].haslo_archiwum is None

@@ -25,6 +25,7 @@ class Zalacznik:
     content_id: str | None = None
     inline: bool = False
     zaszyfrowany: bool = False
+    haslo: str | None = None  # hasło, którym udało się rozpakować archiwum (None = bez hasła)
     dzieci: list["Zalacznik"] = field(default_factory=list)
     wiadomosc: "Wiadomosc | None" = None
 

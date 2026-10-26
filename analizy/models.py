@@ -46,6 +46,7 @@ class IOC(models.Model):
     etykieta = models.TextField(null=True, blank=True)
     zrodlo = models.CharField(max_length=10, choices=ZRODLA)
     hashe = models.JSONField(null=True, blank=True)
+    haslo_archiwum = models.CharField(max_length=255, null=True, blank=True)
     rodzic = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="dzieci")
 
     class Meta:

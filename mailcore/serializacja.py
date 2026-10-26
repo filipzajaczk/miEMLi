@@ -23,6 +23,7 @@ def _zalacznik(z: Zalacznik) -> dict:
         "content_id": z.content_id,
         "inline": z.inline,
         "zaszyfrowany": z.zaszyfrowany,
+        "haslo": z.haslo,
         "dzieci": [_zalacznik(d) for d in z.dzieci],
         "wiadomosc": _wiadomosc(z.wiadomosc) if z.wiadomosc else None,
     }

@@ -236,6 +236,7 @@ def rozpakuj(z: Zalacznik, hasla: list[str], budzet: Budzet) -> list[Ostrzezenie
             return [Ostrzezenie("ARCHIWUM_USZKODZONE", f"Archiwum {z.nazwa} jest uszkodzone.")]
         z.dzieci = wynik
         z.zaszyfrowany = False
+        z.haslo = haslo
         if not wynik:
             return [Ostrzezenie("ARCHIWUM_USZKODZONE", f"Archiwum {z.nazwa} jest puste lub uszkodzone.")]
         return []

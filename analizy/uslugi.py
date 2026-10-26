@@ -50,6 +50,7 @@ def utworz_lub_otworz(
                 etykieta=bez_nul(i.etykieta),
                 zrodlo=i.zrodlo,
                 hashe=i.hashe,
+                haslo_archiwum=bez_nul(i.haslo_archiwum)[:255] if i.haslo_archiwum else None,
                 rodzic=po_numerze.get(i.rodzic_id),
             )
         Zdarzenie.objects.create(uzytkownik=uzytkownik, analiza=analiza, typ="utworzenie", szczegoly={"plik": nazwa})

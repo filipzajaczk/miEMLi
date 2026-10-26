@@ -143,3 +143,15 @@ def test_zip_w_zipie_limit_glebokosci(zbuduj_mail):
     mail = zbuduj_mail(zalaczniki=[("a.zip", "application/zip", dane)])
     w = parsuj(mail, "a.eml", Limity(max_glebokosc=5))
     assert "LIMIT_GLEBOKOSC" in kody(w.ostrzezenia)
+
+
+def test_zapamietane_haslo_archiwum():
+    z = zal("a.zip", zip_([("a.exe", EXE)], "tajne99"))
+    rozpakuj(z, ["zle", "tajne99", "infected"], Budzet(10**6))
+    assert z.haslo == "tajne99"
+
+
+def test_archiwum_bez_hasla():
+    z = zal("a.zip", zip_([("a.exe", EXE)]))
+    rozpakuj(z, ["infected"], Budzet(10**6))
+    assert z.haslo is None

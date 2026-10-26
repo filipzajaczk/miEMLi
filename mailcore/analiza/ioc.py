@@ -31,6 +31,7 @@ class IOC:
     zrodlo: str  # "naglowek" | "tresc" | "zalacznik" | "qr"
     etykieta: str | None = None
     hashe: dict[str, str] | None = None
+    haslo_archiwum: str | None = None  # plik z archiwum: hasło użyte do jego rozpakowania
 
 
 def _publiczny_ip(wartosc: str) -> str | None:
@@ -53,10 +54,10 @@ class _Budowniczy:
     def ignorowana(self, domena: str) -> bool:
         return any(domena == d or domena.endswith("." + d) for d in self.ignorowane)
 
-    def dodaj(self, typ, wartosc, rodzic_id, zrodlo, etykieta=None, hashe=None) -> int:
+    def dodaj(self, typ, wartosc, rodzic_id, zrodlo, etykieta=None, hashe=None, haslo_archiwum=None) -> int:
         klucz = (typ, wartosc)
         if klucz not in self.indeks:
-            ioc = IOC(len(self.lista) + 1, typ, wartosc, rodzic_id, zrodlo, etykieta, hashe)
+            ioc = IOC(len(self.lista) + 1, typ, wartosc, rodzic_id, zrodlo, etykieta, hashe, haslo_archiwum)
             self.lista.append(ioc)
             self.indeks[klucz] = ioc.id
         return self.indeks[klucz]
@@ -104,10 +105,10 @@ class _Budowniczy:
         for z in w.zalaczniki:
             self.zalacznik(z, rodzic_id)
 
-    def zalacznik(self, z: Zalacznik, rodzic_id: int | None) -> None:
+    def zalacznik(self, z: Zalacznik, rodzic_id: int | None, haslo_archiwum: str | None = None) -> None:
         plik_id = self.dodaj(
             "plik", z.sha256, rodzic_id, "zalacznik", z.nazwa,
-            {"md5": z.md5, "sha1": z.sha1, "sha256": z.sha256},
+            {"md5": z.md5, "sha1": z.sha1, "sha256": z.sha256}, haslo_archiwum,
         )
         if z.typ_mime.startswith("image/"):
             if z.sha256 not in self.qr and len(self.qr) < MAKS_OBRAZOW_QR:
@@ -117,7 +118,7 @@ class _Budowniczy:
                     self.url(tresc, None, plik_id, "qr")
         if jest_archiwum(z):
             for dziecko in z.dzieci:
-                self.zalacznik(dziecko, plik_id)
+                self.zalacznik(dziecko, plik_id, z.haslo)
         if z.wiadomosc is not None:
             self.kolejka.append((z.wiadomosc, plik_id))
 
