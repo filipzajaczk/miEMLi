@@ -17,6 +17,18 @@ docker compose exec web python manage.py createsuperuser
 
 Aplikacja: `https://<MIEMLI_HOST>/`. Konta analityków zakłada się w `/admin/`.
 
+### Klucze API (wzbogacenie IOC)
+
+W `.env`: `GTI_API_KEY`, `CENSYS_API_TOKEN` oraz opcjonalnie `CENSYS_ORG_ID` (tylko gdy token ma rolę
+„API Access” w organizacji Censys — inaczej Censys zwraca 403). Pusty klucz = dostawca wyłączony.
+Po zmianie `.env`: `docker compose up -d`. Sprawdzenie kluczy (prawdziwe zapytania, nic nie zapisuje):
+
+```bash
+docker compose exec web python manage.py sprawdz_api
+```
+
+Lookupy wykonuje kontener `worker` (RQ ze schedulerem do ponowień), wyniki są w cache przez 24 h.
+
 Certyfikat: na start Caddy wystawia własny (`tls internal`, przeglądarka pokaże ostrzeżenie).
 Przejście na certyfikat z firmowego CA — patrz komentarz w `Caddyfile`.
 

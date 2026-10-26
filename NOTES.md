@@ -13,6 +13,12 @@
   - ekran analizy w układzie C, ręczny upload, deduplikacja.
 - Testy: 144 (pytest); testy Django przechodzą też na Postgresie. Próbka `.msg` jest prywatna (`tests/samples/private/`) — na innej maszynie testy `.msg` są pomijane.
 
+- Etap 4 zrobiony (branch `etap-4`): wzbogacenie IOC w GTI i Censys przez worker RQ (cache 24 h,
+  ponowienia, odpytywanie htmx co 2 s), kolumny GTI/Censys/JOE, rozwijane szczegóły, „Odśwież
+  wzbogacenie”, `manage.py sprawdz_api`. JOE = tylko link do strony Joe Sandbox.
+- Censys: z `CENSYS_ORG_ID` obecny token dostaje 403 — usunąć zmienną z `.env` albo poprosić
+  administratora Censys o rolę „API Access” w organizacji.
+
 ## Znane ograniczenia
 
 - RAR: brak automatycznego testu prawdziwego archiwum RAR (nie mamy narzędzia do jego utworzenia);
@@ -23,9 +29,8 @@
 
 ## Następna sesja
 
-- Plan etapów 4–5: GTI, Censys, Joe Sandbox (worker RQ, cache 24 h, dociąganie wyników przez htmx,
-  klucz Joe w profilu użytkownika). Najpierw sprawdzić realne odpowiedzi API.
-- Potem etapy 6–7: integracja z RTIR (link z ticketu, raport jako Comment, Custom Fields).
+- Następny: etapy 6–7 — integracja z RTIR (link z ticketu, pobieranie załącznika przez REST2,
+  raport jako Comment, Custom Fields). Potem Joe Sandbox (sekcja „ODŁOŻONE” poniżej).
 
 ### ODŁOŻONE: Joe Sandbox — robimy na samym końcu projektu (decyzja 2026-10-26)
 

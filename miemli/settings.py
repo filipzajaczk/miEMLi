@@ -115,6 +115,8 @@ LOGGING = {
     "formatters": {"prosty": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"}},
     "handlers": {"stdout": {"class": "logging.StreamHandler", "formatter": "prosty"}},
     "root": {"handlers": ["stdout"], "level": "INFO"},
+    # httpx na INFO loguje pełne URL-e (z parametrami, np. organization_id z .env)
+    "loggers": {"httpx": {"level": "WARNING"}, "httpcore": {"level": "WARNING"}},
 }
 
 # Wzbogacenie IOC — klucze tylko w .env
