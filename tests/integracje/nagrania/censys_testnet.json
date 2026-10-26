@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "cialo": {
+    "result": {
+      "resource": {
+        "ip": "192.0.2.1",
+        "services": [],
+        "autonomous_system": null,
+        "location": {
+          "country": null,
+          "country_code": null,
+          "city": null
+        },
+        "dns": {
+          "names": [
+            "host0.example",
+            "host1.example",
+            "host2.example",
+            "host3.example",
+            "host4.example",
+            "host5.example",
+            "host6.example",
+            "host7.example",
+            "host8.example",
+            "host9.example"
+          ]
+        }
+      }
+    }
+  }
+}

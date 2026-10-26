@@ -1,0 +1,63 @@
+{
+  "status": 200,
+  "cialo": {
+    "result": {
+      "resource": {
+        "ip": "8.8.8.8",
+        "services": [
+          {
+            "port": 53,
+            "protocol": "DNS",
+            "transport_protocol": "tcp"
+          },
+          {
+            "port": 53,
+            "protocol": "DNS",
+            "transport_protocol": "udp"
+          },
+          {
+            "port": 443,
+            "protocol": "UNKNOWN",
+            "transport_protocol": "quic"
+          },
+          {
+            "port": 443,
+            "protocol": "HTTP",
+            "transport_protocol": "tcp"
+          },
+          {
+            "port": 853,
+            "protocol": "DNS",
+            "transport_protocol": "tcp"
+          }
+        ],
+        "autonomous_system": {
+          "asn": 15169,
+          "description": "GOOGLE - Google LLC",
+          "bgp_prefix": "8.8.8.0/24",
+          "name": "GOOGLE - Google LLC",
+          "country_code": "US"
+        },
+        "location": {
+          "country": "United States",
+          "country_code": "US",
+          "city": "Mountain View"
+        },
+        "dns": {
+          "names": [
+            "0-6.0.hotic.114ic.com",
+            "0.88hi.vip",
+            "0.avantis.top",
+            "0.jtjt.fun",
+            "0.magas.services",
+            "0.veridocs.top",
+            "00-0.top",
+            "00.huaxia876.cn",
+            "00.kiwinas.top",
+            "000.88hi.vip"
+          ]
+        }
+      }
+    }
+  }
+}

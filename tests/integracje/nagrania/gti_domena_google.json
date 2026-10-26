@@ -1,0 +1,139 @@
+{
+  "status": 200,
+  "cialo": {
+    "data": {
+      "id": "google.com",
+      "type": "domain",
+      "attributes": {
+        "gti_assessment": {
+          "severity": {
+            "value": "SEVERITY_NONE"
+          },
+          "threat_score": {
+            "value": 0
+          },
+          "verdict": {
+            "value": "VERDICT_BENIGN"
+          },
+          "contributing_factors": {
+            "google_botnet_emulation": true,
+            "mandiant_analyst_malicious": true,
+            "normalised_categories": [
+              "pwn"
+            ],
+            "mandiant_confidence_score": 0,
+            "malicious_sandbox_verdict": false,
+            "pervasive_indicator": true,
+            "mandiant_analyst_benign": true,
+            "gti_confidence_score": 0,
+            "google_malware_analysis": true
+          },
+          "description": "This indicator was determined as benign by a Mandiant analyst and likely poses no threat.",
+          "gti_description_cards": {
+            "HUMAN_VERIFIED_GROUND_TRUTH": [
+              {
+                "influence": "high",
+                "title": "Verified Malicious by Mandiant Analyst",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "high",
+                "title": "Was Observed During an Investigation by a Mandiant Analyst",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MITIGATING_FACTORS": [
+              {
+                "influence": "benign",
+                "title": "Omit",
+                "sub_title": "Verified Benign by Mandiant Analyst",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Known Public Threat (OSINT)",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Shared infrastructure",
+                "sub_title": "Verified Shared Infrastructure",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "High prevalence",
+                "sub_title": "High Global Prevalence",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MANDIANT_INTELLIGENCE": [
+              {
+                "influence": "high",
+                "title": "Part of Trusted Threat Collection",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "high",
+                "title": "Google Botnet C2 Emulation",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "TECHNICAL_EVIDENCE": [
+              {
+                "influence": "low",
+                "title": "Classification: pwn",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "PROPAGATED_FACTORS": [
+              {
+                "influence": "high",
+                "title": "Google Sandbox Detonation: Malicious Behavior",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "BULK_SIGNALS": [
+              {
+                "influence": "medium",
+                "title": "Multi-Engine AV Detections: 1",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ]
+          }
+        },
+        "last_analysis_stats": {
+          "malicious": 1,
+          "suspicious": 0,
+          "undetected": 30,
+          "harmless": 61,
+          "timeout": 0
+        },
+        "creation_date": 874306800,
+        "registrar": "MarkMonitor Inc.",
+        "tags": [],
+        "first_seen_itw_date": 1364774400,
+        "last_analysis_date": 1793019862
+      }
+    }
+  }
+}

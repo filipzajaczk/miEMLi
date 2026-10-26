@@ -1,0 +1,8 @@
+{
+  "status": 403,
+  "cialo": {
+    "title": "Forbidden",
+    "status": 403,
+    "detail": "User is not authorized to access the API for this organization. Please contact your administrator."
+  }
+}

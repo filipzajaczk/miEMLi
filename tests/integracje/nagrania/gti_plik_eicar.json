@@ -1,0 +1,152 @@
+{
+  "status": 200,
+  "cialo": {
+    "data": {
+      "id": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+      "type": "file",
+      "attributes": {
+        "gti_assessment": {
+          "threat_score": {
+            "value": 30
+          },
+          "contributing_factors": {
+            "normalised_categories": [
+              "pwn",
+              "sandbox_malware",
+              "sandbox_trojan",
+              "sandbox_evader",
+              "virus"
+            ],
+            "mandiant_analyst_malicious": false,
+            "gavs_detections": 3,
+            "matched_malicious_yara": true,
+            "mandiant_confidence_score": 0,
+            "malicious_sandbox_verdict": true,
+            "gti_confidence_score": 90,
+            "associated_reference": true
+          },
+          "severity": {
+            "value": "SEVERITY_LOW"
+          },
+          "verdict": {
+            "value": "VERDICT_MALICIOUS"
+          },
+          "description": "This indicator is malicious (low severity). It was detected by Google's spam and threat filtering engines, it was involved in a compromise or an attempted compromise, it was detected by sandbox analysis, indicating suspicious behavior, matches YARA rules, it is associated with a Mandiant Intelligence Report and categorised as virus.",
+          "gti_description_cards": {
+            "HUMAN_VERIFIED_GROUND_TRUTH": [
+              {
+                "influence": "high",
+                "title": "Was Observed During an Investigation by a Mandiant Analyst",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MITIGATING_FACTORS": [
+              {
+                "influence": "benign",
+                "title": "Omit",
+                "sub_title": "Verified Test by Mandiant Analyst",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "TECHNICAL_EVIDENCE": [
+              {
+                "influence": "high",
+                "title": "Matched Trusted Community YARA Rule",
+                "sub_title": "",
+                "related_links": [
+                  {
+                    "title": "YARA Ruleset (MALW_Eicar)",
+                    "url": {
+                      "object_type": "yara_ruleset",
+                      "id": "0019ab4291"
+                    }
+                  },
+                  {
+                    "title": "YARA Ruleset (Multi_EICAR)",
+                    "url": {
+                      "object_type": "yara_ruleset",
+                      "id": "015dce072d"
+                    }
+                  },
+                  {
+                    "title": "YARA Ruleset (gen_suspicious_strings)",
+                    "url": {
+                      "object_type": "yara_ruleset",
+                      "id": "000720c1f3"
+                    }
+                  }
+                ],
+                "collection_type": null
+              },
+              {
+                "influence": "low",
+                "title": "Classification: pwn, sandbox_malware, sandbox_trojan, sandbox_evader, virus",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "BULK_SIGNALS": [
+              {
+                "influence": "high",
+                "title": "Sandbox Detonation Malicious",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "medium",
+                "title": "Multi-Engine AV Detections: 64",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "HISTORICAL_CONTEXT": [
+              {
+                "influence": "age_off",
+                "title": "Aged-Off Signals",
+                "sub_title": "Historically detected by: Mandiant Advanced Threat Intelligence (Until: 2023-10-29)",
+                "related_links": [],
+                "collection_type": null
+              }
+            ]
+          }
+        },
+        "last_analysis_stats": {
+          "malicious": 64,
+          "suspicious": 0,
+          "undetected": 3,
+          "harmless": 0,
+          "timeout": 0,
+          "confirmed-timeout": 1,
+          "failure": 1,
+          "type-unsupported": 7
+        },
+        "type_description": "Powershell",
+        "meaningful_name": "eicar.com-26610",
+        "names": [
+          "eicar.com-26610",
+          "eicar.com-17959",
+          "eicar.com-12624",
+          "eicar.com.txt",
+          "metasploit-framework-master/data/eicar.com"
+        ],
+        "tags": [
+          "long-sleeps",
+          "direct-cpu-clock-access",
+          "via-tor",
+          "known-distributor",
+          "attachment",
+          "detect-debug-environment",
+          "idle"
+        ],
+        "first_seen_itw_date": 1339694174,
+        "last_analysis_date": 1793020654
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": 404,
+  "cialo": {
+    "error": {
+      "code": "NotFoundError",
+      "message": "File \"0000000000000000000000000000000000000000000000000000000000000001\" not found"
+    }
+  }
+}

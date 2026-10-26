@@ -1,0 +1,94 @@
+{
+  "status": 200,
+  "cialo": {
+    "data": {
+      "id": "d0e196a0c25d35dd0a84593cbae0f38333aa58529936444ea26453eab28dfc86",
+      "type": "url",
+      "attributes": {
+        "gti_assessment": {
+          "verdict": {
+            "value": "VERDICT_UNDETECTED"
+          },
+          "contributing_factors": {
+            "safebrowsing_verdict": "harmless",
+            "associated_malware_configuration": true,
+            "pervasive_indicator": true,
+            "gti_confidence_score": 0,
+            "malicious_sandbox_verdict": false,
+            "mandiant_confidence_score": 2
+          },
+          "severity": {
+            "value": "SEVERITY_NONE"
+          },
+          "threat_score": {
+            "value": 1
+          },
+          "description": "This indicator did not match our detection criteria and there is currently no evidence of malicious activity. It has been associated with active malicious campaigns.",
+          "gti_description_cards": {
+            "MITIGATING_FACTORS": [
+              {
+                "influence": "benign",
+                "title": "Benign infrastructure heuristic",
+                "sub_title": "ML Predicted Safe Domain",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Known Public Threat (OSINT)",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Shared infrastructure",
+                "sub_title": "Verified Shared Infrastructure",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Benign infrastructure heuristic",
+                "sub_title": "ML Predicted Safe URL",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MANDIANT_INTELLIGENCE": [
+              {
+                "influence": "high",
+                "title": "Part of Trusted Threat Collection",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "TOOL_ABUSE": [
+              {
+                "influence": "dual_use",
+                "title": "Resource has Malicious Uses",
+                "sub_title": "It has been associated with active malicious campaigns",
+                "related_links": [],
+                "collection_type": "software-toolkit"
+              }
+            ]
+          }
+        },
+        "last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 31,
+          "harmless": 62,
+          "timeout": 0
+        },
+        "tags": [
+          "external-resources"
+        ],
+        "first_seen_itw_date": 1721257282,
+        "last_analysis_date": 1793020042,
+        "last_final_url": "https://www.google.com/"
+      }
+    }
+  }
+}

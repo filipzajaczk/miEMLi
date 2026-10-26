@@ -1,0 +1,151 @@
+{
+  "status": 200,
+  "cialo": {
+    "data": {
+      "id": "8.8.8.8",
+      "type": "ip_address",
+      "attributes": {
+        "gti_assessment": {
+          "contributing_factors": {
+            "normalised_categories": [
+              "pwn"
+            ],
+            "malicious_sandbox_verdict": false,
+            "gti_confidence_score": 0,
+            "mandiant_analyst_benign": true,
+            "pervasive_indicator": true,
+            "mandiant_association_malware": true,
+            "mandiant_confidence_score": 0,
+            "google_malware_analysis": true
+          },
+          "threat_score": {
+            "value": 0
+          },
+          "verdict": {
+            "value": "VERDICT_BENIGN"
+          },
+          "severity": {
+            "value": "SEVERITY_NONE"
+          },
+          "description": "This indicator was determined as benign by a Mandiant analyst and likely poses no threat. It has been confirmed as a component of an active malicious campaign but seems to be part of a legitimate resource.",
+          "gti_description_cards": {
+            "HIGHEST_IMPACT_FACTOR": [
+              {
+                "influence": "high",
+                "title": "Attributed to Mandiant Malware Family",
+                "sub_title": "",
+                "related_links": [
+                  {
+                    "title": "METASPLOIT",
+                    "url": {
+                      "object_type": "collection",
+                      "id": "malware--45fea136-53e0-56a9-835e-70a2c5c9abe0"
+                    }
+                  }
+                ],
+                "collection_type": "malware-family"
+              },
+              {
+                "influence": "high",
+                "title": "Known Mandiant Malware Capability: Framework",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": "malware-family"
+              }
+            ],
+            "HUMAN_VERIFIED_GROUND_TRUTH": [
+              {
+                "influence": "high",
+                "title": "Was Observed During an Investigation by a Mandiant Analyst",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MITIGATING_FACTORS": [
+              {
+                "influence": "benign",
+                "title": "Associated with multiple undetected domains",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Omit",
+                "sub_title": "Verified Benign by Mandiant Analyst",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "Shared infrastructure",
+                "sub_title": "Verified Shared Infrastructure",
+                "related_links": [],
+                "collection_type": null
+              },
+              {
+                "influence": "benign",
+                "title": "High prevalence",
+                "sub_title": "High Global Prevalence",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "MANDIANT_INTELLIGENCE": [
+              {
+                "influence": "high",
+                "title": "Part of Trusted Threat Collection",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "TECHNICAL_EVIDENCE": [
+              {
+                "influence": "low",
+                "title": "Classification: pwn",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ],
+            "TOOL_ABUSE": [
+              {
+                "influence": "dual_use",
+                "title": "Abused Legitimate Resource",
+                "sub_title": "This indicator has been confirmed as a component of an active malicious campaign but seems to be part of a legitimate tool",
+                "related_links": [],
+                "collection_type": "software-toolkit"
+              }
+            ],
+            "PROPAGATED_FACTORS": [
+              {
+                "influence": "high",
+                "title": "Google Sandbox Detonation: Malicious Behavior",
+                "sub_title": "",
+                "related_links": [],
+                "collection_type": null
+              }
+            ]
+          }
+        },
+        "last_analysis_stats": {
+          "malicious": 0,
+          "suspicious": 0,
+          "undetected": 39,
+          "harmless": 53,
+          "timeout": 0
+        },
+        "country": "US",
+        "asn": 15169,
+        "as_owner": "Google LLC",
+        "tags": [
+          "suspicious-udp"
+        ],
+        "first_seen_itw_date": 1312949507,
+        "last_analysis_date": 1793018697
+      }
+    }
+  }
+}
