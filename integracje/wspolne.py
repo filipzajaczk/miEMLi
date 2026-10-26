@@ -43,7 +43,7 @@ def wykonaj(
         return WynikDostawcy("blad", link=link, blad="Błąd połączenia.", ponawiac=True)
 
     kod = odp.status_code
-    if kod == 404:
+    if kod in (400, 404):  # 400: dostawca odrzuca wskaźnik (np. domena z nieistniejącą TLD)
         return WynikDostawcy("brak_danych", link=link)
     if kod == 429:
         return WynikDostawcy("limit", link=link, blad="Przekroczono limit zapytań API.", ponawiac=True)

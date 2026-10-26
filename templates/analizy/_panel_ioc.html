@@ -3,6 +3,7 @@
 {% for i, glebokosc in ioc %}
   <a class="wiersz-ioc" href="?sekcja=ioc&wiadomosc={{ wid }}" hx-get="?sekcja=ioc&wiadomosc={{ wid }}"
      hx-target="#glowna" hx-push-url="true">
+    <span class="kropka-miejsce">{% with g=wzbogacenia|klucz:i.pk|klucz:"gti" %}{% if g.status == "gotowe" %}<span class="kropka {{ g.skrot.werdykt|klasa_werdyktu }}" title="GTI: {{ g.skrot.werdykt|opis_werdyktu }}"></span>{% endif %}{% endwith %}</span>
     <span class="typ">{{ i.typ }}</span>
     <span class="mono wartosc">{% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% else %}{{ i|rozbrojony }}{% endif %}</span>
   </a>

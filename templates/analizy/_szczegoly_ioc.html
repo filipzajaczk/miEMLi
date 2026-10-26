@@ -1,0 +1,41 @@
+{% load miemli %}
+<div class="szczegoly-ioc">
+  {% with w=wz.gti %}{% if w.status != "nie_dotyczy" %}
+  <section>
+    <div class="label">GTI</div>
+    {% if w.status == "gotowe" %}{% with s=w.skrot %}
+    <dl class="meta">
+      <dt>Werdykt</dt><dd><span class="b {{ s.werdykt|klasa_werdyktu }}">{{ s.werdykt|opis_werdyktu }}</span>{% if s.ocena is not None %} ocena {{ s.ocena }}{% endif %}{% if s.waznosc %} · {{ s.waznosc }}{% endif %}</dd>
+      {% if s.wykrycia %}<dt>Wykrycia</dt><dd>{{ s.wykrycia.0 }} / {{ s.wykrycia.1 }}</dd>{% endif %}
+      {% if s.typ_pliku %}<dt>Typ pliku</dt><dd>{{ s.typ_pliku }}</dd>{% endif %}
+      {% if s.nazwy %}<dt>Nazwy</dt><dd>{{ s.nazwy|join:", " }}</dd>{% endif %}
+      {% if s.rejestrator %}<dt>Rejestrator</dt><dd>{{ s.rejestrator }}</dd>{% endif %}
+      {% if s.utworzono %}<dt>Utworzona</dt><dd>{{ s.utworzono|z_epoch|date:"Y-m-d" }} ({{ s.utworzono|wiek }})</dd>{% endif %}
+      {% if s.asn %}<dt>ASN</dt><dd>AS{{ s.asn }}{% if s.wlasciciel %} · {{ s.wlasciciel }}{% endif %}</dd>{% endif %}
+      {% if s.kraj %}<dt>Kraj</dt><dd>{{ s.kraj }}</dd>{% endif %}
+      {% if s.pierwsze %}<dt>Pierwsze wystąpienie</dt><dd>{{ s.pierwsze|z_epoch|date:"Y-m-d" }}</dd>{% endif %}
+      {% if s.ostatnia_analiza %}<dt>Ostatnia analiza</dt><dd>{{ s.ostatnia_analiza|z_epoch|date:"Y-m-d H:i" }}</dd>{% endif %}
+      {% if s.tagi %}<dt>Tagi</dt><dd>{{ s.tagi|join:", " }}</dd>{% endif %}
+    </dl>
+    {% endwith %}{% else %}{% include "analizy/_wzbogacenie_status.html" %} <span class="muted">{{ w.blad }}</span>{% endif %}
+    {% if w.link %}<a href="{{ w.link }}" target="_blank" rel="noopener noreferrer">Otwórz w GTI ↗</a>{% endif %}
+    {% if w.sprawdzono %}<div class="muted">Sprawdzono: {{ w.sprawdzono|date:"Y-m-d H:i" }}</div>{% endif %}
+  </section>
+  {% endif %}{% endwith %}
+
+  {% with w=wz.censys %}{% if w.status != "nie_dotyczy" %}
+  <section>
+    <div class="label">Censys</div>
+    {% if w.status == "gotowe" %}{% with s=w.skrot %}
+    <dl class="meta">
+      <dt>Usługi</dt><dd>{% for u in s.uslugi %}<span class="mono">{{ u.0 }}/{{ u.2 }} {{ u.1 }}</span>{% if not forloop.last %}, {% endif %}{% empty %}brak otwartych usług{% endfor %}</dd>
+      {% if s.asn %}<dt>ASN</dt><dd>AS{{ s.asn }}{% if s.as_nazwa %} · {{ s.as_nazwa }}{% endif %}{% if s.bgp %} · {{ s.bgp }}{% endif %}</dd>{% endif %}
+      {% if s.kraj %}<dt>Lokalizacja</dt><dd>{{ s.kraj }}{% if s.miasto %}, {{ s.miasto }}{% endif %}</dd>{% endif %}
+      {% if s.dns %}<dt>Nazwy DNS</dt><dd class="mono">{% for n in s.dns %}{{ n|rozbroj:"domena" }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>{% endif %}
+    </dl>
+    {% endwith %}{% else %}{% include "analizy/_wzbogacenie_status.html" %} <span class="muted">{{ w.blad }}</span>{% endif %}
+    {% if w.link %}<a href="{{ w.link }}" target="_blank" rel="noopener noreferrer">Otwórz w Censys ↗</a>{% endif %}
+    {% if w.sprawdzono %}<div class="muted">Sprawdzono: {{ w.sprawdzono|date:"Y-m-d H:i" }}</div>{% endif %}
+  </section>
+  {% endif %}{% endwith %}
+</div>

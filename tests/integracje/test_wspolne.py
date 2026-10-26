@@ -76,3 +76,11 @@ def test_user_agent():
     respx.get(URL).respond(200, json={"a": 1})
     wynik()
     assert respx.calls.last.request.headers["User-Agent"] == "miemli/1.0"
+
+
+@respx.mock
+def test_400_nieprawidlowy_wskaznik():
+    # GTI odrzuca np. domeny z nieistniejącą TLD (InvalidArgumentError) — to brak danych, nie awaria
+    respx.get(URL).respond(400, json={"error": {"code": "InvalidArgumentError"}})
+    w = wynik()
+    assert w.status == "brak_danych" and w.ponawiac is False

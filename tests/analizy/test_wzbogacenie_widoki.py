@@ -152,3 +152,75 @@ def test_wiek():
     assert wiek(teraz - 12 * 365 * dzien - 60) == "12 lat"
     assert wiek(teraz - 1 * 365 * dzien - 60) == "1 rok"
     assert wiek(None) == ""
+
+
+def ioc_typu(analiza, typ):
+    return analiza.ioc.filter(typ=typ).first()
+
+
+def test_szczegoly_gti_i_censys(zalogowany, analiza):
+    ip = ioc_typu(analiza, "ip")
+    wpis("gti", "ip", ip.wartosc, link=f"https://www.virustotal.com/gui/ip-address/{ip.wartosc}",
+         skrot={"werdykt": "nieszkodliwy", "kraj": "US", "asn": 15169, "wlasciciel": "Google LLC", "tagi": []})
+    wpis("censys", "ip", ip.wartosc, link=f"https://platform.censys.io/hosts/{ip.wartosc}",
+         skrot={"uslugi": [[53, "DNS", "udp"]], "asn": 15169, "as_nazwa": "GOOGLE", "bgp": "8.8.8.0/24",
+                "kraj": "US", "miasto": "Mountain View", "dns": ["dns.google"]})
+    t = zalogowany.get(reverse("analizy:szczegoly_ioc", args=[analiza.pk, ip.pk])).content.decode()
+    assert "Google LLC" in t and "8.8.8.0/24" in t and "dns[.]google" in t
+    assert 'href="https://platform.censys.io/hosts/' in t
+    assert 'href="https://www.virustotal.com/gui/ip-address/' in t
+    assert "Sprawdzono:" in t
+
+
+def test_szczegoly_cudzy_ioc_404(zalogowany, analiza, probka, analityk):
+    inna = utworz_lub_otworz(probka("zip_exe"), "z.eml", analityk)[0]
+    r = zalogowany.get(reverse("analizy:szczegoly_ioc", args=[analiza.pk, inna.ioc.first().pk]))
+    assert r.status_code == 404
+
+
+def test_wrogie_dane_api(zalogowany, analiza):
+    url = ioc_typu(analiza, "url")
+    wpis("gti", "url", url.wartosc,
+         skrot={"werdykt": "zlosliwy", "nazwy": ["<script>alert(1)</script>"], "tagi": ["<b>x</b>"]},
+         surowe={"data": {"attributes": {"last_final_url": "https://evil.example/x"}}})
+    t = zalogowany.get(reverse("analizy:szczegoly_ioc", args=[analiza.pk, url.pk])).content.decode()
+    assert "&lt;b&gt;x&lt;/b&gt;" in t
+    assert "<script>alert" not in t and "<b>x</b>" not in t
+    assert "https://evil.example" not in t
+
+
+def test_odswiez_post(zalogowany, analiza, srodowisko):
+    wszystkie_gotowe(analiza)
+    srodowisko.clear()
+    r = zalogowany.post(reverse("analizy:odswiez", args=[analiza.pk]))
+    assert r.status_code == 302 and r.url == reverse("analizy:szczegoly", args=[analiza.pk])
+    assert analiza.zdarzenia.filter(typ="odswiezenie").exists()
+    assert len(srodowisko) == Wzbogacenie.objects.count()
+
+
+def test_odswiez_get_405(zalogowany, analiza):
+    assert zalogowany.get(reverse("analizy:odswiez", args=[analiza.pk])).status_code == 405
+
+
+def test_odswiez_wymaga_logowania(client, analiza, srodowisko):
+    r = client.post(reverse("analizy:odswiez", args=[analiza.pk]))
+    assert r.status_code == 302 and r.url.startswith(reverse("login"))
+    assert srodowisko == []
+
+
+def test_przycisk_odswiez(zalogowany, analiza):
+    t = strona(zalogowany, analiza)
+    assert reverse("analizy:odswiez", args=[analiza.pk]) in t and "Odśwież wzbogacenie" in t
+
+
+def test_link_joe(zalogowany, analiza):
+    wszystkie_gotowe(analiza)
+    t = strona(zalogowany, analiza, sekcja="ioc")
+    assert 'href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"' in t
+    assert t.count("jbxcloud.joesecurity.org") == analiza.ioc.filter(typ__in=["plik", "url"]).count()
+
+
+def test_kropka_w_panelu(zalogowany, analiza):
+    wszystkie_gotowe(analiza)
+    wpis("gti", "url", "https://pko-platnosci.example/login", skrot={"werdykt": "zlosliwy"})
+    assert 'class="kropka bad"' in strona(zalogowany, analiza)

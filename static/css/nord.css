@@ -188,3 +188,15 @@ tr:hover td { background: rgba(136, 192, 208, .04); }
 .komorka .powod, .ukryty { display: none; }
 .pulsuje { animation: pulsuje 1.2s ease-in-out infinite; }
 @keyframes pulsuje { 50% { opacity: .3; } }
+.klikalny { cursor: pointer; }
+.wiersz-szczegolow td { padding: 0; border-bottom: none; }
+.wiersz-szczegolow td:not(:empty) { padding: 10px 14px 16px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.szczegoly-ioc { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.szczegoly-ioc a { display: inline-block; margin-top: 4px; }
+.kropka { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.kropka.bad { background: var(--bad); }
+.kropka.warn { background: var(--warn); }
+.kropka.ok { background: var(--ok); }
+.kropka.neutral { background: var(--muted); }
+.wiersz-ioc .kropka-miejsce { width: 8px; flex-shrink: 0; padding-top: 1px; }
+.wiersz-ioc .kropka { margin-right: 0; }

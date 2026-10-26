@@ -10,4 +10,6 @@ urlpatterns = [
     path("analiza/<int:pk>/", views.szczegoly, name="szczegoly"),
     path("analiza/<int:pk>/podglad/<str:wid>/", views.podglad, name="podglad"),
     path("analiza/<int:pk>/wzbogacenie/", views.wzbogacenie, name="wzbogacenie"),
+    path("analiza/<int:pk>/ioc/<int:ioc_pk>/", views.szczegoly_ioc, name="szczegoly_ioc"),
+    path("analiza/<int:pk>/odswiez/", views.odswiez, name="odswiez"),
 ]

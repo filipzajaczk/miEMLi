@@ -43,7 +43,7 @@ def test_sekcja_htmx_fragment(zalogowany, analiza):
 def test_ioc_rozbrojone(zalogowany, analiza):
     a = analiza("phishing_klasyczny")
     tresc = zalogowany.get(url(a, sekcja="ioc")).content.decode()
-    assert "https://" not in tresc
+    assert "https://pko-platnosci" not in tresc  # jedyny celowy https:// to link JOE
     assert "hxxps://pko-platnosci[.]example/login" in tresc
     assert "185[.]243[.]115[.]20" in tresc
 

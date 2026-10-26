@@ -114,6 +114,23 @@ def szczegoly(request, pk):
 
 
 @login_required
+def szczegoly_ioc(request, pk, ioc_pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    ioc = get_object_or_404(analiza.ioc, pk=ioc_pk)
+    wzbogacenia, _ = prezentacja.widoki_wzbogacen(analiza)
+    return render(request, "analizy/_szczegoly_ioc.html", {"i": ioc, "wz": wzbogacenia[ioc.pk]})
+
+
+@login_required
+@require_POST
+def odswiez(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    n = zaplanuj(analiza, wymus=True)
+    Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="odswiezenie", szczegoly={"zadania": n})
+    return redirect("analizy:szczegoly", pk=analiza.pk)
+
+
+@login_required
 def wzbogacenie(request, pk):
     """Fragmenty OOB dla odpytywania htmx: panel IOC, tabela IOC i sam element odpytujący."""
     analiza = get_object_or_404(Analiza, pk=pk)

@@ -114,3 +114,13 @@ def pierwsze(lista, n):
 @register.filter
 def reszta(lista, n):
     return max(len(lista or []) - int(n), 0)
+
+
+@register.filter
+def z_epoch(epoch):
+    from datetime import UTC, datetime
+
+    try:
+        return datetime.fromtimestamp(float(epoch), tz=UTC)
+    except (TypeError, ValueError, OverflowError, OSError):
+        return None
