@@ -68,6 +68,9 @@ services:
       GTI_WLACZONE: ${GTI_API_KEY:+1}
       CENSYS_WLACZONE: ${CENSYS_API_TOKEN:+1}
       PIASKOWNICA_URL: http://parser:8000
+      # Joe: web tylko szyfruje klucze analityków (klucz publiczny)
+      JOE_KLUCZ_PUBLICZNY: ${JOE_KLUCZ_PUBLICZNY:-}
+      JOE_LIMIT_DZIENNY: ${JOE_LIMIT_DZIENNY:-20}
       PARSER_WYMAGA_GVISOR: ${PARSER_WYMAGA_GVISOR:-0}
     networks: [wewnetrzna, piaskownica]
     depends_on:
@@ -86,7 +89,7 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     command: ["python", "manage.py", "rqworker", "default", "--with-scheduler",
-              "--serializer", "rq.serializers.JSONSerializer"]
+              "--serializer", "rq.serializers.JSONSerializer", "--worker-class", "analizy.rq_worker.WorkerMiemli"]
     environment:
       SECRET_KEY: ${SECRET_KEY:?ustaw SECRET_KEY w .env}
       DATABASE_URL: ${DATABASE_URL:?ustaw DATABASE_URL w .env}
@@ -94,6 +97,10 @@ services:
       GTI_API_KEY: ${GTI_API_KEY:-}
       CENSYS_API_TOKEN: ${CENSYS_API_TOKEN:-}
       CENSYS_ORG_ID: ${CENSYS_ORG_ID:-}
+      # Joe: klucz prywatny WYŁĄCZNIE tutaj — odszyfrowuje klucze analityków i pliki do wysyłki
+      JOE_KLUCZ_PUBLICZNY: ${JOE_KLUCZ_PUBLICZNY:-}
+      JOE_KLUCZ_PRYWATNY: ${JOE_KLUCZ_PRYWATNY:-}
+      JOE_API_URL: ${JOE_API_URL:-https://jbxcloud.joesecurity.org/api}
     networks: [wewnetrzna, zewnetrzna]
     depends_on:
       postgres:

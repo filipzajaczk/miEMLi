@@ -33,6 +33,21 @@ Lookupy wykonuje `worker` (RQ ze schedulerem do ponowień), wyniki są w cache p
 Certyfikat: na start Caddy wystawia własny (`tls internal`, przeglądarka pokaże ostrzeżenie).
 Przejście na certyfikat z firmowego CA — patrz komentarz w `Caddyfile`.
 
+### Joe Sandbox
+
+Analityk ustawia swój klucz API Joe w profilu (kliknięcie nazwy użytkownika w pasku). Klucz jest
+szyfrowany kluczem publicznym (`JOE_KLUCZ_PUBLICZNY` w `web`), a odczytać go potrafi tylko worker
+(`JOE_KLUCZ_PRYWATNY`). Para kluczy:
+
+```bash
+docker compose run --rm worker python manage.py joe_generuj_klucze   # wynik wklej do .env
+```
+
+Wysyłka całego maila: sekcja „Analizuj w JOE” w analizie (ponowne wgranie pliku — oryginał nie jest
+przechowywany, weryfikacja SHA256) albo checkbox „Wyślij też do Joe Sandbox” przy uploadzie. Parametry:
+Live Interaction, internet, bez url-reputation, usunięcie z Joe po 30 dniach; limit `JOE_LIMIT_DZIENNY`
+wysyłek na analityka. Status i werdykt Joe śledzi worker (co 30 s, maks. 2 h).
+
 ### Sandbox parsera (izolacja plików od atakującego)
 
 Analizowane pliki dekoduje wyłącznie kontener `parser`: bez sieci (poza połączeniem od `web`), bez

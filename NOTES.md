@@ -26,6 +26,11 @@
 - 2026-10-27: sandbox parsera: kontener `parser` (sieć `piaskownica`, bez sekretów/bazy/internetu,
   UID 65534, read-only), proces na plik z limitami, przekodowanie obrazków do PNG, raport nietypowych
   obrazków, walidacja odpowiedzi w web, zdarzenie `analiza_przerwana`, baner o braku gVisor.
+- 2026-10-27: integracja z Joe Sandbox (branch `joe-sandbox`): klucze analityków szyfrowane kluczem
+  publicznym (odczyt tylko w workerze), wysyłka całego maila (ponowne wgranie / checkbox przy uploadzie),
+  śledzenie statusu i werdyktu, limity, audyt. Sprawdzone na prawdziwym koncie: .eml przyjęty, werdykt OK.
+  Worker z `maintenance_interval=60` (scheduler RQ startuje do minuty po restarcie, nie do 10 min).
+- Przy integracji z RTIR: źródło oryginału dla Joe = pobranie z RTIR w workerze (`zlec_wysylke` przyjmuje bajty).
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
 ## Na później (2026-10-27)
