@@ -51,7 +51,7 @@ wysyłany przez worker bez parsowania — sandbox jej nie blokuje), RTIR, własn
 | Element | Odpowiedzialność |
 |---|---|
 | `piaskownica/zadanie.py` (`python -m piaskownica.zadanie`) | proces potomny: stdin = bajty pliku, argumenty = nazwa i limity; ustawia limity systemowe; `parsuj` → `analizuj` → przekodowanie obrazków → `do_json`; stdout = JSON |
-| `piaskownica/obrazki.py` | przekodowanie obrazków cid do PNG |
+| `piaskownica/obrazki.py` | rozpoznanie formatu po sygnaturze, raport obrazków (§8.1), przekodowanie do PNG |
 | `piaskownica/serwer.py` | serwer HTTP: `POST /analizuj`, `GET /zdrowie`; uruchamia proces potomny, pilnuje czasu, równoległości i kolejki |
 | `piaskownica/gvisor.py` | wykrycie, czy proces działa w gVisor |
 
@@ -125,6 +125,56 @@ Wynik parsera jest niezaufany:
 - Obrazek pominięty → w podglądzie ramka „obrazek pominięty” (tekst, bez bajtów).
 - Do `html_bezpieczny` trafiają wyłącznie przekodowane PNG jako `data:image/png;base64,…`.
 
+### 8.1 Raport obrazków
+
+Nietypowy obrazek bywa śladem próby exploita, dlatego każdy obrazek z wiadomości (załącznik
+`image/*` lub osadzony `cid:`, także w zagnieżdżonych wiadomościach) dostaje wpis w raporcie, a
+nietypowe są wyraźnie oznaczone. Oryginalnych bajtów nie przechowujemy — do ponownego zbadania
+służy SHA256 (IOC typu plik) i wysyłka całego maila do Joe Sandbox.
+
+**Rozpoznanie formatu** — własnym kodem po sygnaturze bajtów, *bez* dekodowania (żeby nie uruchamiać
+dekodera nieobsługiwanego formatu): PNG, JPEG, GIF, BMP, TIFF, WebP, SVG, EPS/PostScript, ICO, PSD,
+JPEG 2000, AVIF/HEIC (`ftyp`), nieznany.
+
+**Wpis raportu** (w wyniku parsera, per wiadomość, klucz `obrazki`):
+
+```json
+{"nazwa": "logo.png", "sha256": "…", "rozmiar": 48211, "content_id": "logo1",
+ "mime_zadeklarowany": "image/png", "format_wykryty": "TIFF",
+ "szerokosc": 120, "wysokosc": 40, "klatki": 1,
+ "status": "przekodowany" | "pominiety",
+ "uwagi": [{"kod": "…", "opis": "…"}]}
+```
+
+`szerokosc`/`wysokosc`/`klatki` tylko dla formatów dozwolonych (odczyt nagłówka przez Pillow), dla
+pozostałych `null`.
+
+**Kody uwag** (każdy obrazek może mieć kilka):
+
+| Kod | Kiedy | Status |
+|---|---|---|
+| `FORMAT_NIEOBSLUGIWANY` | wykryty format spoza PNG/JPEG/GIF/BMP (np. TIFF, WebP, SVG, EPS) | pominięty |
+| `FORMAT_NIEZGODNY` | wykryty format ≠ zadeklarowany MIME / rozszerzenie (np. `logo.png` będący TIFF-em) | wg formatu |
+| `ZA_DUZO_PIKSELI` | > 20 Mpx | pominięty |
+| `ZA_DUZY_PLIK` | > 10 MB przed dekodowaniem | pominięty |
+| `NIETYPOWE_WYMIARY` | bok > 10 000 px lub proporcje > 50:1 | wg pozostałych |
+| `ANIMACJA` | GIF z wieloma klatkami (pokazana pierwsza; liczba klatek w `klatki`) | przekodowany |
+| `USZKODZONY` | błąd dekodowania nagłówka lub pikseli | pominięty |
+| `LIMIT_LICZBY` | ponad 20 obrazków w wiadomości | pominięty |
+| `PRZESKALOWANY` | szerszy niż 1600 px — pokazano pomniejszony | przekodowany |
+
+**Wyświetlanie:**
+
+- Sekcja „Wiadomość”: pod listą załączników ramka **„Obrazki (N)”** — nazwa, wykryty format, wymiary,
+  rozmiar, status; uwagi jako odznaki. Uwagi oznaczające podejrzenie (`FORMAT_NIEOBSLUGIWANY`,
+  `FORMAT_NIEZGODNY`, `ZA_DUZO_PIKSELI`, `ZA_DUZY_PLIK`, `NIETYPOWE_WYMIARY`, `USZKODZONY`)
+  w kolorze ostrzegawczym; `ANIMACJA`, `PRZESKALOWANY`, `LIMIT_LICZBY` neutralne.
+- Gdy wiadomość ma choć jeden podejrzany obrazek — ostrzeżenie na górze sekcji „Wiadomość”:
+  „Nietypowe obrazki w wiadomości (N) — szczegóły poniżej; rozważ analizę w Joe Sandbox.”
+- Tabela IOC: przy IOC pliku-obrazka z uwagą podejrzaną odznaka z kodem uwagi (np. „format niezgodny:
+  TIFF”); w rozwinięciu szczegółów pełny wpis raportu.
+- Ramka „obrazek pominięty” w podglądzie zawiera powód (np. „obrazek pominięty: format TIFF”).
+
 ## 9. gVisor
 
 - `piaskownica/gvisor.py`: wykrycie po `/proc/version` / `dmesg` charakterystycznych dla gVisor.
@@ -147,11 +197,14 @@ nagłówków ani nazw plików.
   komunikaty i zdarzenie `analiza_przerwana`, parser niedostępny.
 - `web` nie parsuje lokalnie: podmieniony `mailcore.parsuj.parsuj` rzuca wyjątek, upload działa.
 - Obrazki: cid PNG/JPEG/GIF → PNG o innych bajtach niż oryginał; TIFF/WebP/SVG → pominięte.
+- Raport obrazków: każdy kod uwagi z §8.1 na dedykowanej próbce (TIFF z rozszerzeniem `.png`,
+  animowany GIF, obraz 30 Mpx, pasek 20000×10 px, uszkodzony PNG, 25 obrazków, SVG); rozpoznanie
+  formatu nie wywołuje dekodera dla formatów nieobsługiwanych; wyświetlanie odznak i ostrzeżenia.
 - Ręcznie w Dockerze: z `parser` brak internetu, Postgresa i Redisa; `/zdrowie`; upload próbek.
 
 ## 12. Kolejność budowy
 
-1. `piaskownica/zadanie.py` + `obrazki.py` (limity, przekodowanie).
+1. `piaskownica/zadanie.py` + `obrazki.py` (limity, przekodowanie, raport obrazków).
 2. `piaskownica/serwer.py` (`/analizuj`, `/zdrowie`, kolejka).
 3. Obraz i kontener `parser`, sieć `piaskownica`, `PARSER_RUNTIME`.
 4. Klient w `web`, walidacja, przełączenie uploadu, `analiza_przerwana`.
