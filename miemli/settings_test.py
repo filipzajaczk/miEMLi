@@ -18,3 +18,6 @@ CENSYS_API_TOKEN = ""
 CENSYS_ORG_ID = ""
 GTI_WLACZONE = False
 CENSYS_WLACZONE = False
+
+# Testy analizują w procesie (bez kontenera parser); testy klienta ustawiają własny URL
+PIASKOWNICA_URL = ""

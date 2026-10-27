@@ -5,12 +5,10 @@ import hashlib
 from django.conf import settings
 from django.db import transaction
 
-from mailcore.analiza import analizuj
-from mailcore.model import Limity
-from mailcore.parsuj import parsuj
-from mailcore.serializacja import bez_nul, do_json
+from mailcore.serializacja import bez_nul
 
 from .models import IOC, Analiza, Zdarzenie
+from .piaskownica_klient import AnalizaPrzerwana, analizuj_w_piaskownicy
 from .zadania import zaplanuj
 
 
@@ -27,9 +25,12 @@ def utworz_lub_otworz(
     if istniejaca:
         return istniejaca, False
 
-    limity = Limity(max_rozmiar=settings.MAKS_ROZMIAR_PLIKU)
-    w = parsuj(dane, nazwa, limity)
-    wynik = analizuj(w, settings.MIEMLI_IGNOROWANE_DOMENY)
+    try:
+        wynik = analizuj_w_piaskownicy(dane, nazwa)
+    except AnalizaPrzerwana as e:
+        Zdarzenie.objects.create(uzytkownik=uzytkownik, typ="analiza_przerwana",
+                                 szczegoly={"sha256": sha256, "plik": nazwa[:255], "powod": e.powod})
+        raise
 
     with transaction.atomic():
         analiza = Analiza.objects.create(
@@ -37,21 +38,21 @@ def utworz_lub_otworz(
             attachment_id=attachment_id,
             sha256=sha256,
             nazwa_pliku=nazwa[:255],
-            wynik=do_json(w, wynik),
+            wynik=bez_nul({k: wynik[k] for k in ("wiadomosc", "analiza")} | {"ioc": wynik["ioc"]}),
             utworzyl=uzytkownik,
         )
         po_numerze: dict[int, IOC] = {}
-        for i in wynik.ioc:  # rodzic zawsze ma mniejszy numer niż dziecko
-            po_numerze[i.id] = IOC.objects.create(
+        for i in wynik["ioc"]:  # rodzic zawsze ma mniejszy numer niż dziecko (sprawdza walidacja)
+            po_numerze[i["id"]] = IOC.objects.create(
                 analiza=analiza,
-                numer=i.id,
-                typ=i.typ,
-                wartosc=bez_nul(i.wartosc),
-                etykieta=bez_nul(i.etykieta),
-                zrodlo=i.zrodlo,
-                hashe=i.hashe,
-                haslo_archiwum=bez_nul(i.haslo_archiwum)[:255] if i.haslo_archiwum else None,
-                rodzic=po_numerze.get(i.rodzic_id),
+                numer=i["id"],
+                typ=i["typ"],
+                wartosc=bez_nul(i["wartosc"]),
+                etykieta=bez_nul(i.get("etykieta")),
+                zrodlo=(i.get("zrodlo") or "")[:10],
+                hashe=i.get("hashe"),
+                haslo_archiwum=bez_nul(i["haslo_archiwum"])[:255] if i.get("haslo_archiwum") else None,
+                rodzic=po_numerze.get(i.get("rodzic_id")),
             )
         Zdarzenie.objects.create(uzytkownik=uzytkownik, analiza=analiza, typ="utworzenie", szczegoly={"plik": nazwa})
         transaction.on_commit(lambda: zaplanuj(analiza))

@@ -13,6 +13,7 @@ from mailcore.model import NieobslugiwanyPlik, PlikZaDuzy
 from . import prezentacja
 from .forms import UploadForm
 from .models import Analiza, Zdarzenie
+from .piaskownica_klient import AnalizaPrzerwana, PiaskownicaNiedostepna
 from .uslugi import utworz_lub_otworz
 from .zadania import zaplanuj
 
@@ -21,6 +22,14 @@ logger = logging.getLogger(__name__)
 KOMUNIKAT_NIE_MAIL = "Plik nie jest prawidłową wiadomością .eml ani .msg."
 KOMUNIKAT_ZA_DUZY = "Plik jest większy niż 50 MB."
 KOMUNIKAT_BLAD = "Nie udało się przeanalizować pliku."
+KOMUNIKAT_NIEDOSTEPNY = "Sandbox analizy niedostępny — spróbuj za chwilę."
+_PRZERWANA = "Analiza przerwana: {}. Plik może być złośliwy lub uszkodzony — przeanalizuj go w Joe Sandbox."
+KOMUNIKATY_PRZERWANIA = {
+    "czas": _PRZERWANA.format("przekroczony czas"),
+    "pamiec": _PRZERWANA.format("przekroczony limit pamięci"),
+    "awaria": _PRZERWANA.format("parser przerwał pracę"),
+    "nieprawidlowa_odpowiedz": "Nieprawidłowy wynik analizy.",
+}
 
 # sandbox: nawet otwarty bezpośrednio (nie w iframe) podgląd działa w osobnym, pustym originie
 CSP_PODGLADU = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
@@ -63,6 +72,13 @@ def upload(request):
         return _lista(request, form, KOMUNIKAT_NIE_MAIL)
     except PlikZaDuzy:
         return _lista(request, form, KOMUNIKAT_ZA_DUZY)
+    except AnalizaPrzerwana as e:
+        if e.powod in ("awaria", "nieprawidlowa_odpowiedz"):
+            logger.warning("Sandbox: analiza przerwana (%s) — możliwa próba exploita", e.powod)
+        return _lista(request, form, KOMUNIKATY_PRZERWANIA[e.powod])
+    except PiaskownicaNiedostepna:
+        logger.warning("Sandbox analizy niedostępny")
+        return _lista(request, form, KOMUNIKAT_NIEDOSTEPNY)
     except Exception:
         logger.exception("Błąd analizy pliku (rozmiar %s B)", plik.size)
         return _lista(request, form, KOMUNIKAT_BLAD)
