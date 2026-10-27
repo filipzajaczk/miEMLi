@@ -230,3 +230,8 @@ tr.klikalny.otwarty td { background: rgba(136, 192, 208, .06); }
 .profil { max-width: 520px; }
 .profil h2 { margin-top: 18px; }
 .profil form { margin-top: 12px; }
+label.checkbox { display: flex; align-items: center; gap: 8px; color: var(--fg); margin-bottom: 12px; cursor: pointer; }
+label.checkbox input { width: auto; margin: 0; }
+.joe-wysylka { margin: 14px 0 22px; }
+.joe-wysylka form { display: flex; gap: 12px; align-items: center; }
+.joe-wysylka input[type=file] { margin: 0; max-width: 420px; }

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
@@ -14,6 +15,8 @@ from . import prezentacja
 from .forms import UploadForm
 from .models import Analiza, Zdarzenie
 from .piaskownica_klient import AnalizaPrzerwana, PiaskownicaNiedostepna
+from .joe_zadania import BladZlecenia, zlec_wysylke
+from .models import ZgloszenieJoe, profil_dla
 from .uslugi import utworz_lub_otworz
 from .zadania import zaplanuj
 
@@ -67,8 +70,9 @@ def upload(request):
         za_duzy = int(request.META.get("CONTENT_LENGTH") or 0) > settings.MAKS_ROZMIAR_PLIKU
         return _lista(request, form, KOMUNIKAT_ZA_DUZY if za_duzy else None)
     plik = form.cleaned_data["plik"]
+    dane = plik.read()
     try:
-        analiza, _ = utworz_lub_otworz(plik.read(), plik.name, request.user)
+        analiza, _ = utworz_lub_otworz(dane, plik.name, request.user)
     except NieobslugiwanyPlik:
         return _lista(request, form, KOMUNIKAT_NIE_MAIL)
     except PlikZaDuzy:
@@ -83,6 +87,12 @@ def upload(request):
     except Exception:
         logger.exception("Błąd analizy pliku (rozmiar %s B)", plik.size)
         return _lista(request, form, KOMUNIKAT_BLAD)
+    if form.cleaned_data.get("do_joe"):
+        try:
+            zlec_wysylke(analiza, request.user, dane)
+        except BladZlecenia as e:
+            request.session[f"joe_komunikat_{analiza.pk}"] = str(e)
+        return redirect(reverse("analizy:szczegoly", args=[analiza.pk]) + "?sekcja=joe")
     return redirect("analizy:szczegoly", pk=analiza.pk)
 
 
@@ -93,14 +103,10 @@ def _zapisz_otwarcie(request, analiza: Analiza) -> None:
         request.session[klucz] = True
 
 
-@login_required
-def szczegoly(request, pk):
-    analiza = get_object_or_404(Analiza, pk=pk)
-    sekcja = request.GET.get("sekcja", "wiadomosc")
-    if sekcja not in dict(prezentacja.SEKCJE):
+def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> dict:
+    if sekcja not in dict(prezentacja.SEKCJE) and sekcja not in prezentacja.SEKCJE_DODATKOWE:
         raise Http404("Nieznana sekcja")
     wiadomosci = prezentacja.wiadomosci(analiza.wynik)
-    wid = request.GET.get("wiadomosc", "0")
     if wid not in wiadomosci:
         raise Http404("Nie ma takiej wiadomości")
     _zapisz_otwarcie(request, analiza)
@@ -129,6 +135,26 @@ def szczegoly(request, pk):
     }
     kontekst["wzbogacenia"], kontekst["trwa"] = prezentacja.widoki_wzbogacen(analiza)
     kontekst["obrazki_sha"] = prezentacja.obrazki_po_sha(analiza.wynik)
+    if sekcja == "joe":
+        kontekst.update(_kontekst_joe(request, analiza))
+    return kontekst
+
+
+def _kontekst_joe(request, analiza: Analiza) -> dict:
+    zgloszenia = list(analiza.zgloszenia_joe.select_related("uzytkownik"))
+    return {
+        "zgloszenia": zgloszenia,
+        "joe_trwa": any(z.status in ZgloszenieJoe.AKTYWNE for z in zgloszenia),
+        "joe_ma_klucz": bool(profil_dla(request.user).joe_klucz_szyfr),
+        "joe_komunikat": request.session.pop(f"joe_komunikat_{analiza.pk}", None),
+    }
+
+
+@login_required
+def szczegoly(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    kontekst = _kontekst_szczegolow(request, analiza, request.GET.get("sekcja", "wiadomosc"),
+                                    request.GET.get("wiadomosc", "0"))
     szablon = "analizy/_glowna.html" if request.headers.get("HX-Request") else "analizy/szczegoly.html"
     return render(request, szablon, kontekst)
 
@@ -188,6 +214,28 @@ def odswiez(request, pk):
     n = zaplanuj(analiza, wymus=True)
     Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="odswiezenie", szczegoly={"zadania": n})
     return redirect("analizy:szczegoly", pk=analiza.pk)
+
+
+@login_required
+@require_POST
+def joe_wyslij(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    plik = request.FILES.get("plik")
+    try:
+        if plik is None:
+            raise BladZlecenia("Wskaż plik .eml lub .msg tej analizy.")
+        zlec_wysylke(analiza, request.user, plik.read())
+    except BladZlecenia as e:
+        kontekst = _kontekst_szczegolow(request, analiza, "joe", "0")
+        kontekst["joe_blad"] = str(e)
+        return render(request, "analizy/szczegoly.html", kontekst)
+    return redirect(reverse("analizy:szczegoly", args=[analiza.pk]) + "?sekcja=joe")
+
+
+@login_required
+def joe_historia(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    return render(request, "analizy/_joe_historia.html", {"analiza": analiza, **_kontekst_joe(request, analiza)})
 
 
 @login_required

@@ -19,9 +19,10 @@
     </a>
   {% endfor %}
   <div class="odstep"></div>
-  <a class="nav-joe" href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"
-     title="Na razie otwiera Joe Sandbox. Docelowo wyśle do analizy cały mail (.eml/.msg) z linkami i załącznikami.">
-    <span>Analizuj w JOE</span><span>↗</span>
+  <a class="nav-joe{% if sekcja == 'joe' %} on{% endif %}" href="?sekcja=joe&wiadomosc={{ wid }}"
+     hx-get="?sekcja=joe&wiadomosc={{ wid }}" hx-target="#glowna" hx-push-url="true"
+     title="Wyślij cały mail (z linkami i załącznikami) do Joe Sandbox">
+    <span>Analizuj w JOE</span><span>›</span>
   </a>
 </nav>
 <section class="srodek">

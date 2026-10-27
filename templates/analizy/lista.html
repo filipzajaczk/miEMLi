@@ -4,9 +4,12 @@
   <section class="karta upload">
     <h2>Nowa analiza</h2>
     {% if blad %}<div class="blad">{{ blad }}</div>{% endif %}
-    <form method="post" action="{% url 'analizy:upload' %}" enctype="multipart/form-data">
+    <form method="post" action="{% url 'analizy:upload' %}" enctype="multipart/form-data"
+          data-potwierdz="Mail (z treścią i załącznikami) zostanie wysłany do chmury Joe Sandbox, poza firmę, i usunięty tam po 30 dniach. Kontynuować?"
+          data-potwierdz-jesli="do_joe">
       {% csrf_token %}
       <input type="file" name="plik" accept=".eml,.msg" required>
+      <label class="checkbox"><input type="checkbox" name="do_joe"> Wyślij też do Joe Sandbox</label>
       <button class="btn primary" type="submit">Analizuj</button>
     </form>
     <p class="muted">Pliki .eml i .msg do 50 MB. Plik nie jest zapisywany — tylko wynik analizy.</p>

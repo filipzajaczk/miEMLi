@@ -1,0 +1,24 @@
+<h2>Joe Sandbox</h2>
+<p class="muted">Do Joe Sandbox trafia cały oryginalny mail — Joe sam otwiera linki i załączniki. Wysyłka idzie Twoim
+  kontem Joe (Live Interaction), analiza jest usuwana z Joe po 30 dniach.</p>
+
+{% if joe_komunikat %}<div class="blad">{{ joe_komunikat }}</div>{% endif %}
+{% if joe_blad %}<div class="blad">{{ joe_blad }}</div>{% endif %}
+
+<section class="karta joe-wysylka">
+  <h2>Wyślij cały mail do Joe Sandbox</h2>
+  {% if not joe_ma_klucz %}
+    <p>Ustaw klucz Joe w profilu, aby wysyłać maile: <a href="{% url 'profil' %}">przejdź do profilu</a>.</p>
+  {% endif %}
+  <p class="muted">Oryginał nie jest przechowywany w miemli — wskaż ponownie ten sam plik (.eml / .msg).
+    Zostanie sprawdzony po SHA256.</p>
+  <form method="post" action="{% url 'analizy:joe_wyslij' analiza.pk %}" enctype="multipart/form-data"
+        data-potwierdz="Mail (z treścią i załącznikami) zostanie wysłany do chmury Joe Sandbox, poza firmę, i usunięty tam po 30 dniach. Kontynuować?">
+    {% csrf_token %}
+    <input type="file" name="plik" accept=".eml,.msg" required{% if not joe_ma_klucz %} disabled{% endif %}>
+    <button class="btn primary" type="submit"{% if not joe_ma_klucz %} disabled{% endif %}>Wyślij do Joe Sandbox</button>
+  </form>
+</section>
+
+<h2>Historia wysyłek</h2>
+{% include "analizy/_joe_historia.html" %}

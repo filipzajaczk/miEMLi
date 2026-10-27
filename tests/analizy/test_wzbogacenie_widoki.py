@@ -221,7 +221,7 @@ def test_joe_jako_wyrozniona_zakladka_nie_kolumna(zalogowany, analiza):
     assert "jbxcloud.joesecurity.org" not in tabela
     nav = t[t.find('<nav class="nav">'):t.find("</nav>")]
     assert 'class="nav-joe"' in nav and "Analizuj w JOE" in nav
-    assert 'href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"' in nav
+    assert "sekcja=joe" in nav  # od integracji z Joe: sekcja w aplikacji zamiast linku zewnętrznego
 
 
 def test_kropka_w_panelu(zalogowany, analiza):

@@ -16,6 +16,10 @@ document.addEventListener("click", (zdarzenie) => {
 
 // Potwierdzenie przed wysłaniem formularza (np. usunięcie analizy) — bez JS inline, zgodnie z CSP.
 document.addEventListener("submit", (zdarzenie) => {
-  const pytanie = zdarzenie.target.dataset && zdarzenie.target.dataset.potwierdz;
+  const formularz = zdarzenie.target;
+  const pytanie = formularz.dataset && formularz.dataset.potwierdz;
+  // data-potwierdz-jesli: pytaj tylko, gdy zaznaczone jest wskazane pole (np. „Wyślij też do Joe”)
+  const warunek = formularz.dataset && formularz.dataset.potwierdzJesli;
+  if (warunek && !(formularz.elements[warunek] && formularz.elements[warunek].checked)) return;
   if (pytanie && !window.confirm(pytanie)) zdarzenie.preventDefault();
 });

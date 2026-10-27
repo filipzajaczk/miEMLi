@@ -19,6 +19,9 @@ SEKCJE = [
 ]
 
 
+SEKCJE_DODATKOWE = {"joe": "Joe Sandbox"}  # poza zwykłą listą nawigacji (wyróżniona pozycja w menu)
+
+
 def _zalaczniki(lista: list[dict]) -> Iterator[dict]:
     for z in lista:
         yield z

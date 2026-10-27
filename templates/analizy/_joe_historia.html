@@ -1,0 +1,21 @@
+<div id="joe-historia"{% if joe_trwa %} hx-get="{% url 'analizy:joe_historia' analiza.pk %}" hx-trigger="every 5s" hx-swap="outerHTML"{% endif %}>
+{% if zgloszenia %}
+<table>
+  <thead><tr><th>Analityk</th><th>Zlecono</th><th>Status</th><th>Werdykt Joe</th><th></th></tr></thead>
+  <tbody>
+  {% for z in zgloszenia %}
+    <tr>
+      <td>{{ z.uzytkownik.username }}</td>
+      <td class="muted">{{ z.utworzono|date:"Y-m-d H:i" }}</td>
+      <td>{% if z.status in "zlecone wyslane w_kolejce trwa" %}<span class="pulsuje">{{ z.get_status_display }}</span>{% else %}{{ z.get_status_display }}{% endif %}
+        {% if z.blad %}<div class="muted">{{ z.blad }}</div>{% endif %}</td>
+      <td>{% if z.werdykt %}<span class="b {% if z.werdykt == 'zlosliwy' %}bad{% elif z.werdykt == 'podejrzany' %}warn{% elif z.werdykt == 'czysty' %}ok{% else %}neutral{% endif %}">{% if z.werdykt == 'zlosliwy' %}złośliwy{% elif z.werdykt == 'podejrzany' %}podejrzany{% elif z.werdykt == 'czysty' %}czysty{% else %}nieznany{% endif %}</span>{% if z.wynik is not None %} <span class="muted">{{ z.wynik }}/100</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+      <td>{% if z.link %}<a href="{{ z.link }}" target="_blank" rel="noopener noreferrer">Otwórz w Joe ↗</a>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">Ta analiza nie była jeszcze wysyłana do Joe Sandbox.</p>
+{% endif %}
+</div>
