@@ -33,16 +33,10 @@ STYLE = {
 USUWANE_Z_TRESCIA = {"script", "style", "head", "title", "form", "iframe", "object", "embed", "noscript", "template", "svg", "math"}
 
 
-def _data_uri(z: Zalacznik) -> str:
-    return f"data:{z.typ_mime};base64,{base64.b64encode(z.dane).decode('ascii')}"
-
-
-def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], max_obraz: int = 2 * 1024 * 1024) -> str:
-    obrazy = {
-        z.content_id: z
-        for z in zalaczniki
-        if z.content_id and z.typ_mime.startswith("image/") and z.rozmiar <= max_obraz
-    }
+def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, bytes | str] | None = None) -> str:
+    """obrazy: content_id → przekodowany PNG albo powód pominięcia. Oryginalne bajty obrazków z maila
+    nigdy nie trafiają do wyniku — brak wpisu oznacza obrazek pominięty."""
+    obrazy = obrazy or {}
     soup = BeautifulSoup(html, "html.parser")
 
     for tag in soup.find_all(["meta", "base", "link"]):
@@ -60,9 +54,15 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], max_obraz: int = 2 *
             tag.attrs.pop(atrybut, None)
         if tag.name == "img":
             src = (tag.get("src") or "").strip()
-            obraz = obrazy.get(src[4:].strip("<>")) if src.lower().startswith("cid:") else None
-            if obraz is not None:
-                tag["src"] = _data_uri(obraz)
+            if src.lower().startswith("cid:"):
+                obraz = obrazy.get(src[4:].strip("<>"))
+                if isinstance(obraz, bytes):
+                    tag["src"] = f"data:image/png;base64,{base64.b64encode(obraz).decode('ascii')}"
+                else:
+                    powod = f": {obraz}" if obraz else ""
+                    zastepczy = soup.new_tag("span", attrs={"class": "obrazek-pominiety"})
+                    zastepczy.string = f"[obrazek pominięty{powod}]"
+                    tag.replace_with(zastepczy)
             else:
                 tag.attrs.pop("src", None)
         else:

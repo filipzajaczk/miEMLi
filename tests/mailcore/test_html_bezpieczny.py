@@ -1,3 +1,4 @@
+import base64
 import pytest
 
 from mailcore.analiza import analizuj
@@ -39,17 +40,22 @@ def test_link_zamieniony_na_span():
     assert "href" not in wynik
 
 
-def test_cid_jako_data_uri():
+def test_cid_jako_data_uri_z_przekodowanego():
+    z = zalacznik_z_danych("logo.png", "image/png", PNG, content_id="logo1", inline=True)
+    wynik = bezpieczny_html('<img src="cid:logo1">', [z], obrazy={"logo1": b"\x89PNGprzekodowany"})
+    assert f'src="data:image/png;base64,{base64.b64encode(b"\x89PNGprzekodowany").decode()}"' in wynik
+    assert base64.b64encode(PNG).decode() not in wynik  # nigdy oryginalne bajty
+
+
+def test_cid_bez_mapy_pominiety():
     z = zalacznik_z_danych("logo.png", "image/png", PNG, content_id="logo1", inline=True)
     wynik = bezpieczny_html('<img src="cid:logo1">', [z])
-    assert 'src="data:image/png;base64,' in wynik
+    assert "obrazek-pominiety" in wynik and "data:" not in wynik
 
 
-def test_cid_za_duzy_lub_nie_obraz_usuniety():
-    duzy = zalacznik_z_danych("a.png", "image/png", PNG, content_id="a")
-    exe = zalacznik_z_danych("a.exe", "application/octet-stream", b"MZ", content_id="b")
-    wynik = bezpieczny_html('<img src="cid:a"><img src="cid:b">', [duzy, exe], max_obraz=5)
-    assert "data:" not in wynik
+def test_cid_z_powodem():
+    wynik = bezpieczny_html('<img src="cid:x">', [], obrazy={"x": "format TIFF"})
+    assert "[obrazek pominięty: format TIFF]" in wynik
 
 
 def test_do_json_ma_html_bezpieczny_a_nie_surowy(zbuduj_mail):

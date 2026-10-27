@@ -12,7 +12,7 @@ def _data(d: datetime | None) -> str | None:
     return d.isoformat() if d else None
 
 
-def _zalacznik(z: Zalacznik) -> dict:
+def _zalacznik(z: Zalacznik, obrazki) -> dict:
     return {
         "nazwa": z.nazwa,
         "typ_mime": z.typ_mime,
@@ -24,12 +24,15 @@ def _zalacznik(z: Zalacznik) -> dict:
         "inline": z.inline,
         "zaszyfrowany": z.zaszyfrowany,
         "haslo": z.haslo,
-        "dzieci": [_zalacznik(d) for d in z.dzieci],
-        "wiadomosc": _wiadomosc(z.wiadomosc) if z.wiadomosc else None,
+        "dzieci": [_zalacznik(d, obrazki) for d in z.dzieci],
+        "wiadomosc": _wiadomosc(z.wiadomosc, obrazki) if z.wiadomosc else None,
     }
 
 
-def _wiadomosc(w: Wiadomosc) -> dict:
+def _wiadomosc(w: Wiadomosc, obrazki) -> dict:
+    wlasne = (obrazki or {}).get(w.id, [])
+    mapa = {o.wpis["content_id"]: (o.png if o.png is not None else o.wpis.get("powod", ""))
+            for o in wlasne if o.wpis["content_id"]}
     return {
         "id": w.id,
         "naglowki": [list(p) for p in w.naglowki],
@@ -38,8 +41,9 @@ def _wiadomosc(w: Wiadomosc) -> dict:
         "do": w.do,
         "data": _data(w.data),
         "tekst": w.tekst,
-        "html_bezpieczny": bezpieczny_html(w.html, w.zalaczniki) if w.html else None,
-        "zalaczniki": [_zalacznik(z) for z in w.zalaczniki],
+        "html_bezpieczny": bezpieczny_html(w.html, w.zalaczniki, mapa) if w.html else None,
+        "obrazki": [o.wpis for o in wlasne],
+        "zalaczniki": [_zalacznik(z, obrazki) for z in w.zalaczniki],
         "ostrzezenia": [asdict(o) for o in w.ostrzezenia],
     }
 
@@ -62,9 +66,10 @@ def bez_nul(obj):
     return obj
 
 
-def do_json(w: Wiadomosc, wynik: WynikAnalizy) -> dict:
+def do_json(w: Wiadomosc, wynik: WynikAnalizy, obrazki: dict | None = None) -> dict:
+    """obrazki: wynik piaskownica.obrazki.przetworz_obrazki (klucz = id wiadomości)."""
     return bez_nul({
-        "wiadomosc": _wiadomosc(w),
+        "wiadomosc": _wiadomosc(w, obrazki),
         "analiza": {id: _analiza(a) for id, a in wynik.wiadomosci.items()},
         "ioc": [asdict(i) for i in wynik.ioc],
     })
