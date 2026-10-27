@@ -2,7 +2,9 @@
 
 import re
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -13,11 +15,16 @@ from .models import Zdarzenie, profil_dla
 FORMAT_KLUCZA = re.compile(r"[A-Za-z0-9]{20,128}")
 
 
+@sensitive_post_parameters("klucz_joe")
+@sensitive_variables("klucz")
 @login_required
 def profil(request):
     p = profil_dla(request.user)
     blad = None
-    if request.method == "POST":
+    wlaczone = bool(settings.JOE_KLUCZ_PUBLICZNY)
+    if request.method == "POST" and not wlaczone:
+        blad = "Integracja z Joe Sandbox nie jest skonfigurowana."
+    elif request.method == "POST":
         akcja = request.POST.get("akcja")
         if akcja == "zapisz":
             klucz = request.POST.get("klucz_joe", "").strip()
@@ -30,7 +37,9 @@ def profil(request):
                 p.joe_klucz_zmieniono = timezone.now()
                 p.save()
                 Zdarzenie.objects.create(uzytkownik=request.user, typ="joe_klucz_ustawiony")
-                zlec_sprawdzenie_klucza(request.user.pk)
+                if not zlec_sprawdzenie_klucza(request.user.pk):
+                    p.joe_klucz_stan = "nieznany"
+                    p.save(update_fields=["joe_klucz_stan"])
                 return redirect("profil")
         elif akcja == "usun":
             p.joe_klucz_szyfr = None
@@ -40,4 +49,4 @@ def profil(request):
             p.save()
             Zdarzenie.objects.create(uzytkownik=request.user, typ="joe_klucz_usuniety")
             return redirect("profil")
-    return render(request, "analizy/profil.html", {"profil": p, "blad": blad})
+    return render(request, "analizy/profil.html", {"profil": p, "blad": blad, "joe_wlaczone": wlaczone})

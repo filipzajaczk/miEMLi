@@ -38,6 +38,11 @@
 - RTIR odłożony na później (decyzja użytkownika) — najpierw integracja z Joe Sandbox.
 - Proxy wychodzące dla workera: zawęzić ruch do GTI, Censys i Joe (dziś worker ma ogólny dostęp do internetu).
 
+## Odłożone drobiazgi z przeglądu Joe (2026-10-27)
+
+- 401/403 w trakcie wysyłki lub śledzenia nie zmienia stanu klucza w profilu na „odrzucony”.
+- Brak łącznego limitu czasu na odpowiedź Joe (timeout httpx liczony na pojedynczy odczyt).
+
 ## Odłożone drobiazgi z przeglądu sandboxa (2026-10-27)
 
 - Drzewo `wiadomosc` z parsera walidowane tylko płytko — przejęty parser może wywołać błąd 500 jednej analizy.

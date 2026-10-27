@@ -151,6 +151,8 @@ CENSYS_ORG_ID = os.environ.get("CENSYS_ORG_ID", "").strip()  # opcjonalne
 JOE_KLUCZ_PUBLICZNY = os.environ.get("JOE_KLUCZ_PUBLICZNY", "").strip()
 JOE_KLUCZ_PRYWATNY = os.environ.get("JOE_KLUCZ_PRYWATNY", "").strip()
 JOE_LIMIT_DZIENNY = int(os.environ.get("JOE_LIMIT_DZIENNY", "20"))
+# Raporty błędów (strona DEBUG, e-maile do adminów) ukrywają także ustawienia z „KLUCZ”/„HASLO”
+DEFAULT_EXCEPTION_REPORTER_FILTER = "miemli.raporty.FiltrRaportu"
 JOE_API_URL = os.environ.get("JOE_API_URL", "https://jbxcloud.joesecurity.org/api").rstrip("/")
 # Kontener web nie dostaje kluczy (ma je tylko worker) — wie jedynie, którzy dostawcy są włączeni
 GTI_WLACZONE = _bool("GTI_WLACZONE", bool(GTI_API_KEY))

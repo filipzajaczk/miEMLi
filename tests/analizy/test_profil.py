@@ -61,3 +61,36 @@ def test_get_nie_zmienia(zalogowany, analityk):
 
 def test_link_profilu_w_pasku(zalogowany):
     assert f'href="{reverse("profil")}"' in zalogowany.get(reverse("analizy:lista")).content.decode()
+
+
+def test_klucz_ukryty_w_raportach_bledow(analityk, rf):
+    from analizy.profil import profil as widok
+
+    zadanie = rf.post("/profil/", {"akcja": "zapisz", "klucz_joe": KLUCZ})
+    zadanie.user = analityk
+    zadanie.session = {}
+    widok(zadanie)
+    assert list(zadanie.sensitive_post_parameters) == ["klucz_joe"]
+
+
+def test_ustawienia_z_kluczami_ukryte(settings):
+    from django.views.debug import get_default_exception_reporter_filter
+
+    settings.JOE_KLUCZ_PRYWATNY = "TAJNE"
+    bezpieczne = get_default_exception_reporter_filter().get_safe_settings()
+    assert bezpieczne["JOE_KLUCZ_PRYWATNY"] != "TAJNE"
+
+
+def test_joe_nieskonfigurowany_w_profilu(zalogowany, settings):
+    settings.JOE_KLUCZ_PUBLICZNY = ""
+    t = zalogowany.get(reverse("profil")).content.decode()
+    assert "nie jest skonfigurowana" in t and 'name="klucz_joe"' not in t
+    assert zapisz(zalogowany, KLUCZ).status_code == 200
+
+
+def test_sprawdzanie_nie_wisi_gdy_redis_niedostepny(zalogowany, analityk, monkeypatch):
+    from analizy import profil as modul
+
+    monkeypatch.setattr(modul, "zlec_sprawdzenie_klucza", lambda uid: False)
+    zapisz(zalogowany, KLUCZ)
+    assert profil_dla(analityk).joe_klucz_stan == "nieznany"

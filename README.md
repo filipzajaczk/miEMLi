@@ -48,6 +48,10 @@ przechowywany, weryfikacja SHA256) albo checkbox „Wyślij też do Joe Sandbox�
 Live Interaction, internet, bez url-reputation, usunięcie z Joe po 30 dniach; limit `JOE_LIMIT_DZIENNY`
 wysyłek na analityka. Status i werdykt Joe śledzi worker (co 30 s, maks. 2 h).
 
+Worker wykonuje wyłącznie zadania z listy dozwolonych (`analizy/rq_worker.py`) — przejęty `web`
+(który zna hasło Redisa) nie zleci mu dowolnej funkcji. Zapisane klucze Joe są bezpieczne przy
+przejęciu `web` i bazy; klucz wpisany w profilu już po przejęciu `web` mógłby zostać przechwycony.
+
 ### Sandbox parsera (izolacja plików od atakującego)
 
 Analizowane pliki dekoduje wyłącznie kontener `parser`: bez sieci (poza połączeniem od `web`), bez

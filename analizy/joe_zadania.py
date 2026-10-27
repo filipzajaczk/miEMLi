@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from integracje import joe
 
-from .klucze_joe import BladOdszyfrowania, odszyfruj_klucz, odszyfruj_plik, zaszyfruj_plik
+from .klucze_joe import BladOdszyfrowania, BrakKluczaPrywatnego, odszyfruj_klucz, odszyfruj_plik, zaszyfruj_plik
 from .models import ProfilAnalityka, ZgloszenieJoe, Zdarzenie, profil_dla
 
 logger = logging.getLogger(__name__)
@@ -30,19 +30,23 @@ class BladZlecenia(Exception):
     pass
 
 
-def _kolejkuj(funkcja, *args, opoznienie: int = 0) -> None:
-    """Zadania Joe nie zostają w Redisie po wykonaniu (także po błędzie)."""
+def _kolejkuj(funkcja, *args, opoznienie: int = 0) -> bool:
+    """Zadania Joe nie zostają w Redisie po wykonaniu (także po błędzie). False = kolejka niedostępna."""
     try:
         kolejka = django_rq.get_queue("default")
         if opoznienie:
             kolejka.enqueue_in(timedelta(seconds=opoznienie), funkcja, *args, result_ttl=0, failure_ttl=0)
         else:
             kolejka.enqueue(funkcja, *args, result_ttl=0, failure_ttl=0)
+        return True
     except Exception:
         logger.warning("Nie udało się zakolejkować zadania Joe (Redis niedostępny?)")
+        return False
 
 
 def zlec_wysylke(analiza, uzytkownik, dane: bytes) -> ZgloszenieJoe:
+    if not settings.JOE_KLUCZ_PUBLICZNY:
+        raise BladZlecenia("Integracja z Joe Sandbox nie jest skonfigurowana.")
     if hashlib.sha256(dane).hexdigest() != analiza.sha256:
         raise BladZlecenia("To nie jest ten sam plik co w analizie.")
     with transaction.atomic():
@@ -52,22 +56,29 @@ def zlec_wysylke(analiza, uzytkownik, dane: bytes) -> ZgloszenieJoe:
         if not profil.joe_klucz_szyfr:
             raise BladZlecenia("Ustaw klucz Joe w profilu.")
         teraz = timezone.now()
-        if ZgloszenieJoe.objects.filter(analiza=analiza, uzytkownik=uzytkownik,
-                                        utworzono__gte=teraz - DUPLIKAT).exists():
+        # nieudane zgłoszenia nie blokują ponowienia ani nie zużywają limitu
+        udane = ZgloszenieJoe.objects.filter(uzytkownik=uzytkownik).exclude(status__in=("blad", "limit"))
+        if udane.filter(analiza=analiza, utworzono__gte=teraz - DUPLIKAT).exists():
             raise BladZlecenia("Już wysłano — poczekaj na wynik.")
         polnoc = timezone.localtime(teraz).replace(hour=0, minute=0, second=0, microsecond=0)
-        if ZgloszenieJoe.objects.filter(uzytkownik=uzytkownik, utworzono__gte=polnoc).count() >= settings.JOE_LIMIT_DZIENNY:
+        if udane.filter(utworzono__gte=polnoc).count() >= settings.JOE_LIMIT_DZIENNY:
             raise BladZlecenia("Osiągnięto dzienny limit wysyłek do Joe.")
         zgloszenie = ZgloszenieJoe.objects.create(analiza=analiza, uzytkownik=uzytkownik, status="zlecone")
         Zdarzenie.objects.create(uzytkownik=uzytkownik, analiza=analiza, typ="joe_wyslanie",
                                  szczegoly={"zgloszenie": zgloszenie.pk})
         szyfrogram = zaszyfruj_plik(zgloszenie.pk, dane)
-        transaction.on_commit(lambda: _kolejkuj(wyslij_do_joe, zgloszenie.pk, szyfrogram))
+        transaction.on_commit(lambda: _po_zapisie(zgloszenie.pk, szyfrogram))
     return zgloszenie
 
 
-def zlec_sprawdzenie_klucza(uzytkownik_id: int) -> None:
-    _kolejkuj(sprawdz_klucz_joe, uzytkownik_id)
+def _po_zapisie(zgloszenie_id: int, szyfrogram: str) -> None:
+    if not _kolejkuj(wyslij_do_joe, zgloszenie_id, szyfrogram):
+        ZgloszenieJoe.objects.filter(pk=zgloszenie_id).update(
+            status="blad", blad="Kolejka zadań niedostępna — spróbuj ponownie za chwilę.")
+
+
+def zlec_sprawdzenie_klucza(uzytkownik_id: int) -> bool:
+    return _kolejkuj(sprawdz_klucz_joe, uzytkownik_id)
 
 
 def _ustaw(zgloszenie: ZgloszenieJoe, **pola) -> None:
@@ -83,15 +94,27 @@ def _klucz_analityka(zgloszenie: ZgloszenieJoe) -> str | None:
         return None
     try:
         return odszyfruj_klucz(zgloszenie.uzytkownik_id, profil.joe_klucz_szyfr)
+    except BrakKluczaPrywatnego:
+        logger.error("Worker bez JOE_KLUCZ_PRYWATNY — wysyłki do Joe niemożliwe")
+        return None
     except BladOdszyfrowania:
         ProfilAnalityka.objects.filter(pk=profil.pk).update(joe_klucz_stan="odrzucony")
         return None
 
 
 def wyslij_do_joe(zgloszenie_id: int, szyfrogram: str, proba: int = 0) -> None:
-    zgloszenie = ZgloszenieJoe.objects.select_related("analiza").filter(pk=zgloszenie_id).first()
-    if zgloszenie is None or zgloszenie.status not in ("zlecone",):
+    # atomowe przejęcie: powtórzone/podmienione zadanie nie wyśle maila drugi raz
+    if not ZgloszenieJoe.objects.filter(pk=zgloszenie_id, status="zlecone").update(status="wysylanie"):
         return
+    zgloszenie = ZgloszenieJoe.objects.select_related("analiza").get(pk=zgloszenie_id)
+    try:
+        _wyslij(zgloszenie, szyfrogram, proba)
+    except Exception:
+        logger.exception("joe zgloszenie=%s nieoczekiwany błąd wysyłki", zgloszenie_id)
+        _ustaw(zgloszenie, status="blad", blad="Błąd wewnętrzny wysyłki.")
+
+
+def _wyslij(zgloszenie: ZgloszenieJoe, szyfrogram: str, proba: int) -> None:
     try:
         dane = odszyfruj_plik(zgloszenie.pk, szyfrogram)
     except BladOdszyfrowania:
@@ -109,7 +132,9 @@ def wyslij_do_joe(zgloszenie_id: int, szyfrogram: str, proba: int = 0) -> None:
     opoznienia = OPOZNIENIA.get(wynik.status, ())
     if wynik.ponawiac and proba < len(opoznienia):
         logger.info("joe zgloszenie=%s ponowienie=%s status=%s", zgloszenie.pk, proba + 1, wynik.status)
-        _kolejkuj(wyslij_do_joe, zgloszenie.pk, szyfrogram, proba + 1, opoznienie=opoznienia[proba])
+        _ustaw(zgloszenie, status="zlecone")
+        if not _kolejkuj(wyslij_do_joe, zgloszenie.pk, szyfrogram, proba + 1, opoznienie=opoznienia[proba]):
+            _ustaw(zgloszenie, status="blad", blad="Kolejka zadań niedostępna — spróbuj ponownie za chwilę.")
         return
     _ustaw(zgloszenie, status="limit" if wynik.status == "limit" else "blad", blad=wynik.blad)
 
@@ -118,6 +143,14 @@ def sprawdz_joe(zgloszenie_id: int) -> None:
     zgloszenie = ZgloszenieJoe.objects.filter(pk=zgloszenie_id).first()
     if zgloszenie is None or zgloszenie.status not in ZgloszenieJoe.AKTYWNE or not zgloszenie.id_zgloszenia:
         return
+    try:
+        _sprawdz(zgloszenie)
+    except Exception:
+        logger.exception("joe zgloszenie=%s nieoczekiwany błąd śledzenia", zgloszenie_id)
+        _ustaw(zgloszenie, status="blad", blad="Błąd wewnętrzny śledzenia statusu.")
+
+
+def _sprawdz(zgloszenie: ZgloszenieJoe) -> None:
     klucz = _klucz_analityka(zgloszenie)
     if klucz is None:
         return _ustaw(zgloszenie, status="blad", blad="Ustaw ponownie klucz Joe w profilu.")
@@ -142,6 +175,9 @@ def sprawdz_klucz_joe(uzytkownik_id: int) -> None:
         return
     try:
         klucz = odszyfruj_klucz(uzytkownik_id, profil.joe_klucz_szyfr)
+    except BrakKluczaPrywatnego:
+        logger.error("Worker bez JOE_KLUCZ_PRYWATNY — nie można sprawdzić klucza Joe")
+        return
     except BladOdszyfrowania:
         ProfilAnalityka.objects.filter(pk=profil.pk).update(joe_klucz_stan="odrzucony")
         return

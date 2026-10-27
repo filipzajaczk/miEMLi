@@ -5,6 +5,9 @@
   <div class="waska karta profil">
     <h1>Profil: {{ user.username }}</h1>
     <h2>Klucz Joe Sandbox</h2>
+    {% if not joe_wlaczone %}
+    <p class="blad">Integracja z Joe Sandbox nie jest skonfigurowana (brak JOE_KLUCZ_PUBLICZNY).</p>
+    {% else %}
     <p class="muted">Klucz jest zapisywany zaszyfrowany i nigdy nie jest wyświetlany. Wysyłki do Joe idą Twoim kontem.</p>
     <p>
       {% if profil.joe_klucz_szyfr %}
@@ -15,6 +18,7 @@
       {% else %}<span class="muted">Nieustawiony.</span>{% endif %}
     </p>
     {% if blad %}<div class="blad">{{ blad }}</div>{% endif %}
+    {% if joe_wlaczone %}
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="akcja" value="zapisz">
@@ -22,12 +26,14 @@
       <input type="password" id="klucz_joe" name="klucz_joe" autocomplete="off" spellcheck="false" required>
       <button class="btn primary" type="submit">Zapisz klucz</button>
     </form>
+    {% endif %}
     {% if profil.joe_klucz_szyfr %}
     <form method="post" data-potwierdz="Usunąć klucz Joe z profilu?">
       {% csrf_token %}
       <input type="hidden" name="akcja" value="usun">
       <button class="btn usun" type="submit">Usuń klucz</button>
     </form>
+    {% endif %}
     {% endif %}
   </div>
 </main>

@@ -137,10 +137,10 @@ def profil_dla(uzytkownik) -> ProfilAnalityka:
 class ZgloszenieJoe(models.Model):
     """Wysyłka całego maila do Joe Sandbox (kluczem analityka)."""
 
-    STATUSY = [("zlecone", "Zlecone"), ("wyslane", "Wysłane"), ("w_kolejce", "W kolejce w Joe"),
+    STATUSY = [("zlecone", "Zlecone"), ("wysylanie", "Wysyłanie"), ("wyslane", "Wysłane"), ("w_kolejce", "W kolejce w Joe"),
                ("trwa", "Analiza trwa"), ("zakonczone", "Zakończone"), ("blad", "Błąd"),
                ("limit", "Limit Joe"), ("czas_minal", "Przekroczony czas śledzenia")]
-    AKTYWNE = ("zlecone", "wyslane", "w_kolejce", "trwa")
+    AKTYWNE = ("zlecone", "wysylanie", "wyslane", "w_kolejce", "trwa")
 
     analiza = models.ForeignKey(Analiza, on_delete=models.CASCADE, related_name="zgloszenia_joe")
     uzytkownik = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="zgloszenia_joe")

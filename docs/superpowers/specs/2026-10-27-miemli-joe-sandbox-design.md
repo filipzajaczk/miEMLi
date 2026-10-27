@@ -98,9 +98,11 @@ wychodzącego workera do konkretnych hostów (zapisane w `NOTES.md` na później
    `analiza-<id>.eml` lub `.msg` (rozszerzenie z oryginalnej nazwy, tylko te dwa); zapis
    `id_zgloszenia`, status `wyslane`, zaplanowanie `sprawdz_joe` za 30 s.
 3. **Śledzenie (worker)** `sprawdz_joe(zgloszenie_id)` co 30 s, maks. 2 h od wysyłki:
-   `submission/info` → pierwsza analiza (`webid`) → `analysis/info` → status (`submitted`→`w_kolejce`,
-   `running`→`trwa`, `finished`→`zakonczone`) i po zakończeniu werdykt (`detection`:
-   `malicious`→`zlosliwy`, `suspicious`→`podejrzany`, `clean`→`czysty`, inne→`nieznany`) oraz `score`.
+   `submission/info` → status zgłoszenia (`submitted`→`w_kolejce`, `running`→`trwa`,
+   `finished`→`zakonczone`), `webid` z `analyses[0]`, a po zakończeniu werdykt z
+   `most_relevant_analysis` (`detection`: `malicious`→`zlosliwy`, `suspicious`→`podejrzany`,
+   `clean`→`czysty`, inne→`nieznany`) oraz `score` 0–100 (poza zakresem → brak). Zweryfikowane na
+   prawdziwym koncie 2026-10-27 (zamiast osobnego `analysis/info`).
    Po 2 h bez zakończenia → `czas_minal` (link zostaje).
 4. **Ekran**: sekcja Joe odświeżana fragmentem htmx co 5 s tylko, gdy jest zgłoszenie w statusach
    `zlecone`/`wyslane`/`w_kolejce`/`trwa`.
@@ -133,6 +135,11 @@ wychodzącego workera do konkretnych hostów (zapisane w `NOTES.md` na później
 - **Redis**: `--save "" --appendonly no` (brak zrzutów na dysk); zadania z `result_ttl=0`,
   `failure_ttl=0`.
 - **Logi**: ID zgłoszenia, status, kod HTTP — nigdy klucza, pliku ani nazwy pliku.
+- **Worker wykonuje wyłącznie zadania z listy dozwolonych** (`analizy.rq_worker.DOZWOLONE_ZADANIA`):
+  web zna hasło Redisa, więc bez tej listy przejęty web mógłby zlecić workerowi dowolną funkcję
+  i odczytać klucz prywatny. Ograniczenie: klucze wpisane w profilu *po* przejęciu web mogą zostać
+  przechwycone w trakcie wpisywania.
+- **Raporty błędów** ukrywają `klucz_joe` (POST) i ustawienia z „KLUCZ”/„HASLO” w nazwie.
 - **Ryzyko zaakceptowane**: mail trafia do chmury Joe (potwierdzenie + usunięcie po 30 dniach);
   worker ma ogólny dostęp do internetu (proxy wychodzące — później).
 

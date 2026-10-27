@@ -9,7 +9,7 @@
           data-potwierdz-jesli="do_joe">
       {% csrf_token %}
       <input type="file" name="plik" accept=".eml,.msg" required>
-      <label class="checkbox"><input type="checkbox" name="do_joe"> Wyślij też do Joe Sandbox</label>
+      {% if joe_wlaczone %}<label class="checkbox"><input type="checkbox" name="do_joe"> Wyślij też do Joe Sandbox</label>{% endif %}
       <button class="btn primary" type="submit">Analizuj</button>
     </form>
     <p class="muted">Pliki .eml i .msg do 50 MB. Plik nie jest zapisywany — tylko wynik analizy.</p>

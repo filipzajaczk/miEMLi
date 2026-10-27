@@ -51,7 +51,8 @@ def _lista(request, form=None, blad=None, status=200):
     return render(
         request,
         "analizy/lista.html",
-        {"analizy": analizy, "form": form or UploadForm(), "blad": blad},
+        {"analizy": analizy, "form": form or UploadForm(), "blad": blad,
+         "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY)},
         status=status,
     )
 
@@ -141,11 +142,21 @@ def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> di
 
 
 def _kontekst_joe(request, analiza: Analiza) -> dict:
+    # zgłoszenia, które utknęły (np. utracone zadanie po restarcie Redisa), nie pulsują w nieskończoność
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from .joe_zadania import SLEDZENIE_MAKS
+    analiza.zgloszenia_joe.filter(
+        status__in=ZgloszenieJoe.AKTYWNE, utworzono__lt=timezone.now() - SLEDZENIE_MAKS - timedelta(minutes=10)
+    ).update(status="czas_minal", blad="Brak odpowiedzi workera.")
     zgloszenia = list(analiza.zgloszenia_joe.select_related("uzytkownik"))
     return {
         "zgloszenia": zgloszenia,
         "joe_trwa": any(z.status in ZgloszenieJoe.AKTYWNE for z in zgloszenia),
         "joe_ma_klucz": bool(profil_dla(request.user).joe_klucz_szyfr),
+        "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY),
         "joe_komunikat": request.session.pop(f"joe_komunikat_{analiza.pk}", None),
     }
 

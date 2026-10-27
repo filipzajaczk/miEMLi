@@ -25,7 +25,8 @@ def para(settings):
 @pytest.fixture
 def kolejka(monkeypatch):
     wywolania = []
-    monkeypatch.setattr(jz, "_kolejkuj", lambda f, *a, opoznienie=0: wywolania.append((f.__name__, a, opoznienie)))
+    monkeypatch.setattr(jz, "_kolejkuj",
+                        lambda f, *a, opoznienie=0: wywolania.append((f.__name__, a, opoznienie)) or True)
     return wywolania
 
 
@@ -217,3 +218,95 @@ def test_logi_bez_klucza_i_nazwy(zgloszenie, kolejka, joe_atrapa, caplog):
     z, szyfrogram = zgloszenie
     jz.wyslij_do_joe(z.pk, szyfrogram)
     assert KLUCZ not in caplog.text and "Faktura_tajna" not in caplog.text
+
+
+# --- z końcowego przeglądu ---
+
+def test_kolejka_niedostepna_oznacza_blad(analiza, z_kluczem, probka, monkeypatch, django_capture_on_commit_callbacks):
+    monkeypatch.setattr(jz, "_kolejkuj", lambda *a, **kw: False)
+    z = zlec(analiza, z_kluczem, probka("phishing_klasyczny"), django_capture_on_commit_callbacks)
+    z.refresh_from_db()
+    assert z.status == "blad" and "Kolejka" in z.blad
+
+
+@pytest.mark.parametrize("wyjatek", [RuntimeError("x"), ValueError("y")])
+def test_nieoczekiwany_wyjatek_w_wysylce(zgloszenie, kolejka, monkeypatch, wyjatek):
+    z, szyfrogram = zgloszenie
+
+    def pada(*a, **kw):
+        raise wyjatek
+
+    monkeypatch.setattr(joe, "wyslij", pada)
+    jz.wyslij_do_joe(z.pk, szyfrogram)
+    z.refresh_from_db()
+    assert z.status == "blad" and z.blad == "Błąd wewnętrzny wysyłki."
+
+
+def test_nieoczekiwany_wyjatek_w_sledzeniu(zgloszenie, kolejka, monkeypatch):
+    z, _ = zgloszenie
+    ZgloszenieJoe.objects.filter(pk=z.pk).update(status="trwa", id_zgloszenia="77", wyslano=timezone.now())
+
+    def pada(*a, **kw):
+        raise RuntimeError("x")
+
+    monkeypatch.setattr(joe, "stan_zgloszenia", pada)
+    jz.sprawdz_joe(z.pk)
+    z.refresh_from_db()
+    assert z.status == "blad"
+
+
+def test_powtorzone_zadanie_nie_wysyla_drugi_raz(zgloszenie, kolejka, joe_atrapa):
+    z, szyfrogram = zgloszenie
+    jz.wyslij_do_joe(z.pk, szyfrogram)
+    jz.wyslij_do_joe(z.pk, szyfrogram)
+    assert [w[0] for w in joe_atrapa["wywolania"]].count("wyslij") == 1
+
+
+def test_ponowienie_wraca_do_zlecone(zgloszenie, kolejka, joe_atrapa):
+    z, szyfrogram = zgloszenie
+    joe_atrapa["wyslij"] = WynikJoe("limit", blad="Wyczerpany limit Joe.", ponawiac=True)
+    jz.wyslij_do_joe(z.pk, szyfrogram, 0)
+    z.refresh_from_db()
+    assert z.status == "zlecone"
+    joe_atrapa["wyslij"] = WynikJoe("ok", {"id_zgloszenia": "9"})
+    jz.wyslij_do_joe(z.pk, szyfrogram, 1)
+    z.refresh_from_db()
+    assert z.status == "wyslane"
+
+
+def test_bledne_zgloszenie_nie_blokuje_ponowienia(analiza, z_kluczem, kolejka, probka, django_capture_on_commit_callbacks):
+    z = zlec(analiza, z_kluczem, probka("phishing_klasyczny"), django_capture_on_commit_callbacks)
+    ZgloszenieJoe.objects.filter(pk=z.pk).update(status="blad")
+    zlec(analiza, z_kluczem, probka("phishing_klasyczny"), django_capture_on_commit_callbacks)
+    assert ZgloszenieJoe.objects.count() == 2
+
+
+def test_joe_nieskonfigurowany(analiza, z_kluczem, probka, settings):
+    settings.JOE_KLUCZ_PUBLICZNY = ""
+    with pytest.raises(jz.BladZlecenia, match="Integracja z Joe Sandbox nie jest skonfigurowana."):
+        jz.zlec_wysylke(analiza, z_kluczem, probka("phishing_klasyczny"))
+
+
+def test_brak_klucza_prywatnego_w_workerze_nie_psuje_kluczy(zgloszenie, z_kluczem, kolejka, joe_atrapa, settings, caplog):
+    z, szyfrogram = zgloszenie
+    settings.JOE_KLUCZ_PRYWATNY = ""
+    jz.wyslij_do_joe(z.pk, szyfrogram)
+    jz.sprawdz_klucz_joe(z_kluczem.pk)
+    z.refresh_from_db()
+    assert z.status == "blad" and profil_dla(z_kluczem).joe_klucz_stan != "odrzucony"
+    assert any(r.levelno >= logging.ERROR for r in caplog.records)
+
+
+def test_wiszace_zgloszenie_wygasa_w_widoku(analiza, analityk):
+    from analizy.views import _kontekst_joe
+
+    z = ZgloszenieJoe.objects.create(analiza=analiza, uzytkownik=analityk, status="zlecone")
+    ZgloszenieJoe.objects.filter(pk=z.pk).update(utworzono=timezone.now() - timedelta(hours=3))
+
+    class Zadanie:
+        user = analityk
+        session = {}
+
+    kontekst = _kontekst_joe(Zadanie(), analiza)
+    z.refresh_from_db()
+    assert z.status == "czas_minal" and kontekst["joe_trwa"] is False

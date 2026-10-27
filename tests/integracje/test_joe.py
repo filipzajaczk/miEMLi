@@ -118,3 +118,10 @@ def test_info_konta():
     assert joe.info_konta(KLUCZ).status == "ok"
     trasa.respond(403)
     assert joe.info_konta(KLUCZ).status == "odrzucony"
+
+
+@respx.mock
+def test_wynik_poza_zakresem():
+    respx.post(f"{B}/v2/submission/info").respond(200, json={"data": {"status": "finished", "analyses": [{"webid": "1"}],
+                                                              "most_relevant_analysis": {"detection": "malicious", "score": 10**12}}})
+    assert joe.stan_zgloszenia(KLUCZ, "1").dane["wynik"] is None

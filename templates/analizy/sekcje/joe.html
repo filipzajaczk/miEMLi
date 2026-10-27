@@ -5,6 +5,9 @@
 {% if joe_komunikat %}<div class="blad">{{ joe_komunikat }}</div>{% endif %}
 {% if joe_blad %}<div class="blad">{{ joe_blad }}</div>{% endif %}
 
+{% if not joe_wlaczone %}
+<div class="blad">Integracja z Joe Sandbox nie jest skonfigurowana (brak JOE_KLUCZ_PUBLICZNY) — skontaktuj się z administratorem.</div>
+{% else %}
 <section class="karta joe-wysylka">
   <h2>Wyślij cały mail do Joe Sandbox</h2>
   {% if not joe_ma_klucz %}
@@ -19,6 +22,7 @@
     <button class="btn primary" type="submit"{% if not joe_ma_klucz %} disabled{% endif %}>Wyślij do Joe Sandbox</button>
   </form>
 </section>
+{% endif %}
 
 <h2>Historia wysyłek</h2>
 {% include "analizy/_joe_historia.html" %}

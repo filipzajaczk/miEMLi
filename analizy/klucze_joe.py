@@ -17,6 +17,10 @@ class BladOdszyfrowania(Exception):
     pass
 
 
+class BrakKluczaPrywatnego(BladOdszyfrowania):
+    """Błąd konfiguracji workera — nie wina klucza analityka."""
+
+
 def nowa_para() -> tuple[str, str]:
     prywatny = PrivateKey.generate()
     return (base64.b64encode(bytes(prywatny.public_key)).decode(),
@@ -30,7 +34,7 @@ def _zaszyfruj(tekst: bytes) -> str:
 
 def _odszyfruj(szyfrogram: str) -> bytes:
     if not settings.JOE_KLUCZ_PRYWATNY:
-        raise BladOdszyfrowania("brak klucza prywatnego")
+        raise BrakKluczaPrywatnego("brak JOE_KLUCZ_PRYWATNY w workerze")
     try:
         prywatny = PrivateKey(base64.b64decode(settings.JOE_KLUCZ_PRYWATNY))
         return SealedBox(prywatny).decrypt(base64.b64decode(szyfrogram, validate=True))

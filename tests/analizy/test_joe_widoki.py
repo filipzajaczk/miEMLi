@@ -16,7 +16,7 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(autouse=True)
 def srodowisko(settings, monkeypatch):
     settings.JOE_KLUCZ_PUBLICZNY, settings.JOE_KLUCZ_PRYWATNY = nowa_para()
-    monkeypatch.setattr(jz, "_kolejkuj", lambda *a, **kw: None)
+    monkeypatch.setattr(jz, "_kolejkuj", lambda *a, **kw: True)
 
 
 @pytest.fixture
@@ -126,3 +126,10 @@ def test_csp_bez_inline(zalogowany, analiza):
     t = sekcja_joe(zalogowany, analiza)
     assert not re.search(r"\son[a-z]+=", t) and ' style="' not in t
     assert not re.search(r"<script(?![^>]*\ssrc=)", t)
+
+
+def test_joe_nieskonfigurowany_ukrywa_wysylke(zalogowany, analiza, settings):
+    settings.JOE_KLUCZ_PUBLICZNY = ""
+    t = sekcja_joe(zalogowany, analiza)
+    assert "nie jest skonfigurowana" in t and 'name="plik"' not in t
+    assert 'name="do_joe"' not in zalogowany.get(reverse("analizy:lista")).content.decode()

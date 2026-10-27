@@ -87,7 +87,7 @@ services:
       context: .
       target: web
     restart: unless-stopped
-    mem_limit: 512m
+    mem_limit: 1g  # wysyłka 50 MB maila do Joe: szyfrogram + odszyfrowane kopie w pamięci
     command: ["python", "manage.py", "rqworker", "default", "--with-scheduler",
               "--serializer", "rq.serializers.JSONSerializer", "--worker-class", "analizy.rq_worker.WorkerMiemli"]
     environment:

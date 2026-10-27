@@ -109,7 +109,9 @@ def _stan(d: dict) -> dict:
     if status == "zakonczone":
         istotna = d.get("most_relevant_analysis") if isinstance(d.get("most_relevant_analysis"), dict) else pierwsza
         werdykt = _WERDYKTY.get(istotna.get("detection"), "nieznany")
-        wynik = istotna.get("score") if isinstance(istotna.get("score"), int) and not isinstance(istotna.get("score"), bool) else None
+        wynik = istotna.get("score")
+        if not isinstance(wynik, int) or isinstance(wynik, bool) or not 0 <= wynik <= 100:
+            wynik = None
     return {"status": status, "webid": webid, "werdykt": werdykt, "wynik": wynik}
 
 
