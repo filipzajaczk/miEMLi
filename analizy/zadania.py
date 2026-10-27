@@ -25,9 +25,9 @@ DOSTAWCY = {"gti": ("plik", "url", "domena", "ip"), "censys": ("ip",)}
 
 def skonfigurowany(dostawca: str) -> bool:
     if dostawca == "gti":
-        return bool(settings.GTI_API_KEY)
+        return bool(settings.GTI_WLACZONE or settings.GTI_API_KEY)
     if dostawca == "censys":
-        return bool(settings.CENSYS_API_TOKEN)
+        return bool(settings.CENSYS_WLACZONE or settings.CENSYS_API_TOKEN)
     return False
 
 

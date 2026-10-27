@@ -13,3 +13,9 @@ document.addEventListener("click", (zdarzenie) => {
     wiersz.classList.add("otwarty");
   }
 });
+
+// Potwierdzenie przed wysłaniem formularza (np. usunięcie analizy) — bez JS inline, zgodnie z CSP.
+document.addEventListener("submit", (zdarzenie) => {
+  const pytanie = zdarzenie.target.dataset && zdarzenie.target.dataset.potwierdz;
+  if (pytanie && !window.confirm(pytanie)) zdarzenie.preventDefault();
+});

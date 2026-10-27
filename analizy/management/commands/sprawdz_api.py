@@ -1,5 +1,6 @@
 """Ręczny smoke test kluczy API: prawdziwe zapytania o znane wskaźniki, bez zapisu do bazy."""
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from analizy import zadania
@@ -14,8 +15,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         bledy = 0
         for dostawca in dict.fromkeys(d for d, _, _ in PROBY):
-            if not zadania.skonfigurowany(dostawca):
-                self.stdout.write(f"{dostawca}: brak klucza")
+            klucz = settings.GTI_API_KEY if dostawca == "gti" else settings.CENSYS_API_TOKEN
+            if not klucz:
+                self.stdout.write(f"{dostawca}: brak klucza (w Dockerze uruchom w kontenerze worker)")
                 continue
             sprawdz = zadania._klient(dostawca)
             for d, typ, wartosc in PROBY:

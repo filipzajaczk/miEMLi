@@ -25,7 +25,7 @@ def test_opcje_pokazuja_komentarz_i_usuwanie(zalogowany, analiza):
     assert "<textarea" in t and "Potwierdzony phishing &lt;b&gt;pilne&lt;/b&gt;" in t
     assert reverse("analizy:notatka", args=[analiza.pk]) in t
     assert reverse("analizy:usun", args=[analiza.pk]) in t
-    assert "confirm(" in t
+    assert "data-potwierdz=" in t
 
 
 def test_zapis_komentarza(zalogowany, analiza, analityk):

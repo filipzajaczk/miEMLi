@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
+from mailcore.html_bezpieczny import ponownie_oczysc
 from mailcore.model import NieobslugiwanyPlik, PlikZaDuzy
 
 from . import prezentacja
@@ -21,7 +22,8 @@ KOMUNIKAT_NIE_MAIL = "Plik nie jest prawidłową wiadomością .eml ani .msg."
 KOMUNIKAT_ZA_DUZY = "Plik jest większy niż 50 MB."
 KOMUNIKAT_BLAD = "Nie udało się przeanalizować pliku."
 
-CSP_PODGLADU = "default-src 'none'; img-src data:; style-src 'unsafe-inline'"
+# sandbox: nawet otwarty bezpośrednio (nie w iframe) podgląd działa w osobnym, pustym originie
+CSP_PODGLADU = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
 SZABLON_PODGLADU = (
     "<!doctype html><html><head><meta charset=\"utf-8\"><style>"
     "body{font-family:system-ui,sans-serif;font-size:14px;margin:16px;color:#222;background:#fff}"
@@ -186,7 +188,7 @@ def podglad(request, pk, wid):
     w = prezentacja.wiadomosci(analiza.wynik).get(wid)
     if w is None:
         raise Http404("Nie ma takiej wiadomości")
-    odpowiedz = HttpResponse(SZABLON_PODGLADU.replace("{tresc}", w.get("html_bezpieczny") or ""))
+    odpowiedz = HttpResponse(SZABLON_PODGLADU.replace("{tresc}", ponownie_oczysc(w.get("html_bezpieczny") or "")))
     odpowiedz["Content-Security-Policy"] = CSP_PODGLADU
     odpowiedz["X-Content-Type-Options"] = "nosniff"
     odpowiedz["Referrer-Policy"] = "no-referrer"

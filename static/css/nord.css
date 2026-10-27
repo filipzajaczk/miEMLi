@@ -213,3 +213,6 @@ tr.klikalny.otwarty td { background: rgba(136, 192, 208, .06); }
 .zalaczniki-wiadomosci li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 5px 0; }
 .zalaczniki-wiadomosci .nazwa { font-weight: 500; }
 .podglad { height: 55vh; }
+/* Wcięcia drzewa IOC (zamiast stylów inline — CSP) */
+.gl-0 { padding-left: 10px; } .gl-1 { padding-left: 18px; } .gl-2 { padding-left: 36px; }
+.gl-3 { padding-left: 54px; } .gl-4 { padding-left: 72px; } .gl-5 { padding-left: 90px; } .gl-6 { padding-left: 108px; }

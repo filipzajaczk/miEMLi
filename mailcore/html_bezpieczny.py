@@ -68,8 +68,14 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], max_obraz: int = 2 *
         else:
             tag.attrs.pop("src", None)
 
+    return ponownie_oczysc(str(soup))
+
+
+def ponownie_oczysc(html: str) -> str:
+    """Sama allowlista nh3 — także przy wyświetlaniu HTML zapisanego wcześniej w bazie
+    (poprawka sanitizera obejmuje wtedy również stare analizy)."""
     return nh3.clean(
-        str(soup),
+        html,
         tags=TAGI,
         clean_content_tags=USUWANE_Z_TRESCIA,
         attributes=ATRYBUTY,

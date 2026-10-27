@@ -6,7 +6,7 @@ from analizy.uslugi import utworz_lub_otworz
 
 pytestmark = pytest.mark.django_db
 
-CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'"
+CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox"
 
 
 @pytest.fixture

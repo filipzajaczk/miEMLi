@@ -2,7 +2,7 @@
     <tr class="klikalny" data-szczegoly="{% url 'analizy:szczegoly_ioc' analiza.pk i.pk %}" data-cel="szczegoly-{{ i.pk }}"
         title="Kliknij, aby rozwinąć lub zwinąć szczegóły">
       <td class="muted">{{ i.get_typ_display }}</td>
-      <td class="mono" style="padding-left: {% widthratio glebokosc 1 18 %}px">
+      <td class="mono gl-{% if glebokosc > 6 %}6{% else %}{{ glebokosc }}{% endif %}">
         {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% if i|z_archiwum %} <span class="b neutral" title="Plik wyodrębniony z archiwum {{ i.rodzic.etykieta }}">wyodrębniony z archiwum {{ i.rodzic.etykieta }}</span>{% endif %}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
         {% if i.typ != "plik" and i.etykieta %}<div class="muted">{{ i.etykieta }}</div>{% endif %}
       </td>

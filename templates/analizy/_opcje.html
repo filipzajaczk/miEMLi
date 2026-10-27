@@ -9,7 +9,7 @@
     {% if zapisano %}<span class="b ok">Zapisano</span>{% endif %}
   </form>
   <form method="post" action="{% url 'analizy:usun' analiza.pk %}"
-        onsubmit="return confirm('Usunąć analizę {{ analiza.nazwa_pliku|escapejs }} z bazy? Tej operacji nie można cofnąć.')">
+        data-potwierdz="Usunąć analizę {{ analiza.nazwa_pliku }} z bazy? Tej operacji nie można cofnąć.">
     {% csrf_token %}
     <button class="btn usun" type="submit">Usuń analizę</button>
   </form>

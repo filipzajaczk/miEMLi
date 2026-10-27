@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.utils.csp import CSP
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,7 +45,22 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
 ]
+
+# CSP dla stron aplikacji: tylko własne skrypty i style, bez inline. Podgląd maila ustawia własną, ostrzejszą.
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF],
+    "style-src": [CSP.SELF],
+    "img-src": [CSP.SELF, "data:"],
+    "frame-src": [CSP.SELF],
+    "connect-src": [CSP.SELF],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.NONE],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.SELF],
+}
 
 ROOT_URLCONF = "miemli.urls"
 
@@ -73,7 +89,8 @@ DATABASES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-RQ_QUEUES = {"default": {"URL": REDIS_URL}}
+# JSON zamiast pickle: zapis do Redisa nie może prowadzić do wykonania kodu w workerze
+RQ_QUEUES = {"default": {"URL": REDIS_URL, "SERIALIZER": "rq.serializers.JSONSerializer"}}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -123,3 +140,6 @@ LOGGING = {
 GTI_API_KEY = os.environ.get("GTI_API_KEY", "").strip()
 CENSYS_API_TOKEN = os.environ.get("CENSYS_API_TOKEN", "").strip()
 CENSYS_ORG_ID = os.environ.get("CENSYS_ORG_ID", "").strip()  # opcjonalne
+# Kontener web nie dostaje kluczy (ma je tylko worker) — wie jedynie, którzy dostawcy są włączeni
+GTI_WLACZONE = _bool("GTI_WLACZONE", bool(GTI_API_KEY))
+CENSYS_WLACZONE = _bool("CENSYS_WLACZONE", bool(CENSYS_API_TOKEN))
