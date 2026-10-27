@@ -1,5 +1,17 @@
 {% load miemli %}
 <div class="szczegoly-ioc">
+  {% if obraz %}
+  <section>
+    <div class="label">Obrazek</div>
+    <dl class="meta">
+      <dt>Format</dt><dd>{{ obraz.format_wykryty }} <span class="muted">(zadeklarowany: {{ obraz.mime_zadeklarowany }})</span></dd>
+      {% if obraz.szerokosc %}<dt>Wymiary</dt><dd>{{ obraz.szerokosc }}×{{ obraz.wysokosc }}{% if obraz.klatki and obraz.klatki > 1 %} · {{ obraz.klatki }} klatek{% endif %}</dd>{% endif %}
+      <dt>Rozmiar</dt><dd>{{ obraz.rozmiar|rozmiar }}</dd>
+      <dt>Status</dt><dd>{% if obraz.status == "przekodowany" %}przekodowany do PNG{% else %}pominięty{% endif %}</dd>
+      {% if obraz.uwagi %}<dt>Uwagi</dt><dd>{% for u in obraz.uwagi %}<span class="b {{ u.kod|klasa_uwagi_obrazka }}">{{ u.kod|opis_uwagi_obrazka }}</span> <span class="muted">{{ u.opis }}</span><br>{% endfor %}</dd>{% endif %}
+    </dl>
+  </section>
+  {% endif %}
   {% if i|z_archiwum %}
   <section>
     <div class="label">Archiwum</div>

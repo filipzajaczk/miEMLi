@@ -143,3 +143,37 @@ def pliki(n) -> str:
     if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
         return f"{n} pliki"
     return f"{n} plików"
+
+
+UWAGI_OBRAZKOW = {
+    "FORMAT_NIEOBSLUGIWANY": "format nieobsługiwany", "FORMAT_NIEZGODNY": "format niezgodny",
+    "ZA_DUZO_PIKSELI": "za dużo pikseli", "ZA_DUZY_PLIK": "za duży plik", "NIETYPOWE_WYMIARY": "nietypowe wymiary",
+    "ANIMACJA": "animacja", "USZKODZONY": "uszkodzony", "LIMIT_LICZBY": "limit liczby",
+    "PRZESKALOWANY": "przeskalowany",
+}
+
+
+@register.filter
+def opis_uwagi_obrazka(kod):
+    return UWAGI_OBRAZKOW.get(kod, kod)
+
+
+@register.filter
+def klasa_uwagi_obrazka(kod):
+    from analizy.prezentacja import PODEJRZANE_UWAGI
+
+    return "warn" if kod in PODEJRZANE_UWAGI else "neutral"
+
+
+@register.filter
+def podejrzane_obrazki(obrazki) -> list:
+    from analizy.prezentacja import PODEJRZANE_UWAGI
+
+    return [o for o in obrazki or [] if any(u["kod"] in PODEJRZANE_UWAGI for u in o.get("uwagi", []))]
+
+
+@register.filter
+def pierwsza_podejrzana_uwaga(obraz):
+    from analizy.prezentacja import PODEJRZANE_UWAGI
+
+    return next((u["kod"] for u in (obraz or {}).get("uwagi", []) if u["kod"] in PODEJRZANE_UWAGI), None)

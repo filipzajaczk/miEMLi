@@ -19,6 +19,7 @@
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
     {% endif %}
   </header>
+  {% if ostrzezenie_gvisor %}<div class="baner-ostrzezenie">Uwaga: parser nie działa w gVisor — izolacja analizy plików jest osłabiona. Sprawdź PARSER_RUNTIME na serwerze.</div>{% endif %}
   {% block tresc %}{% endblock %}
 </body>
 </html>

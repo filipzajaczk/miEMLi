@@ -38,6 +38,7 @@ SZABLON_PODGLADU = (
     "body{font-family:system-ui,sans-serif;font-size:14px;margin:16px;color:#222;background:#fff}"
     ".link{color:#0645ad;text-decoration:underline;cursor:help}"
     "img{max-width:100%;height:auto}"
+    ".obrazek-pominiety{display:inline-block;border:1px dashed #999;color:#666;padding:4px 8px;font-size:12px}"
     "</style></head><body>{tresc}</body></html>"
 )
 
@@ -127,6 +128,7 @@ def szczegoly(request, pk):
         },
     }
     kontekst["wzbogacenia"], kontekst["trwa"] = prezentacja.widoki_wzbogacen(analiza)
+    kontekst["obrazki_sha"] = prezentacja.obrazki_po_sha(analiza.wynik)
     szablon = "analizy/_glowna.html" if request.headers.get("HX-Request") else "analizy/szczegoly.html"
     return render(request, szablon, kontekst)
 
@@ -174,7 +176,9 @@ def szczegoly_ioc(request, pk, ioc_pk):
     analiza = get_object_or_404(Analiza, pk=pk)
     ioc = get_object_or_404(analiza.ioc, pk=ioc_pk)
     wzbogacenia, _ = prezentacja.widoki_wzbogacen(analiza)
-    return render(request, "analizy/_szczegoly_ioc.html", {"i": ioc, "wz": wzbogacenia[ioc.pk], "analiza": analiza})
+    obraz = prezentacja.obrazki_po_sha(analiza.wynik).get(ioc.wartosc) if ioc.typ == "plik" else None
+    return render(request, "analizy/_szczegoly_ioc.html",
+                  {"i": ioc, "wz": wzbogacenia[ioc.pk], "analiza": analiza, "obraz": obraz})
 
 
 @login_required
@@ -193,7 +197,7 @@ def wzbogacenie(request, pk):
     wzbogacenia, trwa = prezentacja.widoki_wzbogacen(analiza)
     return render(request, "analizy/_wzbogacenie_oob.html", {
         "analiza": analiza, "ioc": prezentacja.drzewo_ioc(analiza), "wzbogacenia": wzbogacenia,
-        "trwa": trwa, "wid": "0",
+        "trwa": trwa, "wid": "0", "obrazki_sha": prezentacja.obrazki_po_sha(analiza.wynik),
     })
 
 

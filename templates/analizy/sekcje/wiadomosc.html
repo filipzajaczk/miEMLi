@@ -16,6 +16,10 @@
   {% for s in a.sygnaly %}<span class="b warn" title="{{ s.opis }}">{{ s.opis }}</span>{% endfor %}
 </div>
 
+{% with podejrzane=w.obrazki|podejrzane_obrazki %}{% if podejrzane %}
+<div class="blad">Nietypowe obrazki w wiadomości ({{ podejrzane|length }}) — szczegóły poniżej; rozważ analizę w Joe Sandbox.</div>
+{% endif %}{% endwith %}
+
 {% if w.ostrzezenia %}
 <ul class="ostrzezenia">
   {% for o in w.ostrzezenia %}<li>{{ o.opis }}</li>{% endfor %}
@@ -43,6 +47,22 @@
       {% if z.dzieci %}<span class="b neutral">archiwum: {{ z.dzieci|length|pliki }} w środku</span>{% endif %}
       {% if z.zaszyfrowany %}<span class="b warn">zaszyfrowane, hasło nieznane</span>{% elif z.haslo %}<span class="b neutral" title="Hasło użyte do rozpakowania">hasło: {{ z.haslo }}</span>{% endif %}
       {% if z.wiadomosc %}<a href="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}" hx-get="?sekcja=wiadomosc&wiadomosc={{ z.wiadomosc.id }}" hx-target="#glowna" hx-push-url="true">otwórz wiadomość ↗</a>{% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if w.obrazki %}
+<section class="obrazki-wiadomosci">
+  <div class="label">Obrazki ({{ w.obrazki|length }})</div>
+  <ul>
+  {% for o in w.obrazki %}
+    <li>
+      <span class="nazwa">{{ o.nazwa }}</span>
+      <span class="muted">{{ o.format_wykryty }}{% if o.szerokosc %} · {{ o.szerokosc }}×{{ o.wysokosc }}{% endif %} · {{ o.rozmiar|rozmiar }}</span>
+      <span class="muted">{% if o.status == "przekodowany" %}przekodowany{% else %}pominięty{% endif %}</span>
+      {% for u in o.uwagi %}<span class="b {{ u.kod|klasa_uwagi_obrazka }}" title="{{ u.opis }}">{{ u.kod|opis_uwagi_obrazka }}</span>{% endfor %}
     </li>
   {% endfor %}
   </ul>

@@ -112,3 +112,12 @@ def widoki_wzbogacen(analiza: Analiza) -> tuple[dict[int, dict[str, WidokWzbogac
                 trwa = trwa or wpis.status == "oczekuje"
             wynik[i.pk][d] = widok
     return wynik, trwa
+
+
+PODEJRZANE_UWAGI = {"FORMAT_NIEOBSLUGIWANY", "FORMAT_NIEZGODNY", "ZA_DUZO_PIKSELI", "ZA_DUZY_PLIK",
+                    "NIETYPOWE_WYMIARY", "USZKODZONY"}
+
+
+def obrazki_po_sha(wynik: dict) -> dict[str, dict]:
+    """Wpisy raportu obrazków z całego drzewa wiadomości, po SHA256 (do tabeli IOC i szczegółów)."""
+    return {o["sha256"]: o for w in wiadomosci(wynik).values() for o in w.get("obrazki", [])}
