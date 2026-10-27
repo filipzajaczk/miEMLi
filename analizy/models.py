@@ -132,3 +132,41 @@ class ProfilAnalityka(models.Model):
 
 def profil_dla(uzytkownik) -> ProfilAnalityka:
     return ProfilAnalityka.objects.get_or_create(uzytkownik=uzytkownik)[0]
+
+
+class ZgloszenieJoe(models.Model):
+    """Wysyłka całego maila do Joe Sandbox (kluczem analityka)."""
+
+    STATUSY = [("zlecone", "Zlecone"), ("wyslane", "Wysłane"), ("w_kolejce", "W kolejce w Joe"),
+               ("trwa", "Analiza trwa"), ("zakonczone", "Zakończone"), ("blad", "Błąd"),
+               ("limit", "Limit Joe"), ("czas_minal", "Przekroczony czas śledzenia")]
+    AKTYWNE = ("zlecone", "wyslane", "w_kolejce", "trwa")
+
+    analiza = models.ForeignKey(Analiza, on_delete=models.CASCADE, related_name="zgloszenia_joe")
+    uzytkownik = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="zgloszenia_joe")
+    utworzono = models.DateTimeField(auto_now_add=True)
+    wyslano = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=12, choices=STATUSY, default="zlecone")
+    id_zgloszenia = models.CharField(max_length=64, null=True, blank=True)
+    webid = models.CharField(max_length=64, null=True, blank=True)
+    werdykt = models.CharField(max_length=12, null=True, blank=True)
+    wynik = models.IntegerField(null=True, blank=True)
+    blad = models.TextField(blank=True, default="")
+    sprawdzono = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-utworzono"]
+        verbose_name = "zgłoszenie Joe"
+        verbose_name_plural = "zgłoszenia Joe"
+
+    def __str__(self):
+        return f"Joe #{self.pk} analiza {self.analiza_id}: {self.status}"
+
+    @property
+    def link(self) -> str | None:
+        from integracje.joe import link_analizy
+
+        try:
+            return link_analizy(self.webid) if self.webid else None
+        except ValueError:
+            return None
