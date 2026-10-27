@@ -28,6 +28,14 @@
   obrazków, walidacja odpowiedzi w web, zdarzenie `analiza_przerwana`, baner o braku gVisor.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
+## Odłożone drobiazgi z przeglądu sandboxa (2026-10-27)
+
+- Drzewo `wiadomosc` z parsera walidowane tylko płytko — przejęty parser może wywołać błąd 500 jednej analizy.
+- OOM-kill kontenera parsera raportowany jako „czas”, nie „pamięć”.
+- Kolejka 8 w parserze praktycznie nieosiągalna (3 workery gunicorna, timeout klienta 90 s).
+- Parser widzi `web:8000` bezpośrednio (strona logowania z pominięciem Caddy) — rozważyć limit prób logowania.
+- Sprzątanie procesów w kontenerze parsera zabija też sesje `docker compose exec parser …` (diagnostyka).
+
 ## Znane ograniczenia
 
 - RAR: brak automatycznego testu prawdziwego archiwum RAR (nie mamy narzędzia do jego utworzenia);
