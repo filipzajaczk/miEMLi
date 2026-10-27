@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block tytul %}Profil · miemli{% endblock %}
+{% block tresc %}
+<main class="tresc">
+  <div class="waska karta profil">
+    <h1>Profil: {{ user.username }}</h1>
+    <h2>Klucz Joe Sandbox</h2>
+    <p class="muted">Klucz jest zapisywany zaszyfrowany i nigdy nie jest wyświetlany. Wysyłki do Joe idą Twoim kontem.</p>
+    <p>
+      {% if profil.joe_klucz_szyfr %}
+        Ustawiony, kończy się na <span class="mono">…{{ profil.joe_klucz_koncowka }}</span>
+        {% if profil.joe_klucz_stan == "dziala" %}<span class="b ok">działa</span>
+        {% elif profil.joe_klucz_stan == "odrzucony" %}<span class="b bad">odrzucony</span>
+        {% elif profil.joe_klucz_stan == "sprawdzanie" %}<span class="b neutral">sprawdzanie…</span>{% endif %}
+      {% else %}<span class="muted">Nieustawiony.</span>{% endif %}
+    </p>
+    {% if blad %}<div class="blad">{{ blad }}</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="akcja" value="zapisz">
+      <label for="klucz_joe">{% if profil.joe_klucz_szyfr %}Nowy klucz{% else %}Klucz API{% endif %}</label>
+      <input type="password" id="klucz_joe" name="klucz_joe" autocomplete="off" spellcheck="false" required>
+      <button class="btn primary" type="submit">Zapisz klucz</button>
+    </form>
+    {% if profil.joe_klucz_szyfr %}
+    <form method="post" data-potwierdz="Usunąć klucz Joe z profilu?">
+      {% csrf_token %}
+      <input type="hidden" name="akcja" value="usun">
+      <button class="btn usun" type="submit">Usuń klucz</button>
+    </form>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

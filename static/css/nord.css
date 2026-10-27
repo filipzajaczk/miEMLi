@@ -227,3 +227,6 @@ tr.klikalny.otwarty td { background: rgba(136, 192, 208, .06); }
 .obrazki-wiadomosci li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 5px 0; }
 .obrazki-wiadomosci .nazwa { font-weight: 500; }
 .baner-ostrzezenie { background: var(--bad-bg); color: var(--bad); padding: 8px 22px; font-weight: 600; flex-shrink: 0; }
+.profil { max-width: 520px; }
+.profil h2 { margin-top: 18px; }
+.profil form { margin-top: 12px; }

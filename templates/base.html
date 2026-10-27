@@ -15,7 +15,7 @@
     {% block pasek %}{% endblock %}
     <span class="sp"></span>
     {% if user.is_authenticated %}
-      <span class="muted">{{ user.username }}</span>
+      <a class="muted" href="{% url 'profil' %}">{{ user.username }}</a>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
     {% endif %}
   </header>

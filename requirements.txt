@@ -6,6 +6,7 @@ extract-msg==0.57.0
 gunicorn==26.2.0
 httpx==0.28.1
 nh3==0.3.7
+PyNaCl==1.6.2
 pillow==13.0.0
 psycopg[binary]==3.3.6
 py7zr==1.1.4

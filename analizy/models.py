@@ -110,3 +110,25 @@ class Wzbogacenie(models.Model):
     @staticmethod
     def klucz_dla(dostawca: str, typ: str, wartosc: str) -> str:
         return hashlib.sha256(f"{dostawca}:{typ}:{wartosc}".encode()).hexdigest()
+
+
+class ProfilAnalityka(models.Model):
+    STANY = [("nieznany", "Nieznany"), ("sprawdzanie", "Sprawdzanie"), ("dziala", "Działa"),
+             ("odrzucony", "Odrzucony")]
+
+    uzytkownik = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profil")
+    joe_klucz_szyfr = models.TextField(null=True, blank=True)  # SealedBox — web nie potrafi odczytać
+    joe_klucz_koncowka = models.CharField(max_length=4, blank=True, default="")
+    joe_klucz_stan = models.CharField(max_length=12, choices=STANY, default="nieznany")
+    joe_klucz_zmieniono = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "profil analityka"
+        verbose_name_plural = "profile analityków"
+
+    def __str__(self):
+        return f"profil {self.uzytkownik}"
+
+
+def profil_dla(uzytkownik) -> ProfilAnalityka:
+    return ProfilAnalityka.objects.get_or_create(uzytkownik=uzytkownik)[0]

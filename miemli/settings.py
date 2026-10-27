@@ -147,6 +147,11 @@ LOGGING = {
 GTI_API_KEY = os.environ.get("GTI_API_KEY", "").strip()
 CENSYS_API_TOKEN = os.environ.get("CENSYS_API_TOKEN", "").strip()
 CENSYS_ORG_ID = os.environ.get("CENSYS_ORG_ID", "").strip()  # opcjonalne
+# Joe Sandbox: klucze analityków szyfrowane kluczem publicznym; prywatny ma WYŁĄCZNIE worker
+JOE_KLUCZ_PUBLICZNY = os.environ.get("JOE_KLUCZ_PUBLICZNY", "").strip()
+JOE_KLUCZ_PRYWATNY = os.environ.get("JOE_KLUCZ_PRYWATNY", "").strip()
+JOE_LIMIT_DZIENNY = int(os.environ.get("JOE_LIMIT_DZIENNY", "20"))
+JOE_API_URL = os.environ.get("JOE_API_URL", "https://jbxcloud.joesecurity.org/api").rstrip("/")
 # Kontener web nie dostaje kluczy (ma je tylko worker) — wie jedynie, którzy dostawcy są włączeni
 GTI_WLACZONE = _bool("GTI_WLACZONE", bool(GTI_API_KEY))
 CENSYS_WLACZONE = _bool("CENSYS_WLACZONE", bool(CENSYS_API_TOKEN))
