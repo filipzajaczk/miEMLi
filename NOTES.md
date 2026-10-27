@@ -28,6 +28,11 @@
   obrazków, walidacja odpowiedzi w web, zdarzenie `analiza_przerwana`, baner o braku gVisor.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
+## Na później (2026-10-27)
+
+- RTIR odłożony na później (decyzja użytkownika) — najpierw integracja z Joe Sandbox.
+- Proxy wychodzące dla workera: zawęzić ruch do GTI, Censys i Joe (dziś worker ma ogólny dostęp do internetu).
+
 ## Odłożone drobiazgi z przeglądu sandboxa (2026-10-27)
 
 - Drzewo `wiadomosc` z parsera walidowane tylko płytko — przejęty parser może wywołać błąd 500 jednej analizy.
