@@ -1,5 +1,6 @@
 # Sekrety pochodzą z .env (interpolacja), ale każdy kontener dostaje tylko te, których potrzebuje.
 # Sieci: "wewnetrzna" nie ma wyjścia do internetu; do internetu wychodzą tylko caddy i worker.
+# "piaskownica": wyłącznie web ↔ parser. Parser nie widzi bazy, Redisa ani internetu.
 
 x-utwardzenie: &utwardzenie
   read_only: true
@@ -30,9 +31,27 @@ services:
     depends_on:
       - web
 
+  parser:
+    build:
+      context: .
+      target: parser
+    restart: unless-stopped
+    runtime: ${PARSER_RUNTIME:-runc}  # produkcja: runsc (gVisor)
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 2560m
+    pids_limit: 64
+    tmpfs:
+      - /tmp:size=300m,noexec,nosuid,nodev,uid=65534,gid=65534
+    # celowo bez żadnych zmiennych z sekretami
+    networks: [piaskownica]
+
   web:
     <<: *utwardzenie
-    build: .
+    build:
+      context: .
+      target: web
     restart: unless-stopped
     mem_limit: 1g
     environment:
@@ -48,16 +67,22 @@ services:
       # web nie dostaje kluczy API — tylko informację, którzy dostawcy są włączeni
       GTI_WLACZONE: ${GTI_API_KEY:+1}
       CENSYS_WLACZONE: ${CENSYS_API_TOKEN:+1}
-    networks: [wewnetrzna]
+      PIASKOWNICA_URL: http://parser:8000
+      PARSER_WYMAGA_GVISOR: ${PARSER_WYMAGA_GVISOR:-0}
+    networks: [wewnetrzna, piaskownica]
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+      parser:
+        condition: service_started
 
   worker:
     <<: *utwardzenie
-    build: .
+    build:
+      context: .
+      target: web
     restart: unless-stopped
     mem_limit: 512m
     command: ["python", "manage.py", "rqworker", "default", "--with-scheduler",
@@ -102,6 +127,8 @@ services:
 
 networks:
   wewnetrzna:
+    internal: true
+  piaskownica:
     internal: true
   zewnetrzna: {}
 

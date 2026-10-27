@@ -1,0 +1,8 @@
+beautifulsoup4==4.15.0
+extract-msg==0.57.0
+nh3==0.3.7
+pillow==13.0.0
+py7zr==1.1.4
+pyzipper==0.4.0
+rarfile==4.5
+zxing-cpp==3.1.1
