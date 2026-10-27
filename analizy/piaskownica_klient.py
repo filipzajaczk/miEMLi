@@ -78,21 +78,40 @@ def _odpowiedz_z_sieci(dane: bytes, nazwa: str) -> dict:
         "Content-Type": "application/octet-stream",
     }
     try:
-        r = httpx.post(f"{settings.PIASKOWNICA_URL}/analizuj", content=dane, headers=naglowki, timeout=CZAS_ZADANIA)
+        with httpx.stream("POST", f"{settings.PIASKOWNICA_URL}/analizuj", content=dane, headers=naglowki,
+                          timeout=CZAS_ZADANIA) as r:
+            if r.status_code != 200:
+                raise PiaskownicaNiedostepna(f"HTTP {r.status_code}")
+            tresc = _czytaj_z_limitem(r, MAKS_ODPOWIEDZ)
     except httpx.HTTPError as e:
         raise PiaskownicaNiedostepna(type(e).__name__) from e
-    if r.status_code != 200:
-        raise PiaskownicaNiedostepna(f"HTTP {r.status_code}")
-    if len(r.content) > MAKS_ODPOWIEDZ:
+    if tresc is None:
         raise _blad()
     try:
-        return json.loads(r.content)
-    except ValueError as e:
+        return json.loads(tresc)
+    except (ValueError, RecursionError) as e:
         raise _blad() from e
 
 
+def _czytaj_z_limitem(odpowiedz: httpx.Response, limit: int) -> bytes | None:
+    """Czyta strumieniowo; None, gdy treść przekracza limit (nie trzymamy w pamięci więcej niż limit)."""
+    bufor = bytearray()
+    for kawalek in odpowiedz.iter_bytes():
+        bufor.extend(kawalek)
+        if len(bufor) > limit:
+            return None
+    return bytes(bufor)
+
+
 def analizuj_w_piaskownicy(dane: bytes, nazwa: str) -> dict:
-    odpowiedz = _odpowiedz_w_procesie(dane, nazwa) if not settings.PIASKOWNICA_URL else _odpowiedz_z_sieci(dane, nazwa)
+    if not settings.PIASKOWNICA_URL:
+        if not (settings.DEBUG or settings.PIASKOWNICA_W_PROCESIE):
+            # pusty URL na produkcji nie może po cichu wyłączyć sandboxa
+            logger.error("PIASKOWNICA_URL pusty bez DEBUG/PIASKOWNICA_W_PROCESIE — odmowa analizy")
+            raise PiaskownicaNiedostepna("brak konfiguracji sandboxa")
+        odpowiedz = _odpowiedz_w_procesie(dane, nazwa)
+    else:
+        odpowiedz = _odpowiedz_z_sieci(dane, nazwa)
     if not isinstance(odpowiedz, dict):
         raise _blad()
     if odpowiedz.get("status") == "przerwana":
@@ -116,8 +135,12 @@ def stan_piaskownicy() -> dict | None:
     if time.monotonic() - _stan_cache["czas"] < 60:
         return _stan_cache["wartosc"]
     try:
-        wartosc = httpx.get(f"{settings.PIASKOWNICA_URL}/zdrowie", timeout=3).json()
-    except (httpx.HTTPError, ValueError):
+        with httpx.stream("GET", f"{settings.PIASKOWNICA_URL}/zdrowie", timeout=3) as r:
+            tresc = _czytaj_z_limitem(r, 64 * 1024)
+        wartosc = json.loads(tresc) if tresc is not None else None
+    except (httpx.HTTPError, ValueError, RecursionError):
+        wartosc = None
+    if not isinstance(wartosc, dict):
         wartosc = None
     _stan_cache.update(czas=time.monotonic(), wartosc=wartosc)
     return wartosc

@@ -92,3 +92,63 @@ def test_log_bez_nazw_i_tresci(adres, caplog):
     tekst = caplog.text
     assert "sha256=" in tekst
     assert "faktura" not in tekst and "Faktura" not in tekst and "evil" not in tekst
+
+
+# --- z końcowego przeglądu ---
+
+def test_proces_demon_zabity_po_zadaniu(adres, monkeypatch, tmp_path):
+    """Przejęty proces potomny nie może zostawić procesu działającego po zakończeniu zadania."""
+    znacznik = tmp_path / "demon.pid"
+    monkeypatch.setenv("PIASKOWNICA_TEST", "demon")
+    monkeypatch.setenv("PIASKOWNICA_TEST_PLIK", str(znacznik))
+    monkeypatch.setattr(serwer, "PRZEKAZYWANE_ZMIENNE", serwer.PRZEKAZYWANE_ZMIENNE + ("PIASKOWNICA_TEST_PLIK",))
+    wyslij(adres, b"x")
+    pid = int(znacznik.read_text())
+    time.sleep(0.3)
+    import os
+    assert not os.path.exists(f"/proc/{pid}") or open(f"/proc/{pid}/stat").read().split(") ")[1][0] == "Z"
+
+
+def test_sprzatanie_pid1_zabija_obce_sesje():
+    zabite = []
+    procesy = {1: 1, 10: 10, 11: 10, 20: 20, 30: 30}  # pid → sesja
+    serwer._sprzatnij(procesy, aktywne_sesje={20}, zabij=zabite.append, jestem_pid1=True)
+    assert sorted(zabite) == [10, 11, 30]
+
+
+def test_sprzatanie_poza_kontenerem_tylko_sesja_zadania():
+    zabite = []
+    procesy = {1: 1, 10: 10, 11: 10, 30: 30}
+    serwer._sprzatnij(procesy, aktywne_sesje=set(), zabij=zabite.append, jestem_pid1=False, sesja_zadania=10)
+    assert sorted(zabite) == [10, 11]
+
+
+def test_osobny_tmp_dla_zadania_usuwany(adres, monkeypatch, tmp_path):
+    monkeypatch.setattr(serwer, "KATALOG_TMP", str(tmp_path))
+    monkeypatch.setenv("PIASKOWNICA_TEST", "tmp")
+    wyslij(adres, b"x")
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_zalew_wyjscia_przerwany(adres, monkeypatch):
+    monkeypatch.setattr(serwer, "MAKS_WYJSCIE", 1024 * 1024)
+    monkeypatch.setenv("PIASKOWNICA_TEST", "zalew")
+    assert wyslij(adres, b"x") == (200, {"status": "przerwana", "powod": "awaria"})
+    assert wyslij(adres, (PROBKI / "zip_exe.eml").read_bytes())[1]["status"] == "przerwana"  # nadal zalew
+    monkeypatch.delenv("PIASKOWNICA_TEST")
+    assert wyslij(adres, (PROBKI / "zip_exe.eml").read_bytes())[1]["status"] == "ok"  # serwer żyje
+
+
+def test_nazwa_z_minusem(adres):
+    status, odp = wyslij(adres, (PROBKI / "zip_exe.eml").read_bytes(), nazwa="-faktura.eml")
+    assert odp["status"] == "ok"
+
+
+def test_gleboko_zagniezdzony_json_z_procesu(adres, monkeypatch):
+    monkeypatch.setenv("PIASKOWNICA_TEST", "zagniezdzony")
+    assert wyslij(adres, b"x") == (200, {"status": "przerwana", "powod": "awaria"})
+
+
+def test_proces_niezrzucalny(adres, monkeypatch):
+    monkeypatch.setenv("PIASKOWNICA_TEST", "dumpable")
+    assert wyslij(adres, b"x")[1] == {"dumpable": 0}

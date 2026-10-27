@@ -155,3 +155,41 @@ def test_naglowek_nazwy(zalogowany, przez_siec, wynik_probki):
     assert "X-Evil" not in naglowki
     analizuj_w_piaskownicy(b"x", "a" * 1000)
     assert len(trasa.calls.last.request.headers["X-Miemli-Nazwa"]) <= 255
+
+
+# --- z końcowego przeglądu ---
+
+@respx.mock
+def test_strumien_przerwany_po_limicie(zalogowany, przez_siec, monkeypatch):
+    import analizy.piaskownica_klient as k
+
+    monkeypatch.setattr(k, "MAKS_ODPOWIEDZ", 1000)
+    respx.post(f"{URL}/analizuj").respond(200, stream=httpx.ByteStream(b"{" + b" " * 5000))
+    assert "Nieprawidłowy wynik analizy" in upload(zalogowany).content.decode()
+
+
+@respx.mock
+def test_gleboko_zagniezdzony_json(zalogowany, przez_siec):
+    respx.post(f"{URL}/analizuj").respond(200, content=b"[" * 100000 + b"]" * 100000)
+    assert "Nieprawidłowy wynik analizy" in upload(zalogowany).content.decode()
+    assert Zdarzenie.objects.filter(typ="analiza_przerwana", szczegoly__powod="nieprawidlowa_odpowiedz").exists()
+
+
+@pytest.mark.parametrize("odpowiedz", [b"[1, 2]", b'"tekst"', b"null"])
+@respx.mock
+def test_zdrowie_nie_slownik(settings, odpowiedz):
+    import analizy.piaskownica_klient as k
+
+    settings.PIASKOWNICA_URL = URL
+    k._stan_cache.update(czas=0.0, wartosc=None)
+    respx.get(f"{URL}/zdrowie").respond(200, content=odpowiedz)
+    assert k.stan_piaskownicy() is None
+
+
+def test_pusty_url_na_produkcji_odmawia(zalogowany, settings, probka):
+    settings.PIASKOWNICA_URL = ""
+    settings.PIASKOWNICA_W_PROCESIE = False
+    settings.DEBUG = False
+    r = upload(zalogowany, probka("zip_exe"))
+    assert "Sandbox analizy niedostępny" in r.content.decode()
+    assert not Analiza.objects.exists()

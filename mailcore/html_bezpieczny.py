@@ -82,4 +82,13 @@ def ponownie_oczysc(html: str) -> str:
         url_schemes={"data"},
         filter_style_properties=STYLE,
         link_rel=None,
+        attribute_filter=_tylko_png,
     )
+
+
+def _tylko_png(tag: str, atrybut: str, wartosc: str) -> str | None:
+    """Do przeglądarki trafiają wyłącznie obrazki PNG wygenerowane przez sandbox — żadnych innych data: URI
+    (np. WebP/SVG/HTML), nawet gdyby przejęty parser je podsunął."""
+    if tag == "img" and atrybut == "src":
+        return wartosc if wartosc.startswith("data:image/png;base64,") else None
+    return wartosc

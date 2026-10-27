@@ -21,3 +21,4 @@ CENSYS_WLACZONE = False
 
 # Testy analizują w procesie (bez kontenera parser); testy klienta ustawiają własny URL
 PIASKOWNICA_URL = ""
+PIASKOWNICA_W_PROCESIE = True

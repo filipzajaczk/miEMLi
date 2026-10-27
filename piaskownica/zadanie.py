@@ -21,6 +21,14 @@ KOD_PAMIEC = 3
 KOD_BLAD = 4
 
 
+def niezrzucalny() -> None:
+    """PR_SET_DUMPABLE=0: inne procesy tego samego UID nie mogą się podpiąć (ptrace)
+    ani czytać /proc/<pid>/fd tego procesu."""
+    import ctypes
+
+    ctypes.CDLL(None, use_errno=True).prctl(4, 0, 0, 0, 0)  # PR_SET_DUMPABLE
+
+
 def ustaw_limity() -> None:
     for nazwa, (miekki, twardy) in LIMITY.items():
         resource.setrlimit(getattr(resource, f"RLIMIT_{nazwa}"), (miekki, twardy))
@@ -59,6 +67,32 @@ def _hak_testowy(hak: str) -> None:
     if hak == "petla":
         while True:
             pass
+    if hak == "demon":  # proces, który próbuje przeżyć zadanie
+        pid = os.fork()
+        if pid == 0:
+            with open(os.environ["PIASKOWNICA_TEST_PLIK"], "w") as f:
+                f.write(str(os.getpid()))
+            import time
+            time.sleep(60)
+            os._exit(0)
+        return
+    if hak == "tmp":
+        import tempfile
+        with open(os.path.join(tempfile.gettempdir(), "pozostalosc.bin"), "wb") as f:
+            f.write(b"x" * 1024)
+        return
+    if hak == "zalew":
+        while True:
+            sys.stdout.write("x" * 65536)
+    if hak == "zagniezdzony":
+        sys.stdout.write("[" * 100000 + "]" * 100000)
+        sys.stdout.flush()
+        os._exit(0)
+    if hak == "dumpable":
+        import ctypes
+        print(json.dumps({"dumpable": ctypes.CDLL(None).prctl(3, 0, 0, 0, 0)}))  # PR_GET_DUMPABLE
+        sys.stdout.flush()
+        os._exit(0)
     if hak == "polowa":
         sys.stdout.write('{"status": "ok", "wyn')
         sys.stdout.flush()
@@ -66,6 +100,7 @@ def _hak_testowy(hak: str) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    niezrzucalny()
     ustaw_limity()
     parser = argparse.ArgumentParser()
     parser.add_argument("--nazwa", default="plik")

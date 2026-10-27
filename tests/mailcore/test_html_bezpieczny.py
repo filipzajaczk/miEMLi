@@ -63,3 +63,20 @@ def test_do_json_ma_html_bezpieczny_a_nie_surowy(zbuduj_mail):
     j = do_json(w, analizuj(w))
     assert "<p>Hej</p>" in j["wiadomosc"]["html_bezpieczny"]
     assert "<script" not in str(j)
+
+
+@pytest.mark.parametrize("src", [
+    "data:image/webp;base64,UklGRg==", "data:image/svg+xml;base64,PHN2Zz4=", "data:text/html;base64,PGI+",
+    "data:image/png,surowe", "DATA:image/avif;base64,AAAA",
+])
+def test_ponownie_oczysc_tylko_data_png(src):
+    from mailcore.html_bezpieczny import ponownie_oczysc
+
+    wynik = ponownie_oczysc(f'<img src="{src}">')
+    assert "src=" not in wynik
+
+
+def test_ponownie_oczysc_zostawia_png():
+    from mailcore.html_bezpieczny import ponownie_oczysc
+
+    assert 'src="data:image/png;base64,iVBORw0KGgo="' in ponownie_oczysc('<img src="data:image/png;base64,iVBORw0KGgo=">')

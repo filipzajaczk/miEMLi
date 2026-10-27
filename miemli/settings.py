@@ -128,6 +128,8 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = MAKS_ROZMIAR_PLIKU
 # Sandbox parsera (kontener "parser"). Pusty = analiza w procesie web — tylko do pracy lokalnej i testów.
 PIASKOWNICA_URL = os.environ.get("PIASKOWNICA_URL", "http://parser:8000").rstrip("/")
 PARSER_WYMAGA_GVISOR = _bool("PARSER_WYMAGA_GVISOR", False)
+# Analiza w procesie web (pusty PIASKOWNICA_URL) dozwolona tylko przy DEBUG albo jawnie tą flagą
+PIASKOWNICA_W_PROCESIE = _bool("PIASKOWNICA_W_PROCESIE", False)
 
 MIEMLI_IGNOROWANE_DOMENY = frozenset(d.lower() for d in _lista("MIEMLI_IGNOROWANE_DOMENY"))
 
