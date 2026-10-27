@@ -56,7 +56,7 @@ def fragment(klient, analiza):
 def test_kolumny(zalogowany, analiza):
     wszystkie_gotowe(analiza)
     t = strona(zalogowany, analiza, sekcja="ioc")
-    assert ">GTI<" in t and ">Censys<" in t and ">JOE<" in t
+    assert ">GTI<" in t and ">Censys<" in t and ">JOE<" not in t
 
 
 def test_komorka_gti_zlosliwy(zalogowany, analiza):
@@ -214,11 +214,14 @@ def test_przycisk_odswiez(zalogowany, analiza):
     assert ">Odśwież</button>" in t and "Odśwież wzbogacenie" not in t
 
 
-def test_link_joe(zalogowany, analiza):
+def test_joe_jako_wyrozniona_zakladka_nie_kolumna(zalogowany, analiza):
     wszystkie_gotowe(analiza)
     t = strona(zalogowany, analiza, sekcja="ioc")
-    assert 'href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"' in t
-    assert t.count("jbxcloud.joesecurity.org") == analiza.ioc.filter(typ__in=["plik", "url"]).count()
+    tabela = t[t.find('id="tabela-ioc-cialo"'):t.find("</table>")]
+    assert "jbxcloud.joesecurity.org" not in tabela
+    nav = t[t.find('<nav class="nav">'):t.find("</nav>")]
+    assert 'class="nav-joe"' in nav and "Analizuj w JOE" in nav
+    assert 'href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"' in nav
 
 
 def test_kropka_w_panelu(zalogowany, analiza):

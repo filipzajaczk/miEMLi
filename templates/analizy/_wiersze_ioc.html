@@ -8,8 +8,7 @@
       </td>
       <td class="komorka">{% with w=wz.gti %}{% include "analizy/_wzbogacenie_gti.html" %}{% endwith %}</td>
       <td class="komorka">{% with w=wz.censys %}{% include "analizy/_wzbogacenie_censys.html" %}{% endwith %}</td>
-      <td>{% if i.typ == "plik" or i.typ == "url" %}<a href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer">JOE ↗</a>{% endif %}</td>
       <td class="muted">{{ i.get_zrodlo_display }}</td>
     </tr>
-    <tr class="wiersz-szczegolow"><td colspan="6" id="szczegoly-{{ i.pk }}"></td></tr>
+    <tr class="wiersz-szczegolow"><td colspan="5" id="szczegoly-{{ i.pk }}"></td></tr>
 {% endwith %}{% endfor %}

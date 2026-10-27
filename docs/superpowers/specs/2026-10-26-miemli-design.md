@@ -246,6 +246,8 @@ Każdy etap kończy się działającym stanem, commitem i wpisem w `NOTES.md`.
   to zwykły link do strony Joe Sandbox. Szczegóły i otwarta kwestia bajtów załączników: `NOTES.md`.
   Punkty §5.4 (JOE), §6 (`ZgloszenieJoe`, klucz Joe w profilu) i §11 etap 5 obowiązują dopiero
   przy tej integracji.
+- **2026-10-27: do Joe Sandbox wysyłany jest cały mail (.eml/.msg)**, a nie pojedyncze załączniki/URL-e.
+  Akcja „Analizuj w JOE” jest w menu ekranu analizy (nie w tabeli IOC). Szczegóły: `NOTES.md`.
 - **Etap 4 (GTI, Censys):** szczegóły w `docs/superpowers/specs/2026-10-26-miemli-etap4-wzbogacenie-design.md`.
 
 ## 13. Otwarte kwestie (do rozstrzygnięcia w trakcie)

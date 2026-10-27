@@ -42,6 +42,15 @@
     nierozbrajane, `httpx.InvalidURL` w workerze, brak sprzątania tabeli `Wzbogacenie`.
 - Plik demonstracyjny „wszystko na czerwono”: `/home/kali/Desktop/fifi/czerwony.eml` (poza repo, EICAR).
 
+### DECYZJA 2026-10-27: do Joe wysyłamy CAŁY mail (.eml/.msg), nie pojedyncze pliki
+
+- Joe sam otwiera załączniki i linki z maila, więc nie trzeba wyodrębniać plików ani przechowywać bajtów.
+- Przepływ docelowy: analityk klika „Analizuj w JOE” (wyróżniona pozycja w menu analizy) → web zleca
+  zadanie → worker pobiera oryginał z RTIR (ręczny upload: prośba o ponowne wgranie, weryfikacja SHA256)
+  → worker wysyła plik do Joe kluczem analityka (bez parsowania) → link do Live Interaction.
+- Do czasu integracji „Analizuj w JOE” otwiera tylko stronę Joe Sandbox. Kolumna JOE w tabeli IOC usunięta.
+- Do sprawdzenia przy integracji: czy konto Joe Pro przyjmuje .eml/.msg jako próbkę.
+
 ### ODŁOŻONE: Joe Sandbox — robimy na samym końcu projektu (decyzja 2026-10-26)
 
 - Pełna integracja z Joe (lookup po hashu, wysyłka pliku/URL-a kluczem użytkownika, Live Interaction,

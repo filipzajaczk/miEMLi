@@ -18,6 +18,11 @@
       <span>{{ nazwa }}</span>{% with n=liczniki|klucz:kod %}{% if n is not None %}<span class="licznik">{{ n }}</span>{% endif %}{% endwith %}
     </a>
   {% endfor %}
+  <div class="odstep"></div>
+  <a class="nav-joe" href="https://jbxcloud.joesecurity.org/" target="_blank" rel="noopener noreferrer"
+     title="Na razie otwiera Joe Sandbox. Docelowo wyśle do analizy cały mail (.eml/.msg) z linkami i załącznikami.">
+    <span>Analizuj w JOE</span><span>↗</span>
+  </a>
 </nav>
 <section class="srodek">
   {% include "analizy/sekcje/"|add:sekcja|add:".html" %}
