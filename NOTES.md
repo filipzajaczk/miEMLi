@@ -19,6 +19,15 @@
 - Censys: z `CENSYS_ORG_ID` obecny token dostaje 403 — usunąć zmienną z `.env` albo poprosić
   administratora Censys o rolę „API Access” w organizacji.
 
+- 2026-10-27: utwardzenie: Pillow tylko PNG/JPEG/GIF/BMP + twardy limit pikseli, CSP bez inline,
+  `sandbox` w CSP podglądu, ponowne czyszczenie HTML przy wyświetlaniu, kontenery read-only bez
+  capabilities, sieci bez internetu dla web/postgres/redis, hasło Redisa, RQ na JSON, klucze API tylko
+  w workerze, obraz bazowy przypięty do digestu, pip-audit (0 podatności).
+- 2026-10-27: sandbox parsera: kontener `parser` (sieć `piaskownica`, bez sekretów/bazy/internetu,
+  UID 65534, read-only), proces na plik z limitami, przekodowanie obrazków do PNG, raport nietypowych
+  obrazków, walidacja odpowiedzi w web, zdarzenie `analiza_przerwana`, baner o braku gVisor.
+- Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
+
 ## Znane ograniczenia
 
 - RAR: brak automatycznego testu prawdziwego archiwum RAR (nie mamy narzędzia do jego utworzenia);
