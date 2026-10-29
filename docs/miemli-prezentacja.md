@@ -1,6 +1,6 @@
 # miemli — opis dla zespołu
 
-Wewnętrzne narzędzie CSIRT do **bezpiecznej analizy podejrzanych wiadomości** `.eml` / `.msg`
+Narzędzie do **bezpiecznej analizy podejrzanych wiadomości** `.eml` / `.msg`
 zgłaszanych w RTIR. Analityk wgrywa plik i po kilku sekundach widzi czytelny podgląd, ocenę
 nagłówków, artefakty z reputacją oraz może jednym kliknięciem wysłać mail do Joe Sandbox.
 
@@ -180,24 +180,8 @@ Szczegóły: https://miemli.csirt.local/analiza/123/
 
 ---
 
-## 6. Udostępnienie w sieci zespołu (do testów)
 
-Kroki na serwerze / stacji z Dockerem:
-
-1. W `.env` ustawić nazwę hosta lub IP, pod którym koledzy wejdą, np.
-   `MIEMLI_HOST=miemli.csirt.local`, `ALLOWED_HOSTS=miemli.csirt.local`,
-   `CSRF_TRUSTED_ORIGINS=https://miemli.csirt.local`.
-2. Wpis DNS (albo `hosts`) wskazujący tę nazwę na adres maszyny.
-3. Otworzyć port **443/TCP** tylko z sieci zespołu / VPN (zapora hosta).
-4. Certyfikat: na test `tls internal` w Caddy (przeglądarka pokaże ostrzeżenie); docelowo certyfikat
-   z firmowego CA.
-5. `docker compose up -d --build`, potem konta dla kolegów w `/admin/` (każdy zmieni hasło w profilu).
-6. Na czas testów: **nie wgrywać prawdziwych zgłoszeń z danymi osobowymi**, jeśli parser nie działa
-   w gVisor (aplikacja pokazuje wtedy czerwony baner).
-
----
-
-## 7. Stan i dalsze kroki
+## 6. Stan i dalsze kroki
 
 - ✅ Rdzeń analizy, archiwa, QR, podgląd, sandbox parsera, GTI/Censys, Joe Sandbox, werdykty, audyt,
   zmiana hasła, oś czasu nagłówków, wyszukiwarka.
