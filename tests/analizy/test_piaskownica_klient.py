@@ -262,3 +262,50 @@ def test_walidacja_uwag_obrazkow(wynik_probki, uwagi):
     w["wiadomosc"]["obrazki"] = [{"sha256": "a" * 64, "uwagi": uwagi}]
     with pytest.raises(AnalizaPrzerwana):
         waliduj_wynik(w)
+
+
+
+def _z_analiza(w, **pola):
+    w = copy.deepcopy(w)
+    a = next(iter(w["analiza"].values()))
+    a.update(pola)
+    return w
+
+
+@pytest.mark.parametrize("pola", [
+    {"klient": "x"},
+    {"klient": {"x_mailer": "x" * 301, "user_agent": None, "x_originating_ip": None}},
+    {"klient": {"x_mailer": 5, "user_agent": None, "x_originating_ip": None}},
+    {"arc": "x"},
+    {"arc": {"ogniwa": [{"i": 1, "serwer": None, "spf": None, "dkim": None, "dmarc": None}] * 51,
+             "kompletny": True, "cv": None}},
+    {"arc": {"ogniwa": [{"i": "1", "serwer": None, "spf": None, "dkim": None, "dmarc": None}],
+             "kompletny": True, "cv": None}},
+    {"arc": {"ogniwa": [], "kompletny": "tak", "cv": None}},
+    {"received": [{"od": None, "przez": None, "ip": None, "czas": None, "uwagi": "x"}]},
+    {"received": [{"od": None, "przez": None, "ip": None, "czas": None, "uwagi": [{"kod": 1, "opis": "x"}]}]},
+])
+def test_walidacja_nowych_pol(wynik_probki, pola):
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(_z_analiza(wynik_probki, **pola))
+
+
+def test_walidacja_bez_nowych_pol(wynik_probki):
+    w = copy.deepcopy(wynik_probki)
+    for a in w["analiza"].values():
+        a.pop("klient", None), a.pop("arc", None)
+        for h in a["received"]:
+            h.pop("uwagi", None)
+    assert waliduj_wynik(w) is w
+
+
+@pytest.mark.parametrize("hop", [
+    {"od": None, "przez": None, "ip": ["1.2.3.4"], "czas": None},
+    {"od": None, "przez": None, "ip": None, "czas": 5},
+    {"od": None, "przez": None, "ip": None, "czas": "abc"},
+    {"od": 1, "przez": None, "ip": None, "czas": None},
+    {"przez": None, "ip": None, "czas": None},
+])
+def test_walidacja_pol_hopu(wynik_probki, hop):
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(_z_analiza(wynik_probki, received=[hop]))

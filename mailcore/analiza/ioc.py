@@ -95,6 +95,8 @@ class _Budowniczy:
                     continue
                 email_id = self.dodaj("email", adres, rodzic_id, "naglowek")
                 self.dodaj("domena", domena, email_id, "naglowek")
+        if ip := analiza.klient.x_originating_ip and _publiczny_ip(analiza.klient.x_originating_ip):
+            self.dodaj("ip", ip, rodzic_id, "naglowek")
         for hop in analiza.received:
             ip = hop.ip and _publiczny_ip(hop.ip)
             if ip:

@@ -1,9 +1,11 @@
 """Przekształcenie zapisanego wyniku analizy (JSON) w dane dla szablonów."""
 
+import ipaddress
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 
+from django.db.models import Count
 from django.utils import timezone
 
 from .models import IOC, Analiza, Wzbogacenie
@@ -46,11 +48,28 @@ def liczba_zalacznikow(w: dict) -> int:
     return sum(1 for _ in _zalaczniki(w["zalaczniki"]))
 
 
+def _czas_utc(tekst) -> datetime | None:
+    """Czas bez strefy (nagłówek z „-0000”) traktujemy jako UTC — mieszanie z czasami ze strefą nie może rzucić."""
+    try:
+        czas = datetime.fromisoformat(tekst) if tekst else None
+    except (TypeError, ValueError):
+        return None
+    return czas.replace(tzinfo=UTC) if czas and czas.tzinfo is None else czas
+
+
+def _ip_kanoniczne(ip) -> str | None:
+    try:
+        return str(ipaddress.ip_address(ip))
+    except (TypeError, ValueError):
+        return ip if isinstance(ip, str) else None
+
+
 def hopy(received: list[dict]) -> list[dict]:
     """Hopy z opóźnieniem względem poprzedniego (sekundy) — długie przerwy bywają podejrzane."""
     wynik, poprzedni = [], None
     for numer, hop in enumerate(received, start=1):
-        czas = datetime.fromisoformat(hop["czas"]) if hop["czas"] else None
+        czas = _czas_utc(hop.get("czas"))
+        hop = {**hop, "ip_kan": _ip_kanoniczne(hop.get("ip"))}
         opoznienie = int((czas - poprzedni).total_seconds()) if czas and poprzedni else None
         wynik.append({**hop, "lp": numer, "czas_dt": czas, "opoznienie": opoznienie})
         poprzedni = czas or poprzedni
@@ -124,3 +143,32 @@ PODEJRZANE_UWAGI = {"FORMAT_NIEOBSLUGIWANY", "FORMAT_NIEZGODNY", "ZA_DUZO_PIKSEL
 def obrazki_po_sha(wynik: dict) -> dict[str, dict]:
     """Wpisy raportu obrazków z całego drzewa wiadomości, po SHA256 (do tabeli IOC i szczegółów)."""
     return {o["sha256"]: o for w in wiadomosci(wynik).values() for o in w.get("obrazki", [])}
+
+
+def geo_ip(ioc, wzbogacenia: dict[int, dict[str, WidokWzbogacenia]]) -> dict[str, dict]:
+    """Kraj i ASN adresów IP z istniejących wyników wzbogacenia — GTI ma pierwszeństwo, braki uzupełnia Censys."""
+    wynik = {}
+    for i in ioc:
+        if i.typ != "ip":
+            continue
+        widoki = [wzbogacenia.get(i.pk, {}).get(d) for d in ("gti", "censys")]
+        gotowe = [w.skrot for w in widoki if w and w.status == "gotowe"]
+        if gotowe:
+            pole = lambda nazwa: next((s.get(nazwa) for s in gotowe if s.get(nazwa)), None)  # noqa: E731
+            wynik[i.wartosc] = {"stan": "gotowe", "kraj": pole("kraj"), "asn": pole("asn"),
+                                "wlasciciel": pole("wlasciciel")}
+        elif any(w and w.status == "oczekuje" for w in widoki):
+            wynik[i.wartosc] = {"stan": "oczekuje"}
+        else:
+            wynik[i.wartosc] = {"stan": "brak"}
+    return wynik
+
+
+def inne_analizy(analiza: Analiza) -> dict[int, int]:
+    """ioc.pk → w ilu innych analizach wystąpił ten sam artefakt (tylko > 0). Dwa zapytania niezależnie od liczby."""
+    wlasne = dict(analiza.ioc.values_list("pk", "skrot"))
+    liczby = dict(
+        IOC.objects.filter(skrot__in=set(wlasne.values()) - {""}).exclude(analiza=analiza)
+        .values("skrot").annotate(n=Count("analiza", distinct=True)).values_list("skrot", "n")
+    )
+    return {pk: liczby[s] for pk, s in wlasne.items() if liczby.get(s)}

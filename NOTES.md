@@ -36,8 +36,10 @@
   w interfejsie, podgląd HTML z przyciskami i ramkami obrazów zewnętrznych (dwa commity: „Podgląd HTML:
   wygląd przycisków…” i „Podgląd HTML: link zawsze widoczny…” — `git revert` obu przywraca poprzedni
   wygląd; dotyczy analiz utworzonych po zmianie), 11 poprawek z przeglądów + poprawki z końcowego przeglądu.
-- Plan dalej: etap B — oś czasu nagłówków + wyszukiwarka analiz (wykorzysta kolumnę `temat_wiadomosci`);
-  etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
+- 2026-10-29: etap B (branch `etap-b`): oś czasu nagłówków (anomalie przeskoków, `DATA_ODLEGLA`, kraj/ASN
+  z wzbogacenia, klient, ARC; `X-Originating-IP` jako artefakt), wyszukiwarka `/szukaj/`, odznaki
+  „w N innych analizach” (`IOC.skrot`). Nowe pola analizy mają tylko analizy utworzone po zmianie.
+- Plan dalej: etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
 ## Na później (2026-10-27)
@@ -59,6 +61,13 @@
   `rozbroj_tekst` nie rozbraja IP i domen z Unicode w danych GTI (tekst i tak nie jest klikalny);
   otwarte szczegóły artefaktu są pobierane ponownie przy każdym odpytywaniu (co 2 s).
 - Usunięcie analizy kasuje (CASCADE) jej zdarzenia — w audycie zostaje tylko wpis „Usunięcie analizy”.
+
+## Odłożone z etapu B (2026-10-29)
+
+- ARC: `cv=fail` albo brak `cv` nie obniża „łańcuch kompletny” (wartość `cv` jest pokazywana obok).
+- Wyszukiwarka ładuje do Pythona wszystkie pasujące wiersze (bardzo popularne domeny — wolniej); przy
+  dużej bazie przejść na podzapytania i opisy dopasowań tylko dla 200 pokazanych analiz.
+- Zapytanie wyszukiwarki jest w adresie URL — gdyby włączyć logi dostępu w Caddy/gunicorn, trzeba je filtrować.
 
 ## Znane ograniczenia
 

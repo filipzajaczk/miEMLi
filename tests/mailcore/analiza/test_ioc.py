@@ -143,3 +143,9 @@ def test_url_do_prywatnego_ipv6_pominiety(zbuduj_mail):
 def test_url_skrocone_ip_prywatne_pominiete(zbuduj_mail):
     html = "".join(f'<a href="{u}">x</a>' for u in ("http://127.1/", "http://10.1/a", "http://3232235777/"))
     assert not [i for i in ioc(zbuduj_mail, tekst="x", html=html) if i.typ == "url"]
+
+
+def test_x_originating_ip_artefakt(zbuduj_mail):
+    m = po_wartosci(ioc(zbuduj_mail, naglowki=[("X-Originating-IP", "[185.243.115.20]")]))
+    assert m[("ip", "185.243.115.20")].zrodlo == "naglowek"
+    assert not [i for i in ioc(zbuduj_mail, naglowki=[("X-Originating-IP", "[10.0.0.1]")]) if i.typ == "ip"]

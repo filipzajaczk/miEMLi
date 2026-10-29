@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import time
+from datetime import datetime
 from urllib.parse import quote
 
 import httpx
@@ -83,10 +84,52 @@ def _wiadomosc_ok(w, glebokosc: int = 0) -> bool:
     return _lista(w.get("zalaczniki")) and all(_zalacznik_ok(z, glebokosc) for z in w["zalaczniki"])
 
 
+def _krotki_tekst(x, limit: int = 300) -> bool:
+    return x is None or (isinstance(x, str) and len(x) <= limit)
+
+
+def _klient_ok(k) -> bool:
+    return k is None or (isinstance(k, dict) and all(
+        _krotki_tekst(k.get(p)) for p in ("x_mailer", "user_agent", "x_originating_ip")))
+
+
+def _arc_ok(arc) -> bool:
+    if arc is None:
+        return True
+    if not isinstance(arc, dict) or not isinstance(arc.get("kompletny"), bool) or not _krotki_tekst(arc.get("cv")):
+        return False
+    ogniwa = arc.get("ogniwa")
+    return _lista(ogniwa, dict) and len(ogniwa) <= 50 and all(
+        isinstance(o.get("i"), int) and not isinstance(o["i"], bool)
+        and all(_krotki_tekst(o.get(p)) for p in ("serwer", "spf", "dkim", "dmarc"))
+        for o in ogniwa)
+
+
+def _czas_ok(czas) -> bool:
+    if czas is None:
+        return True
+    try:
+        return isinstance(czas, str) and len(czas) <= 64 and bool(datetime.fromisoformat(czas))
+    except ValueError:
+        return False
+
+
+def _hop_ok(h: dict) -> bool:
+    return (all(p in h and _krotki_tekst(h[p], 1000) for p in ("od", "przez", "ip")) and "czas" in h
+            and _czas_ok(h["czas"]) and _uwagi_ok(h.get("uwagi", [])))
+
+
+def _uwagi_ok(uwagi) -> bool:
+    return _lista(uwagi, dict) and all(isinstance(u.get("kod"), str) and isinstance(u.get("opis"), str)
+                                       for u in uwagi)
+
+
 def _analiza_ok(a) -> bool:
     return isinstance(a, dict) and all(
         isinstance(k, str) and isinstance(v, dict)
         and all(_lista(v.get(p, []), dict) for p in ("received", "sygnaly", "linki"))
+        and all(_hop_ok(h) for h in v.get("received", []))
+        and _klient_ok(v.get("klient")) and _arc_ok(v.get("arc"))
         for k, v in a.items()
     )
 

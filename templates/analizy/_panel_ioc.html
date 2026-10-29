@@ -5,7 +5,7 @@
      hx-target="#glowna" hx-push-url="true">
     <span class="kropka-miejsce">{% with g=wzbogacenia|klucz:i.pk|klucz:"gti" %}{% if g.status == "gotowe" %}<span class="kropka {{ g.skrot.werdykt|klasa_werdyktu }}" title="GTI: {{ g.skrot.werdykt|opis_werdyktu }}"></span>{% endif %}{% endwith %}</span>
     <span class="typ">{{ i.typ }}</span>
-    <span class="mono wartosc">{% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% else %}{{ i|rozbrojony }}{% endif %}</span>
+    <span class="mono wartosc">{% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% else %}{{ i|rozbrojony }}{% endif %}{% with n=inne|klucz:i.pk %}{% if n %} <span class="b neutral">{{ n|w_innych_analizach }}</span>{% endif %}{% endwith %}</span>
   </a>
 {% empty %}
   <p class="muted">Nie znaleziono artefaktów.</p>

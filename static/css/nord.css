@@ -251,3 +251,15 @@ nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--
 .profil form ul { margin: 0 0 8px 18px; color: var(--muted); font-size: 12px; }
 .profil .helptext { color: var(--muted); font-size: 12px; }
 .filtry-audytu input[type=date] { color-scheme: dark; }
+/* Oś czasu */
+.os-czasu .geo { font-family: var(--sans, inherit); font-size: 12px; margin-top: 2px; }
+.os-czasu td .b { display: inline-block; margin: 0 4px 4px 0; white-space: normal; }
+.os-czasu td:nth-child(5) { white-space: nowrap; }
+.os-czasu td:last-child { min-width: 220px; }
+.adnotacja { margin: 6px 0 22px; }
+/* Wyszukiwarka w pasku */
+form.szukaj input[type=search] {
+  width: 300px; margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 6px; font-size: 13px;
+}
+form.szukaj input[type=search]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }

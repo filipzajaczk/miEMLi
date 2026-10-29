@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load miemli %}
+{% block tytul %}Szukaj · miemli{% endblock %}
+{% block tresc %}
+<main class="tresc">
+  <h1>Szukaj</h1>
+  <p class="muted adnotacja">Hash, IP, adres e-mail, URL, domena (z subdomenami) albo fragment tematu, nazwy pliku lub komentarza. Wartości rozbrojone (hxxp, [.]) też działają.</p>
+  {% if wynik.komunikat %}<p class="blad">{{ wynik.komunikat }}</p>{% endif %}
+  {% if q and not wynik.komunikat %}
+    {% if wynik.analizy %}
+    <table>
+      <thead><tr><th>Data</th><th>Plik</th><th>Temat</th><th>Werdykt</th><th>Analityk</th><th>Dopasowanie</th></tr></thead>
+      <tbody>
+      {% for a in wynik.analizy %}
+        <tr>
+          <td class="muted">{{ a.utworzono|date:"Y-m-d H:i" }}</td>
+          <td><a href="{% url 'analizy:szczegoly' a.pk %}">{{ a.nazwa_pliku }}</a></td>
+          <td>{{ a.temat_wiadomosci|default:"—" }}</td>
+          <td>{% if a.werdykt %}<span class="b {{ a.werdykt|klasa_werdyktu_analityka }}">{{ a.get_werdykt_display }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td class="muted">{{ a.utworzyl.username }}</td>
+          <td class="mono">{{ wynik.dopasowania|klucz:a.pk }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if wynik.obcieto %}<p class="muted">Pokazano 200 najnowszych analiz.</p>{% endif %}
+    {% else %}
+    <p class="muted">Nie znaleziono analiz.</p>
+    {% endif %}
+  {% endif %}
+</main>
+{% endblock %}

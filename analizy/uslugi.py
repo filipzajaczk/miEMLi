@@ -49,6 +49,7 @@ def utworz_lub_otworz(
                 numer=i["id"],
                 typ=i["typ"],
                 wartosc=bez_nul(i["wartosc"]),
+                skrot=IOC.skrot_dla(i["typ"], bez_nul(i["wartosc"])),
                 etykieta=bez_nul(i.get("etykieta")),
                 zrodlo=(i.get("zrodlo") or "")[:10],
                 hashe=i.get("hashe"),

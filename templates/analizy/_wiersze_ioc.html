@@ -5,6 +5,7 @@
       <td class="mono gl-{% if glebokosc > 6 %}6{% else %}{{ glebokosc }}{% endif %}">
         {% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% with ob=obrazki_sha|klucz:i.wartosc %}{% with kod=ob|pierwsza_podejrzana_uwaga %}{% if kod %} <span class="b warn" title="Nietypowy obrazek — szczegóły po rozwinięciu">{{ kod|opis_uwagi_obrazka }}: {{ ob.format_wykryty }}</span>{% endif %}{% endwith %}{% endwith %}{% if i|z_archiwum %} <span class="b neutral" title="Plik wyodrębniony z archiwum {{ i.rodzic.etykieta }}">wyodrębniony z archiwum {{ i.rodzic.etykieta }}</span>{% endif %}<div class="muted">sha256 {{ i.wartosc }}</div>{% else %}{{ i|rozbrojony }}{% endif %}
         {% if i.typ != "plik" and i.etykieta %}<div class="muted">{{ i.etykieta }}</div>{% endif %}
+        {% with n=inne|klucz:i.pk %}{% if n %}<div><a class="b neutral" href="{% url 'szukaj' %}?q={{ i.wartosc|urlencode }}" title="Pokaż analizy z tym artefaktem">{{ n|w_innych_analizach }}</a></div>{% endif %}{% endwith %}
       </td>
       <td class="komorka">{% with w=wz.gti %}{% include "analizy/_wzbogacenie_gti.html" %}{% endwith %}</td>
       <td class="komorka">{% with w=wz.censys %}{% include "analizy/_wzbogacenie_censys.html" %}{% endwith %}</td>

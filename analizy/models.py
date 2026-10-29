@@ -53,6 +53,8 @@ class IOC(models.Model):
     zrodlo = models.CharField(max_length=10, choices=ZRODLA)
     hashe = models.JSONField(null=True, blank=True)
     haslo_archiwum = models.CharField(max_length=255, null=True, blank=True)
+    # sha256 z "typ:wartosc" — indeksowalne porównanie także długich URL-i (odznaki „w N innych analizach”)
+    skrot = models.CharField(max_length=64, db_index=True, default="", blank=True)
     rodzic = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="dzieci")
 
     class Meta:
@@ -61,6 +63,10 @@ class IOC(models.Model):
         ordering = ["numer"]
         verbose_name = "artefakt"
         verbose_name_plural = "artefakty"
+
+    @staticmethod
+    def skrot_dla(typ: str, wartosc: str) -> str:
+        return hashlib.sha256(f"{typ}:{wartosc}".encode()).hexdigest()
 
     def __str__(self):
         return f"{self.typ}: {self.wartosc}"
