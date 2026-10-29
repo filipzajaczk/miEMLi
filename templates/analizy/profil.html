@@ -35,6 +35,14 @@
     </form>
     {% endif %}
     {% endif %}
+
+    <h2>Zmiana hasła</h2>
+    {% if haslo_zmienione %}<p class="b ok">Hasło zostało zmienione.</p>{% endif %}
+    <form method="post" action="{% url 'haslo' %}">
+      {% csrf_token %}
+      {{ form_hasla.as_div }}
+      <button class="btn primary" type="submit">Zmień hasło</button>
+    </form>
   </div>
 </main>
 {% endblock %}
