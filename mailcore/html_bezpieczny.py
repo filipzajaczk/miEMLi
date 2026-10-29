@@ -4,6 +4,7 @@ To pierwsza warstwa. Druga to iframe sandbox + CSP `default-src 'none'; img-src 
 """
 
 import base64
+import re
 from urllib.parse import urlsplit
 
 import nh3
@@ -32,6 +33,7 @@ STYLE = {
     "border-width", "border-style", "border-collapse", "border-spacing", "border-radius",
 }
 KLASY_ZASTRZEZONE = {"link", "obraz-zewnetrzny", "obrazek-pominiety"}
+_HOST = re.compile(r"[a-z0-9.-]{1,253}|[0-9a-f:.]{2,45}")
 USUWANE_Z_TRESCIA = {"script", "style", "head", "title", "form", "iframe", "object", "embed", "noscript", "template", "svg", "math"}
 
 
@@ -76,10 +78,11 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
                     zastepczy = soup.new_tag("span", attrs={"class": "obrazek-pominiety"})
                     zastepczy.string = f"[obrazek pominięty{powod}]"
                     tag.replace_with(zastepczy)
-            elif host := _host_zewnetrzny(src):
+            elif src.lower().startswith(("http://", "https://")):
                 # tylko host: ścieżka i parametry bywają identyfikatorem ofiary (piksel śledzący)
+                host = _host_zewnetrzny(src)
                 zastepczy = soup.new_tag("span", attrs={"class": "obraz-zewnetrzny"})
-                zastepczy.string = f"[obraz zewnętrzny: {rozbroj('domena', host)}]"
+                zastepczy.string = f"[obraz zewnętrzny: {rozbroj('domena', host)}]" if host else "[obraz zewnętrzny]"
                 tag.replace_with(zastepczy)
             else:
                 tag.attrs.pop("src", None)
@@ -90,12 +93,14 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
 
 
 def _host_zewnetrzny(src: str) -> str | None:
-    if not src.lower().startswith(("http://", "https://")):
-        return None
+    """Host w postaci ASCII (punycode — homoglify widoczne), albo None, gdy nie wygląda na domenę/IP:
+    tekst ramki nie może być dowolnym napisem atakującego."""
     try:
-        return urlsplit(src).hostname or None
-    except ValueError:
+        host = urlsplit(src).hostname or ""
+        host = host.encode("idna").decode("ascii")
+    except (ValueError, UnicodeError):
         return None
+    return host if _HOST.fullmatch(host) else None
 
 
 def ponownie_oczysc(html: str) -> str:

@@ -39,7 +39,8 @@ CSP_PODGLADU = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sa
 SZABLON_PODGLADU = (
     "<!doctype html><html><head><meta charset=\"utf-8\"><style>"
     "body{font-family:system-ui,sans-serif;font-size:14px;margin:16px;color:#222;background:#fff}"
-    ".link{color:#0645ad;text-decoration:underline;cursor:help}"
+    # outline nie jest na liście stylów maila — nie da się go wyłączyć, link zawsze widać
+    ".link{color:#0645ad;text-decoration:underline;cursor:help;outline:1px dashed #0645ad;outline-offset:1px}"
     "img{max-width:100%;height:auto}"
     ".obrazek-pominiety,.obraz-zewnetrzny{display:inline-block;border:1px dashed #999;color:#666;padding:4px 8px;font-size:12px}"
     "</style></head><body>{tresc}</body></html>"

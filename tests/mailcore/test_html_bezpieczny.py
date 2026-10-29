@@ -100,7 +100,7 @@ def test_obraz_zewnetrzny():
     assert "logo.png" not in wynik and "jan.kowalski" not in wynik and "<img" not in wynik
 
 
-@pytest.mark.parametrize("src", ["javascript:alert(1)", "//", "data:image/svg+xml,x", "https://"])
+@pytest.mark.parametrize("src", ["javascript:alert(1)", "//", "data:image/svg+xml,x"])
 def test_obraz_bez_hosta_usuniety(src):
     wynik = bezpieczny_html(f'<img src="{src}" alt="a">', [])
     assert "obraz zewnętrzny" not in wynik and "svg" not in wynik and "javascript" not in wynik
@@ -109,3 +109,13 @@ def test_obraz_bez_hosta_usuniety(src):
 def test_obraz_cid_bez_zmian():
     wynik = bezpieczny_html('<img src="cid:logo">', [], {"logo": b"\x89PNG"})
     assert 'src="data:image/png;base64,' in wynik and "obraz zewnętrzny" not in wynik
+
+
+@pytest.mark.parametrize("src,napis", [
+    ("https://konto zablokowane zadzwon 555.evil.com/a.png", "[obraz zewnętrzny]"),
+    ("https://раураl.com/a.png", "[obraz zewnętrzny: xn--l-7sba6dbr[.]com]"),
+    ("https://" + "a" * 300 + ".com/x.png", "[obraz zewnętrzny]"),
+    ("https://", "[obraz zewnętrzny]"),
+])
+def test_host_obrazu_ograniczony(src, napis):
+    assert napis in bezpieczny_html(f'<img src="{src}">', [])
