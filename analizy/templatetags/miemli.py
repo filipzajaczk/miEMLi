@@ -214,3 +214,8 @@ def ip_publiczny(wartosc) -> bool:
         return ipaddress.ip_address(wartosc).is_global
     except (TypeError, ValueError):
         return False
+
+
+@register.filter
+def w_innych_analizach(n) -> str:
+    return "w 1 innej analizie" if n == 1 else f"w {n} innych analizach"

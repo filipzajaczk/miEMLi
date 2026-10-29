@@ -4,6 +4,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from django.db.models import Count
 from django.utils import timezone
 
 from .models import IOC, Analiza, Wzbogacenie
@@ -143,3 +144,13 @@ def geo_ip(ioc, wzbogacenia: dict[int, dict[str, WidokWzbogacenia]]) -> dict[str
         else:
             wynik[i.wartosc] = {"stan": "brak"}
     return wynik
+
+
+def inne_analizy(analiza: Analiza) -> dict[int, int]:
+    """ioc.pk → w ilu innych analizach wystąpił ten sam artefakt (tylko > 0). Dwa zapytania niezależnie od liczby."""
+    wlasne = dict(analiza.ioc.values_list("pk", "skrot"))
+    liczby = dict(
+        IOC.objects.filter(skrot__in=set(wlasne.values()) - {""}).exclude(analiza=analiza)
+        .values("skrot").annotate(n=Count("analiza", distinct=True)).values_list("skrot", "n")
+    )
+    return {pk: liczby[s] for pk, s in wlasne.items() if liczby.get(s)}

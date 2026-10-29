@@ -148,6 +148,7 @@ def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> di
     }
     kontekst["wzbogacenia"], kontekst["trwa"] = prezentacja.widoki_wzbogacen(analiza)
     kontekst["geo"] = prezentacja.geo_ip((i for i, _ in ioc), kontekst["wzbogacenia"])
+    kontekst["inne"] = prezentacja.inne_analizy(analiza)
     kontekst["klient_w"] = analiza_w.get("klient") or {}
     kontekst["arc"] = analiza_w.get("arc")
     kontekst["obrazki_sha"] = prezentacja.obrazki_po_sha(analiza.wynik)
@@ -293,6 +294,7 @@ def wzbogacenie(request, pk):
         "trwa": trwa, "wid": wid, "obrazki_sha": prezentacja.obrazki_po_sha(analiza.wynik),
         "hopy": prezentacja.hopy(analiza.wynik["analiza"][wid]["received"]),
         "geo": prezentacja.geo_ip((i for i, _ in ioc), wzbogacenia),
+        "inne": prezentacja.inne_analizy(analiza),
     })
 
 
