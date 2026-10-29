@@ -33,8 +33,9 @@
 - Przy integracji z RTIR: źródło oryginału dla Joe = pobranie z RTIR w workerze (`zlec_wysylke` przyjmuje bajty).
 - 2026-10-29: etap A (branch `etap-a`): werdykt analityka (ekran + kolumna i filtr na liście), zmiana
   hasła w profilu (inne sesje wylogowane), audyt `/audyt/` tylko dla `is_staff`, „IOC” → „Artefakty”
-  w interfejsie, podgląd HTML z przyciskami i ramkami obrazów zewnętrznych (osobny commit — `git revert`
-  przywraca poprzedni wygląd; dotyczy analiz utworzonych po zmianie), 11 poprawek z przeglądów.
+  w interfejsie, podgląd HTML z przyciskami i ramkami obrazów zewnętrznych (dwa commity: „Podgląd HTML:
+  wygląd przycisków…” i „Podgląd HTML: link zawsze widoczny…” — `git revert` obu przywraca poprzedni
+  wygląd; dotyczy analiz utworzonych po zmianie), 11 poprawek z przeglądów + poprawki z końcowego przeglądu.
 - Plan dalej: etap B — oś czasu nagłówków + wyszukiwarka analiz (wykorzysta kolumnę `temat_wiadomosci`);
   etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
@@ -54,6 +55,9 @@
 
 - Wyścig przy dwóch równoczesnych uploadach tego samego pliku, sprzątanie starych `Wzbogacenie`,
   kolizje ponowień zadań, limit prób logowania.
+- Z końcowego przeglądu: proces parsera blokujący SIGXCPU (limit CPU) raportowany jako „pamięć”;
+  `rozbroj_tekst` nie rozbraja IP i domen z Unicode w danych GTI (tekst i tak nie jest klikalny);
+  otwarte szczegóły artefaktu są pobierane ponownie przy każdym odpytywaniu (co 2 s).
 - Usunięcie analizy kasuje (CASCADE) jej zdarzenia — w audycie zostaje tylko wpis „Usunięcie analizy”.
 
 ## Znane ograniczenia
