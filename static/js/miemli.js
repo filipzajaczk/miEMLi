@@ -22,6 +22,11 @@ document.addEventListener("click", (zdarzenie) => {
   }
 });
 
+// Zmiana sekcji podmienia #glowna — wcześniej otwarte wiersze już nie dotyczą widoku
+document.addEventListener("htmx:beforeSwap", (zdarzenie) => {
+  if (zdarzenie.detail.target && zdarzenie.detail.target.id === "glowna") otwarte.clear();
+});
+
 // Odpytywanie podmienia tabelę artefaktów (OOB) — ponownie rozwijamy wiersze otwarte wcześniej.
 // Zdarzenie przychodzi raz na każdy podmieniony element; klasa „otwarty” chroni przed zdublowaniem.
 document.addEventListener("htmx:oobAfterSwap", () => {

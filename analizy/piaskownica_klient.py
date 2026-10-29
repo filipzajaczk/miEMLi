@@ -49,6 +49,8 @@ def _tekst_lub_none(x) -> bool:
 
 
 def _zalacznik_ok(z, glebokosc: int) -> bool:
+    if glebokosc > MAKS_GLEBOKOSC_DRZEWA:
+        return False
     if not isinstance(z, dict) or not isinstance(z.get("nazwa"), str):
         return False
     if not isinstance(z.get("sha256"), str) or not _SHA256.fullmatch(z["sha256"]):
@@ -71,6 +73,10 @@ def _wiadomosc_ok(w, glebokosc: int = 0) -> bool:
         return False
     if not _lista(w.get("do", []), str) or not _lista(w.get("obrazki", []), dict):
         return False
+    for o in w.get("obrazki", []):
+        uwagi = o.get("uwagi", [])
+        if not _lista(uwagi, dict) or not all(isinstance(u.get("kod"), str) for u in uwagi):
+            return False
     ostrzezenia = w.get("ostrzezenia", [])
     if not _lista(ostrzezenia, dict) or not all(_tekst_lub_none(o.get("kod")) for o in ostrzezenia):
         return False
@@ -88,7 +94,11 @@ def _analiza_ok(a) -> bool:
 def waliduj_wynik(wynik: object) -> dict:
     if not isinstance(wynik, dict):
         raise _blad()
-    if not _wiadomosc_ok(wynik.get("wiadomosc")):
+    try:
+        poprawna = _wiadomosc_ok(wynik.get("wiadomosc"))
+    except RecursionError:
+        poprawna = False
+    if not poprawna:
         raise _blad()
     if not _analiza_ok(wynik.get("analiza")):
         raise _blad()

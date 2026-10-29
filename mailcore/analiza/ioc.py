@@ -80,7 +80,8 @@ class _Budowniczy:
             if not ipaddress.ip_address(host).is_global:
                 return  # URL do prywatnego IP (v4 lub v6)
         except ValueError:
-            pass
+            if re.fullmatch(r"[\d.]+", host):
+                return  # skrócone/dziesiętne IPv4 (127.1, 3232235777) — nie wysyłamy do dostawców
         url_id = self.dodaj("url", url, rodzic_id, zrodlo, etykieta)
         self.domena_lub_ip(host, url_id, zrodlo)
 

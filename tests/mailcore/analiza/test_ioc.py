@@ -138,3 +138,8 @@ def test_url_do_prywatnego_ipv6_pominiety(zbuduj_mail):
                    ("http://[fd00::1]/x", "http://[::1]/y", "http://10.0.0.5/z", "http://[2001:4860::8888]/ok"))
     lista = ioc(zbuduj_mail, tekst="x", html=html)
     assert [i.wartosc for i in lista if i.typ == "url"] == ["http://[2001:4860::8888]/ok"]
+
+
+def test_url_skrocone_ip_prywatne_pominiete(zbuduj_mail):
+    html = "".join(f'<a href="{u}">x</a>' for u in ("http://127.1/", "http://10.1/a", "http://3232235777/"))
+    assert not [i for i in ioc(zbuduj_mail, tekst="x", html=html) if i.typ == "url"]

@@ -1,12 +1,15 @@
 from django.db import migrations, models
+from django.db.models import Value
+from django.db.models.fields.json import KT
+from django.db.models.functions import Coalesce, Substr
 
 
 def uzupelnij_temat(apps, schema_editor):
+    # jedno UPDATE w bazie — bez ładowania (nawet kilkunastomegabajtowych) wyników do pamięci
     Analiza = apps.get_model("analizy", "Analiza")
-    for a in Analiza.objects.filter(temat_wiadomosci="").only("pk", "wynik").iterator(chunk_size=200):
-        temat = ((a.wynik or {}).get("wiadomosc") or {}).get("temat")
-        if isinstance(temat, str) and temat:
-            Analiza.objects.filter(pk=a.pk).update(temat_wiadomosci=temat.replace("\x00", "")[:500])
+    Analiza.objects.filter(temat_wiadomosci="").update(
+        temat_wiadomosci=Coalesce(Substr(KT("wynik__wiadomosc__temat"), 1, 500), Value(""))
+    )
 
 
 class Migration(migrations.Migration):

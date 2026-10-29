@@ -82,14 +82,20 @@ def _zapytanie(sciezka: str, pola: dict, baza: str, pliki: dict | None = None,
 
 
 def _wykonaj(sciezka: str, klucz: str, pola: dict, baza: str, przetworz, pliki=None, czas=TIMEOUT,
-             czas_calkowity=CZAS_CALKOWITY) -> WynikJoe:
+             czas_calkowity=CZAS_CALKOWITY, po_czasie_ponawiaj=True) -> WynikJoe:
     try:
         kod, odp = _zapytanie(sciezka, {"apikey": klucz, **pola}, baza, pliki, czas, czas_calkowity)
     except _Nieprawidlowa:
         return WynikJoe("niedostepny", blad=NIEPRAWIDLOWA)
-    except httpx.InvalidURL:
+    except (httpx.InvalidURL, httpx.UnsupportedProtocol):
         return WynikJoe("niedostepny", blad="Nieprawidłowy adres Joe (JOE_API_URL).")
-    except (_ZaDlugo, httpx.HTTPError):
+    except _ZaDlugo:
+        if po_czasie_ponawiaj:
+            return WynikJoe("niedostepny", blad="Joe niedostępny.", ponawiac=True)
+        # Joe mógł już przyjąć próbkę — ponowienie groziłoby podwójną wysyłką
+        return WynikJoe("niedostepny", blad="Joe nie odpowiedział w czasie — sprawdź na koncie Joe, "
+                                            "czy próbka nie została przyjęta.")
+    except httpx.HTTPError:
         return WynikJoe("niedostepny", blad="Joe niedostępny.", ponawiac=True)
     if kod in (401, 403):
         return WynikJoe("odrzucony", blad="Klucz Joe odrzucony — sprawdź go w profilu.", klucz_odrzucony=True)
@@ -114,7 +120,7 @@ def wyslij(klucz: str, dane: bytes, nazwa_pliku: str, komentarz: str, baza: str 
         "/v2/submission/new", klucz, {**PARAMETRY, "comments": komentarz}, baza,
         lambda d: {"id_zgloszenia": _identyfikator(d.get("submission_id"))},
         pliki={"sample": (nazwa_pliku, dane, "application/octet-stream")}, czas=CZAS_WYSYLKI,
-        czas_calkowity=CZAS_CALKOWITY_WYSYLKI,
+        czas_calkowity=CZAS_CALKOWITY_WYSYLKI, po_czasie_ponawiaj=False,
     )
 
 

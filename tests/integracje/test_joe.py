@@ -135,12 +135,12 @@ class _Kapiacy(httpx.SyncByteStream):
         yield b'{"submission_id": "1"}}'
 
 
-@pytest.mark.parametrize("wywolanie,limit", [
-    (lambda: joe.wyslij(KLUCZ, b"x", "a.eml", "c"), joe.CZAS_CALKOWITY_WYSYLKI),
-    (lambda: joe.stan_zgloszenia(KLUCZ, "1"), joe.CZAS_CALKOWITY),
+@pytest.mark.parametrize("wywolanie,limit,ponawiac", [
+    (lambda: joe.wyslij(KLUCZ, b"x", "a.eml", "c"), joe.CZAS_CALKOWITY_WYSYLKI, False),
+    (lambda: joe.stan_zgloszenia(KLUCZ, "1"), joe.CZAS_CALKOWITY, True),
 ])
 @respx.mock
-def test_limit_calkowity(monkeypatch, wywolanie, limit):
+def test_limit_calkowity(monkeypatch, wywolanie, limit, ponawiac):
     respx.post(url__startswith=B).respond(200, stream=_Kapiacy())
     teraz = [0.0]
 
@@ -150,7 +150,7 @@ def test_limit_calkowity(monkeypatch, wywolanie, limit):
 
     monkeypatch.setattr(joe, "_zegar", zegar)
     w = wywolanie()
-    assert (w.status, w.blad, w.ponawiac) == ("niedostepny", "Joe niedostępny.", True)
+    assert (w.status, w.ponawiac) == ("niedostepny", ponawiac)
 
 
 @respx.mock
@@ -170,3 +170,17 @@ def test_odrzucony_klucz_oznaczony(kod):
 def test_odrzucony_plik_bez_oznaczenia_klucza():
     respx.post(f"{B}/v2/submission/new").respond(400, json={"errors": [{"message": "zly plik"}]})
     assert joe.wyslij(KLUCZ, b"x", "a.eml", "c").klucz_odrzucony is False
+
+
+@respx.mock
+def test_wysylka_po_czasie_bez_ponowienia(monkeypatch):
+    respx.post(f"{B}/v2/submission/new").respond(200, stream=_Kapiacy())
+    teraz = [0.0]
+    monkeypatch.setattr(joe, "_zegar", lambda: teraz.__setitem__(0, teraz[0] + 10) or teraz[0])
+    w = joe.wyslij(KLUCZ, b"x", "a.eml", "c")
+    assert w.status == "niedostepny" and w.ponawiac is False and "sprawdź na koncie Joe" in w.blad
+
+
+def test_nieobslugiwany_protokol_bez_ponowienia():
+    w = joe.info_konta(KLUCZ, "ftp://joe.example/api")
+    assert w.status == "niedostepny" and w.ponawiac is False

@@ -236,3 +236,29 @@ def test_pusty_url_na_produkcji_odmawia(zalogowany, settings, probka):
     r = upload(zalogowany, probka("zip_exe"))
     assert "Sandbox analizy niedostępny" in r.content.decode()
     assert not Analiza.objects.exists()
+
+
+def _gleboko_dzieci(poziomy):
+    z = {"nazwa": "a.zip", "sha256": "a" * 64, "rozmiar": 1, "dzieci": [], "wiadomosc": None}
+    gora = z
+    for _ in range(poziomy):
+        nowy = dict(z, dzieci=[])
+        gora["dzieci"] = [nowy]
+        gora = nowy
+    return z
+
+
+@pytest.mark.parametrize("poziomy", [11, 2000])
+def test_walidacja_glebokie_dzieci(wynik_probki, poziomy):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"]["zalaczniki"] = [_gleboko_dzieci(poziomy)]
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)
+
+
+@pytest.mark.parametrize("uwagi", ["x", ["x"], [{"kod": 1}]])
+def test_walidacja_uwag_obrazkow(wynik_probki, uwagi):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"]["obrazki"] = [{"sha256": "a" * 64, "uwagi": uwagi}]
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)
