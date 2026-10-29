@@ -254,3 +254,9 @@ nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--
 /* Oś czasu */
 .os-czasu .geo { font-family: var(--sans, inherit); font-size: 12px; margin-top: 2px; }
 .os-czasu td .b { display: inline-block; margin: 0 4px 4px 0; }
+/* Wyszukiwarka w pasku */
+form.szukaj input[type=search] {
+  width: 300px; margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 6px; font-size: 13px;
+}
+form.szukaj input[type=search]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }

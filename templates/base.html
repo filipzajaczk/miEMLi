@@ -15,6 +15,9 @@
     {% block pasek %}{% endblock %}
     <span class="sp"></span>
     {% if user.is_authenticated %}
+      <form class="szukaj" method="get" action="{% url 'szukaj' %}" role="search">
+        <input type="search" name="q" value="{{ q|default:'' }}" placeholder="Szukaj: domena, IP, hash, temat…" maxlength="2048" aria-label="Szukaj w analizach">
+      </form>
       {% if user.is_staff %}<a class="muted" href="{% url 'audyt' %}">Audyt</a>{% endif %}
       <a class="muted" href="{% url 'profil' %}">{{ user.username }}</a>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
