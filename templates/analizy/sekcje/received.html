@@ -1,20 +1,30 @@
 {% load miemli %}
-<h2>Ścieżka Received <span class="muted">(najstarszy hop pierwszy)</span></h2>
-{% if hopy %}
+{% if klient_w.x_mailer or klient_w.user_agent or klient_w.x_originating_ip or arc %}
+<h2>Klient i przekazanie</h2>
+<dl class="meta">
+  {% if klient_w.x_mailer %}<dt>X-Mailer</dt><dd class="mono">{{ klient_w.x_mailer }}</dd>{% endif %}
+  {% if klient_w.user_agent %}<dt>User-Agent</dt><dd class="mono">{{ klient_w.user_agent }}</dd>{% endif %}
+  {% if klient_w.x_originating_ip %}{% with g=geo|klucz:klient_w.x_originating_ip %}<dt>X-Originating-IP</dt><dd class="mono">{{ klient_w.x_originating_ip|rozbroj:"ip" }}{% if not klient_w.x_originating_ip|ip_publiczny %} <span class="muted">sieć wewnętrzna</span>{% elif g.stan == "gotowe" %} · {{ g.kraj|default:"?" }}{% if g.asn %} · AS{{ g.asn }}{% endif %}{% endif %}</dd>{% endwith %}{% endif %}
+</dl>
+{% if arc %}
+<div class="label">ARC — {% if arc.kompletny %}łańcuch kompletny{% else %}<span class="b warn">łańcuch niekompletny</span>{% endif %}{% if arc.cv %} · cv={{ arc.cv }}{% endif %}</div>
 <table>
-  <thead><tr><th>#</th><th>Od</th><th>Przez</th><th>IP</th><th>Czas</th><th>Opóźnienie</th></tr></thead>
+  <thead><tr><th>i</th><th>Serwer</th><th>SPF</th><th>DKIM</th><th>DMARC</th></tr></thead>
   <tbody>
-  {% for h in hopy %}
-    <tr>
-      <td class="muted">{{ h.lp }}</td>
-      <td class="mono">{{ h.od|default:"—" }}</td>
-      <td class="mono">{{ h.przez|default:"—" }}</td>
-      <td class="mono">{{ h.ip|rozbroj:"ip"|default:"—" }}</td>
-      <td class="muted">{% if h.czas_dt %}{{ h.czas_dt|date:"Y-m-d H:i:s O" }}{% else %}—{% endif %}</td>
-      <td>{% if h.opoznienie is not None %}{{ h.opoznienie }} s{% else %}—{% endif %}</td>
-    </tr>
+  {% for o in arc.ogniwa %}
+    <tr><td class="muted">{{ o.i }}</td><td class="mono">{{ o.serwer|default:"—" }}</td>
+      <td>{{ o.spf|default:"—" }}</td><td>{{ o.dkim|default:"—" }}</td><td>{{ o.dmarc|default:"—" }}</td></tr>
   {% endfor %}
   </tbody>
+</table>
+<p class="muted">Wyniki deklarowane przez serwery pośredniczące — podpisy ARC nie są weryfikowane kryptograficznie.</p>
+{% endif %}
+{% endif %}
+<h2>Ścieżka Received <span class="muted">(najstarszy serwer pierwszy)</span></h2>
+{% if hopy %}
+<table class="os-czasu">
+  <thead><tr><th>#</th><th>Od</th><th>Przez</th><th>IP</th><th>Czas</th><th>Opóźnienie</th><th>Uwagi</th></tr></thead>
+  <tbody id="os-czasu-cialo">{% include "analizy/_os_czasu_wiersze.html" %}</tbody>
 </table>
 {% else %}
 <p class="muted">Brak nagłówków Received.</p>

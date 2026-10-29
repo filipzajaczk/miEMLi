@@ -251,3 +251,6 @@ nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--
 .profil form ul { margin: 0 0 8px 18px; color: var(--muted); font-size: 12px; }
 .profil .helptext { color: var(--muted); font-size: 12px; }
 .filtry-audytu input[type=date] { color-scheme: dark; }
+/* Oś czasu */
+.os-czasu .geo { font-family: var(--sans, inherit); font-size: 12px; margin-top: 2px; }
+.os-czasu td .b { display: inline-block; margin: 0 4px 4px 0; }

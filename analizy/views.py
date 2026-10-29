@@ -147,6 +147,9 @@ def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> di
         },
     }
     kontekst["wzbogacenia"], kontekst["trwa"] = prezentacja.widoki_wzbogacen(analiza)
+    kontekst["geo"] = prezentacja.geo_ip((i for i, _ in ioc), kontekst["wzbogacenia"])
+    kontekst["klient_w"] = analiza_w.get("klient") or {}
+    kontekst["arc"] = analiza_w.get("arc")
     kontekst["obrazki_sha"] = prezentacja.obrazki_po_sha(analiza.wynik)
     if sekcja == "joe":
         kontekst.update(_kontekst_joe(request, analiza))
@@ -280,10 +283,16 @@ def joe_historia(request, pk):
 def wzbogacenie(request, pk):
     """Fragmenty OOB dla odpytywania htmx: panel IOC, tabela IOC i sam element odpytujący."""
     analiza = get_object_or_404(Analiza, pk=pk)
+    wid = request.GET.get("wiadomosc", "0")
+    if wid not in analiza.wynik["analiza"]:
+        raise Http404("Nie ma takiej wiadomości")
     wzbogacenia, trwa = prezentacja.widoki_wzbogacen(analiza)
+    ioc = prezentacja.drzewo_ioc(analiza)
     return render(request, "analizy/_wzbogacenie_oob.html", {
-        "analiza": analiza, "ioc": prezentacja.drzewo_ioc(analiza), "wzbogacenia": wzbogacenia,
-        "trwa": trwa, "wid": "0", "obrazki_sha": prezentacja.obrazki_po_sha(analiza.wynik),
+        "analiza": analiza, "ioc": ioc, "wzbogacenia": wzbogacenia,
+        "trwa": trwa, "wid": wid, "obrazki_sha": prezentacja.obrazki_po_sha(analiza.wynik),
+        "hopy": prezentacja.hopy(analiza.wynik["analiza"][wid]["received"]),
+        "geo": prezentacja.geo_ip((i for i, _ in ioc), wzbogacenia),
     })
 
 

@@ -199,3 +199,18 @@ def pierwsza_podejrzana_uwaga(obraz):
 def klasa_werdyktu_analityka(kod):
     return {"phishing": "bad", "malware": "bad", "bec": "bad", "oszustwo": "bad", "spam": "warn",
             "czysty": "ok"}.get(kod, "neutral")
+
+
+@register.filter
+def klasa_uwagi_hopu(kod):
+    return {"CZAS_WSTECZ": "bad", "CZAS_W_PRZYSZLOSCI": "bad", "DLUGI_POSTOJ": "warn"}.get(kod, "neutral")
+
+
+@register.filter
+def ip_publiczny(wartosc) -> bool:
+    import ipaddress
+
+    try:
+        return ipaddress.ip_address(wartosc).is_global
+    except (TypeError, ValueError):
+        return False

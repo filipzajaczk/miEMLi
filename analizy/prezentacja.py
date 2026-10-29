@@ -124,3 +124,22 @@ PODEJRZANE_UWAGI = {"FORMAT_NIEOBSLUGIWANY", "FORMAT_NIEZGODNY", "ZA_DUZO_PIKSEL
 def obrazki_po_sha(wynik: dict) -> dict[str, dict]:
     """Wpisy raportu obrazków z całego drzewa wiadomości, po SHA256 (do tabeli IOC i szczegółów)."""
     return {o["sha256"]: o for w in wiadomosci(wynik).values() for o in w.get("obrazki", [])}
+
+
+def geo_ip(ioc, wzbogacenia: dict[int, dict[str, WidokWzbogacenia]]) -> dict[str, dict]:
+    """Kraj i ASN adresów IP z istniejących wyników wzbogacenia — GTI ma pierwszeństwo, braki uzupełnia Censys."""
+    wynik = {}
+    for i in ioc:
+        if i.typ != "ip":
+            continue
+        widoki = [wzbogacenia.get(i.pk, {}).get(d) for d in ("gti", "censys")]
+        gotowe = [w.skrot for w in widoki if w and w.status == "gotowe"]
+        if gotowe:
+            pole = lambda nazwa: next((s.get(nazwa) for s in gotowe if s.get(nazwa)), None)  # noqa: E731
+            wynik[i.wartosc] = {"stan": "gotowe", "kraj": pole("kraj"), "asn": pole("asn"),
+                                "wlasciciel": pole("wlasciciel")}
+        elif any(w and w.status == "oczekuje" for w in widoki):
+            wynik[i.wartosc] = {"stan": "oczekuje"}
+        else:
+            wynik[i.wartosc] = {"stan": "brak"}
+    return wynik
