@@ -7,6 +7,7 @@ from ..model import Wiadomosc, Zalacznik
 from .ioc import IOC, zbuduj_ioc
 from .linki import Link, wyciagnij_linki
 from .podszywanie import Sygnal, wykryj_podszywanie
+from .klient import Klient, LancuchArc, klient, lancuch_arc
 from .received import Hop, sciezka_received, sygnaly_czasu
 from .uwierzytelnienie import Uwierzytelnienie, sprawdz_uwierzytelnienie
 
@@ -17,6 +18,8 @@ class AnalizaWiadomosci:
     received: list[Hop]
     sygnaly: list[Sygnal]
     linki: list[Link]
+    klient: Klient
+    arc: LancuchArc | None
 
 
 @dataclass
@@ -43,6 +46,7 @@ def analizuj(w: Wiadomosc, ignorowane_domeny: frozenset[str] = frozenset()) -> W
     for x in wszystkie_wiadomosci(w):
         hopy = sciezka_received(x)
         wiadomosci[x.id] = AnalizaWiadomosci(
-            sprawdz_uwierzytelnienie(x), hopy, wykryj_podszywanie(x) + sygnaly_czasu(x, hopy), wyciagnij_linki(x)
+            sprawdz_uwierzytelnienie(x), hopy, wykryj_podszywanie(x) + sygnaly_czasu(x, hopy), wyciagnij_linki(x),
+            klient(x), lancuch_arc(x),
         )
     return WynikAnalizy(wiadomosci, zbuduj_ioc(w, wiadomosci, ignorowane_domeny))
