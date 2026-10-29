@@ -30,7 +30,7 @@
             title="Kliknij, aby dodać komentarz lub usunąć analizę">
           <td class="muted">{{ a.utworzono|date:"Y-m-d H:i" }}</td>
           <td><a href="{% url 'analizy:szczegoly' a.pk %}">{{ a.nazwa_pliku }}</a></td>
-          <td>{{ a.temat|default:"—" }}</td>
+          <td>{{ a.temat_wiadomosci|default:"—" }}</td>
           <td>{% if a.werdykt %}<span class="b {{ a.werdykt|klasa_werdyktu_analityka }}">{{ a.get_werdykt_display }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
           <td class="muted">{% if a.ticket_id %}#{{ a.ticket_id }}{% else %}—{% endif %}</td>
           <td class="muted">{{ a.utworzyl.username }}{% if a.notatka %} <span class="b neutral" title="{{ a.notatka|truncatechars:200 }}">komentarz</span>{% endif %}</td>

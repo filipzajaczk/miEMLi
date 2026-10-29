@@ -3,6 +3,7 @@ parser i traktuje odpowiedź jak dane niezaufane (walidacja struktury i limitów
 
 import json
 import logging
+import re
 import time
 from urllib.parse import quote
 
@@ -35,12 +36,61 @@ def _blad() -> AnalizaPrzerwana:
     return AnalizaPrzerwana("nieprawidlowa_odpowiedz")
 
 
+MAKS_GLEBOKOSC_DRZEWA = 10
+_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def _lista(x, typ=None) -> bool:
+    return isinstance(x, list) and (typ is None or all(isinstance(e, typ) for e in x))
+
+
+def _tekst_lub_none(x) -> bool:
+    return x is None or isinstance(x, str)
+
+
+def _zalacznik_ok(z, glebokosc: int) -> bool:
+    if not isinstance(z, dict) or not isinstance(z.get("nazwa"), str):
+        return False
+    if not isinstance(z.get("sha256"), str) or not _SHA256.fullmatch(z["sha256"]):
+        return False
+    if not isinstance(z.get("rozmiar"), int) or isinstance(z["rozmiar"], bool):
+        return False
+    if not _lista(z.get("dzieci")) or not all(_zalacznik_ok(d, glebokosc + 1) for d in z["dzieci"]):
+        return False
+    return z.get("wiadomosc") is None or _wiadomosc_ok(z["wiadomosc"], glebokosc + 1)
+
+
+def _wiadomosc_ok(w, glebokosc: int = 0) -> bool:
+    """Drzewo wiadomości od (potencjalnie przejętego) parsera — szablony zakładają te typy."""
+    if glebokosc > MAKS_GLEBOKOSC_DRZEWA or not isinstance(w, dict) or not isinstance(w.get("id"), str):
+        return False
+    if not all(_tekst_lub_none(w.get(p)) for p in ("temat", "od", "data", "tekst", "html_bezpieczny")):
+        return False
+    naglowki = w.get("naglowki")
+    if not _lista(naglowki) or not all(_lista(n, str) and len(n) == 2 for n in naglowki):
+        return False
+    if not _lista(w.get("do", []), str) or not _lista(w.get("obrazki", []), dict):
+        return False
+    ostrzezenia = w.get("ostrzezenia", [])
+    if not _lista(ostrzezenia, dict) or not all(_tekst_lub_none(o.get("kod")) for o in ostrzezenia):
+        return False
+    return _lista(w.get("zalaczniki")) and all(_zalacznik_ok(z, glebokosc) for z in w["zalaczniki"])
+
+
+def _analiza_ok(a) -> bool:
+    return isinstance(a, dict) and all(
+        isinstance(k, str) and isinstance(v, dict)
+        and all(_lista(v.get(p, []), dict) for p in ("received", "sygnaly", "linki"))
+        for k, v in a.items()
+    )
+
+
 def waliduj_wynik(wynik: object) -> dict:
     if not isinstance(wynik, dict):
         raise _blad()
-    if not isinstance(wynik.get("wiadomosc"), dict) or not isinstance(wynik["wiadomosc"].get("id"), str):
+    if not _wiadomosc_ok(wynik.get("wiadomosc")):
         raise _blad()
-    if not isinstance(wynik.get("analiza"), dict):
+    if not _analiza_ok(wynik.get("analiza")):
         raise _blad()
     lista = wynik.get("ioc")
     if not isinstance(lista, list) or len(lista) > MAKS_IOC:

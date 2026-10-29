@@ -50,7 +50,7 @@ FILTRY_WERDYKTU = [("", "Wszystkie"), ("brak", "Bez werdyktu")] + list(Analiza.W
 
 
 def _lista(request, form=None, blad=None, status=200):
-    analizy = Analiza.objects.select_related("utworzyl")
+    analizy = Analiza.objects.select_related("utworzyl").defer("wynik")
     filtr = request.GET.get("werdykt", "")
     if filtr == "brak":
         analizy = analizy.filter(werdykt="")

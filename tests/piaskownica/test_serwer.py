@@ -152,3 +152,14 @@ def test_gleboko_zagniezdzony_json_z_procesu(adres, monkeypatch):
 def test_proces_niezrzucalny(adres, monkeypatch):
     monkeypatch.setenv("PIASKOWNICA_TEST", "dumpable")
     assert wyslij(adres, b"x")[1] == {"dumpable": 0}
+
+
+@pytest.mark.parametrize("wynik,powod", [
+    ((-9, b"", False, False), "pamiec"),   # SIGKILL bez przekroczenia czasu — OOM killer
+    ((-24, b"", False, False), "czas"),    # SIGXCPU — limit CPU
+    ((-9, b"", True, False), "czas"),      # ubity przez nas po przekroczeniu czasu
+    ((-9, b"x", False, True), "awaria"),   # ubity przez nas po przepełnieniu wyjścia
+])
+def test_kody_zakonczenia(monkeypatch, wynik, powod):
+    monkeypatch.setattr(serwer, "_uruchom", lambda *a: wynik)
+    assert serwer.uruchom_proces(b"x", "a.eml", "", 100) == {"status": "przerwana", "powod": powod}

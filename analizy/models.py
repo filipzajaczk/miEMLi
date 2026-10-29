@@ -18,6 +18,8 @@ class Analiza(models.Model):
     nazwa_pliku = models.CharField(max_length=255)
     wynik = models.JSONField()
     werdykt = models.CharField(max_length=20, blank=True, choices=WERDYKTY)
+    # kopia tematu z wyniku — lista analiz nie musi ładować (dużego) pola wynik
+    temat_wiadomosci = models.CharField(max_length=500, blank=True, default="")
     notatka = models.TextField(blank=True)
     utworzyl = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="analizy")
     utworzono = models.DateTimeField(auto_now_add=True)

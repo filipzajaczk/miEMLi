@@ -136,11 +136,12 @@ def uruchom_proces(dane: bytes, nazwa: str, ignorowane: str, max_rozmiar: int) -
             dane, [f"--nazwa={nazwa}", f"--ignorowane={ignorowane}", f"--max-rozmiar={max_rozmiar}"], katalog_tmp)
     finally:
         shutil.rmtree(katalog_tmp, ignore_errors=True)
-    if czas or kod in (-signal.SIGXCPU, -signal.SIGKILL) and not za_duzo:
+    if czas or kod == -signal.SIGXCPU:
         return przerwana("czas")
     if za_duzo:
         return przerwana("awaria")
-    if kod == KOD_PAMIEC:
+    # SIGKILL, którego nie wysłaliśmy (nie minął czas, wyjście w normie) — OOM killer jądra / limit kontenera
+    if kod in (KOD_PAMIEC, -signal.SIGKILL):
         return przerwana("pamiec")
     if kod != 0:
         return przerwana("awaria")

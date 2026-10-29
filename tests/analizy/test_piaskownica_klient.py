@@ -115,6 +115,49 @@ def test_walidacja(wynik_probki, sposob):
     assert e.value.powod == "nieprawidlowa_odpowiedz"
 
 
+def _gleboko(poziomy):
+    w = {"id": "0", "naglowki": [], "zalaczniki": [], "obrazki": [], "ostrzezenia": [], "do": []}
+    gora = w
+    for n in range(poziomy):
+        dziecko = dict(w, id=f"0.{n}", zalaczniki=[])
+        gora["zalaczniki"] = [{"nazwa": "m.eml", "sha256": "a" * 64, "rozmiar": 1, "dzieci": [],
+                               "wiadomosc": dziecko}]
+        gora = dziecko
+    return w
+
+
+@pytest.mark.parametrize("zepsuj", [
+    lambda w: w["wiadomosc"].update(temat=["lista"]),
+    lambda w: w["wiadomosc"].update(naglowki=[["a"]]),
+    lambda w: w["wiadomosc"].update(naglowki=[[1, "x"]]),
+    lambda w: w["wiadomosc"].update(do="jan@x"),
+    lambda w: w["wiadomosc"].update(html_bezpieczny=5),
+    lambda w: w["wiadomosc"].update(zalaczniki="x"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(sha256="zly"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(rozmiar="1"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(nazwa=None),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(dzieci=[1]),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(wiadomosc="x"),
+    lambda w: w["wiadomosc"].update(obrazki=["x"]),
+    lambda w: w["wiadomosc"].update(ostrzezenia=[{"kod": 1}]),
+    lambda w: w.update(wiadomosc=_gleboko(11)),
+    lambda w: w["analiza"].update({"0": []}),
+    lambda w: w["analiza"].update({"0": {"received": "x", "sygnaly": [], "linki": []}}),
+    lambda w: w["analiza"].update({"0": {"received": [], "sygnaly": [], "linki": None}}),
+])
+def test_walidacja_drzewa(wynik_probki, zepsuj):
+    w = copy.deepcopy(wynik_probki)
+    zepsuj(w)
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)
+
+
+def test_walidacja_glebokosc_10_ok(wynik_probki):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"] = _gleboko(10)
+    assert waliduj_wynik(w) is w
+
+
 def test_walidacja_poprawnego(wynik_probki):
     assert waliduj_wynik(wynik_probki) is wynik_probki
 

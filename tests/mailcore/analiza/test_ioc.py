@@ -131,3 +131,10 @@ def test_haslo_archiwum_w_ioc_dziecka(zbuduj_mail):
     pliki = {i.etykieta: i for i in lista if i.typ == "plik"}
     assert pliki["faktura.exe"].haslo_archiwum == "Faktura2026!"
     assert pliki["faktura.zip"].haslo_archiwum is None
+
+
+def test_url_do_prywatnego_ipv6_pominiety(zbuduj_mail):
+    html = "".join(f'<a href="{u}">x</a>' for u in
+                   ("http://[fd00::1]/x", "http://[::1]/y", "http://10.0.0.5/z", "http://[2001:4860::8888]/ok"))
+    lista = ioc(zbuduj_mail, tekst="x", html=html)
+    assert [i.wartosc for i in lista if i.typ == "url"] == ["http://[2001:4860::8888]/ok"]

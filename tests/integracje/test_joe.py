@@ -125,3 +125,48 @@ def test_wynik_poza_zakresem():
     respx.post(f"{B}/v2/submission/info").respond(200, json={"data": {"status": "finished", "analyses": [{"webid": "1"}],
                                                               "most_relevant_analysis": {"detection": "malicious", "score": 10**12}}})
     assert joe.stan_zgloszenia(KLUCZ, "1").dane["wynik"] is None
+
+
+class _Kapiacy(httpx.SyncByteStream):
+    def __iter__(self):
+        yield b'{"data": '
+        for _ in range(100):
+            yield b" "
+        yield b'{"submission_id": "1"}}'
+
+
+@pytest.mark.parametrize("wywolanie,limit", [
+    (lambda: joe.wyslij(KLUCZ, b"x", "a.eml", "c"), joe.CZAS_CALKOWITY_WYSYLKI),
+    (lambda: joe.stan_zgloszenia(KLUCZ, "1"), joe.CZAS_CALKOWITY),
+])
+@respx.mock
+def test_limit_calkowity(monkeypatch, wywolanie, limit):
+    respx.post(url__startswith=B).respond(200, stream=_Kapiacy())
+    teraz = [0.0]
+
+    def zegar():
+        teraz[0] += limit / 20  # każdy odczyt fragmentu „trwa” 1/20 limitu
+        return teraz[0]
+
+    monkeypatch.setattr(joe, "_zegar", zegar)
+    w = wywolanie()
+    assert (w.status, w.blad, w.ponawiac) == ("niedostepny", "Joe niedostępny.", True)
+
+
+@respx.mock
+def test_limit_calkowity_nie_przeszkadza_szybkiej_odpowiedzi():
+    respx.post(f"{B}/v2/submission/new").respond(200, stream=_Kapiacy())
+    assert joe.wyslij(KLUCZ, b"x", "a.eml", "c").status == "ok"
+
+
+@pytest.mark.parametrize("kod", [401, 403])
+@respx.mock
+def test_odrzucony_klucz_oznaczony(kod):
+    respx.post(f"{B}/v2/submission/new").respond(kod)
+    assert joe.wyslij(KLUCZ, b"x", "a.eml", "c").klucz_odrzucony is True
+
+
+@respx.mock
+def test_odrzucony_plik_bez_oznaczenia_klucza():
+    respx.post(f"{B}/v2/submission/new").respond(400, json={"errors": [{"message": "zly plik"}]})
+    assert joe.wyslij(KLUCZ, b"x", "a.eml", "c").klucz_odrzucony is False

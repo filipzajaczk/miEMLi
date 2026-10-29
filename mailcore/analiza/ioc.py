@@ -76,8 +76,11 @@ class _Budowniczy:
             return
         if not host or self.ignorowana(normalizuj(host)):
             return
-        if _publiczny_ip(host) is None and re.fullmatch(r"[\d.]+", host):
-            return  # URL do prywatnego IP
+        try:
+            if not ipaddress.ip_address(host).is_global:
+                return  # URL do prywatnego IP (v4 lub v6)
+        except ValueError:
+            pass
         url_id = self.dodaj("url", url, rodzic_id, zrodlo, etykieta)
         self.domena_lub_ip(host, url_id, zrodlo)
 

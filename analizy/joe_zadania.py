@@ -136,7 +136,14 @@ def _wyslij(zgloszenie: ZgloszenieJoe, szyfrogram: str, proba: int) -> None:
         if not _kolejkuj(wyslij_do_joe, zgloszenie.pk, szyfrogram, proba + 1, opoznienie=opoznienia[proba]):
             _ustaw(zgloszenie, status="blad", blad="Kolejka zadań niedostępna — spróbuj ponownie za chwilę.")
         return
+    _oznacz_klucz(zgloszenie, wynik)
     _ustaw(zgloszenie, status="limit" if wynik.status == "limit" else "blad", blad=wynik.blad)
+
+
+def _oznacz_klucz(zgloszenie: ZgloszenieJoe, wynik) -> None:
+    """Klucz odrzucony w trakcie wysyłki/śledzenia — analityk od razu widzi to w profilu."""
+    if wynik.klucz_odrzucony:
+        ProfilAnalityka.objects.filter(uzytkownik_id=zgloszenie.uzytkownik_id).update(joe_klucz_stan="odrzucony")
 
 
 def sprawdz_joe(zgloszenie_id: int) -> None:
@@ -163,6 +170,7 @@ def _sprawdz(zgloszenie: ZgloszenieJoe) -> None:
         if d["status"] == "zakonczone":
             return
     elif not wynik.ponawiac:
+        _oznacz_klucz(zgloszenie, wynik)
         return _ustaw(zgloszenie, status="blad", blad=wynik.blad, sprawdzono=teraz)
     if zgloszenie.wyslano and teraz - zgloszenie.wyslano >= SLEDZENIE_MAKS:
         return _ustaw(zgloszenie, status="czas_minal")

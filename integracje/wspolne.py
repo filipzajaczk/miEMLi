@@ -37,6 +37,9 @@ def wykonaj(
 ) -> WynikDostawcy:
     try:
         odp = klient.get(url, headers=naglowki, params=params)
+    except (httpx.InvalidURL, httpx.UnsupportedProtocol, ValueError):
+        # adres zbudowany z artefaktu (np. ze znakiem sterującym) — ponowienie nic nie da
+        return WynikDostawcy("blad", link=link, blad="Nieprawidłowy adres.")
     except httpx.TimeoutException:
         return WynikDostawcy("blad", link=link, blad="Przekroczono czas odpowiedzi.", ponawiac=True)
     except httpx.HTTPError:
