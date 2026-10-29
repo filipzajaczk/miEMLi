@@ -11,7 +11,7 @@ class Analiza(models.Model):
         ("bec", "BEC"),                      # podszycie pod firmę / przełożonego (fałszywe faktury, przelewy)
         ("oszustwo", "Oszustwo / scam"),     # sextortion, oszustwa inwestycyjne, „nagrody”
         ("spam", "Spam"),
-        ("symulacja", "Symulacja"),          # test / kampania phishingowa organizacji
+        ("test", "Test"),                    # test / kampania phishingowa organizacji
         ("czysty", "Czysty"),
         ("do_weryfikacji", "Do weryfikacji"),
     ]

@@ -80,7 +80,7 @@ def test_filtr_listy(zalogowany, probka, analityk):
 
 @pytest.mark.parametrize("kod,etykieta,klasa", [
     ("phishing", "Phishing", "bad"), ("malware", "Malware", "bad"), ("bec", "BEC", "bad"),
-    ("oszustwo", "Oszustwo / scam", "bad"), ("spam", "Spam", "warn"), ("symulacja", "Symulacja", "neutral"),
+    ("oszustwo", "Oszustwo / scam", "bad"), ("spam", "Spam", "warn"), ("test", "Test", "neutral"),
     ("czysty", "Czysty", "ok"), ("do_weryfikacji", "Do weryfikacji", "neutral"),
 ])
 def test_wszystkie_werdykty(zalogowany, analiza, kod, etykieta, klasa):
@@ -88,3 +88,15 @@ def test_wszystkie_werdykty(zalogowany, analiza, kod, etykieta, klasa):
     t = zalogowany.get(reverse("analizy:lista")).content.decode()
     assert f'<span class="b {klasa}">{etykieta}</span>' in t
     assert f'?werdykt={kod}"' in t
+
+
+def test_migracja_symulacja_na_test(analiza):
+    import importlib
+
+    from django.apps import apps
+
+    Analiza = type(analiza)
+    Analiza.objects.filter(pk=analiza.pk).update(werdykt="symulacja")
+    importlib.import_module("analizy.migrations.0011_werdykt_test").symulacja_na_test(apps, None)
+    analiza.refresh_from_db()
+    assert analiza.werdykt == "test"
