@@ -62,6 +62,13 @@
   otwarte szczegóły artefaktu są pobierane ponownie przy każdym odpytywaniu (co 2 s).
 - Usunięcie analizy kasuje (CASCADE) jej zdarzenia — w audycie zostaje tylko wpis „Usunięcie analizy”.
 
+## Odłożone z etapu B (2026-10-29)
+
+- ARC: `cv=fail` albo brak `cv` nie obniża „łańcuch kompletny” (wartość `cv` jest pokazywana obok).
+- Wyszukiwarka ładuje do Pythona wszystkie pasujące wiersze (bardzo popularne domeny — wolniej); przy
+  dużej bazie przejść na podzapytania i opisy dopasowań tylko dla 200 pokazanych analiz.
+- Zapytanie wyszukiwarki jest w adresie URL — gdyby włączyć logi dostępu w Caddy/gunicorn, trzeba je filtrować.
+
 ## Znane ograniczenia
 
 - RAR: brak automatycznego testu prawdziwego archiwum RAR (nie mamy narzędzia do jego utworzenia);
