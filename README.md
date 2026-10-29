@@ -1,6 +1,6 @@
 # miEMLi
 
-Wewnętrzne narzędzie zespołu CSIRT do analizy podejrzanych wiadomości `.eml` / `.msg`
+Narzędzie do analizy podejrzanych wiadomości `.eml` / `.msg`
 dołączanych do incydentów w RTIR: czytelny podgląd wiadomości, analiza nagłówków
 (SPF/DKIM/DMARC, Received, podszywanie), linki, załączniki z archiwami i zagnieżdżonymi
 mailami oraz artefakty (adresy, domeny, IP, URL-e, pliki) z relacjami „skąd pochodzi”.
