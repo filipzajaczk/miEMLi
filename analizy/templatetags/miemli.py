@@ -197,4 +197,5 @@ def pierwsza_podejrzana_uwaga(obraz):
 
 @register.filter
 def klasa_werdyktu_analityka(kod):
-    return {"phishing": "bad", "spam": "warn", "czysty": "ok", "do_weryfikacji": "neutral"}.get(kod, "neutral")
+    return {"phishing": "bad", "malware": "bad", "bec": "bad", "oszustwo": "bad", "spam": "warn",
+            "czysty": "ok"}.get(kod, "neutral")

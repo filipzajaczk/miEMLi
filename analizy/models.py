@@ -6,8 +6,12 @@ from django.db import models
 
 class Analiza(models.Model):
     WERDYKTY = [
-        ("phishing", "Phishing"),
+        ("phishing", "Phishing"),            # wyłudzenie danych logowania / płatności
+        ("malware", "Malware"),              # złośliwy załącznik lub link do pobrania
+        ("bec", "BEC"),                      # podszycie pod firmę / przełożonego (fałszywe faktury, przelewy)
+        ("oszustwo", "Oszustwo / scam"),     # sextortion, oszustwa inwestycyjne, „nagrody”
         ("spam", "Spam"),
+        ("symulacja", "Symulacja"),          # test / kampania phishingowa organizacji
         ("czysty", "Czysty"),
         ("do_weryfikacji", "Do weryfikacji"),
     ]

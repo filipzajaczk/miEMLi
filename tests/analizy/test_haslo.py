@@ -71,3 +71,14 @@ def test_parametry_wrazliwe(analityk, rf):
     except Exception:
         pass  # brak pełnej sesji w RequestFactory — liczy się oznaczenie parametrów
     assert set(zadanie.sensitive_post_parameters) == {"old_password", "new_password1", "new_password2"}
+
+
+def test_formularz_bez_opisow(zalogowany):
+    t = zalogowany.get(reverse("profil")).content.decode()
+    assert "helptext" not in t and "co najmniej 12 znaków" not in t and "dla weryfikacji" not in t
+    assert "Nowe hasło" in t and "Powtórz nowe hasło" in t
+
+
+def test_bledy_nadal_widoczne(zalogowany):
+    t = zmien(zalogowany, nowe="krotkie123", powtorz="krotkie123").content.decode()
+    assert "12 znaków" in t

@@ -18,6 +18,19 @@ from .models import Zdarzenie, profil_dla
 FORMAT_KLUCZA = re.compile(r"[A-Za-z0-9]{20,128}")
 
 
+class FormularzHasla(PasswordChangeForm):
+    """Same pola, bez opisów — reguły haseł działają nadal i wracają jako komunikaty błędów."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for pole in self.fields.values():
+            pole.help_text = ""
+            pole.widget.attrs.pop("autofocus", None)
+        self.fields["old_password"].label = "Obecne hasło"
+        self.fields["new_password1"].label = "Nowe hasło"
+        self.fields["new_password2"].label = "Powtórz nowe hasło"
+
+
 @sensitive_post_parameters("klucz_joe")
 @sensitive_variables("klucz")
 @login_required
@@ -58,7 +71,7 @@ def profil(request):
 def _strona(request, p, blad=None, form_hasla=None, status=200):
     return render(request, "analizy/profil.html", {
         "profil": p, "blad": blad, "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY),
-        "form_hasla": form_hasla or PasswordChangeForm(request.user),
+        "form_hasla": form_hasla or FormularzHasla(request.user),
         "haslo_zmienione": request.session.pop("haslo_zmienione", False),
     }, status=status)
 
@@ -67,7 +80,7 @@ def _strona(request, p, blad=None, form_hasla=None, status=200):
 @login_required
 @require_POST
 def zmien_haslo(request):
-    form = PasswordChangeForm(request.user, request.POST)
+    form = FormularzHasla(request.user, request.POST)
     if not form.is_valid():
         return _strona(request, profil_dla(request.user), form_hasla=form)
     form.save()

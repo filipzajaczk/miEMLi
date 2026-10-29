@@ -76,3 +76,15 @@ def test_filtr_listy(zalogowany, probka, analityk):
     t = lista("?werdykt=xyz")
     assert all(n in t for n in ("phish.eml", "spam.eml", "bez.eml"))
     assert 'class="on"' in lista("?werdykt=spam")
+
+
+@pytest.mark.parametrize("kod,etykieta,klasa", [
+    ("phishing", "Phishing", "bad"), ("malware", "Malware", "bad"), ("bec", "BEC", "bad"),
+    ("oszustwo", "Oszustwo / scam", "bad"), ("spam", "Spam", "warn"), ("symulacja", "Symulacja", "neutral"),
+    ("czysty", "Czysty", "ok"), ("do_weryfikacji", "Do weryfikacji", "neutral"),
+])
+def test_wszystkie_werdykty(zalogowany, analiza, kod, etykieta, klasa):
+    assert ustaw(zalogowany, analiza, kod).status_code == 200
+    t = zalogowany.get(reverse("analizy:lista")).content.decode()
+    assert f'<span class="b {klasa}">{etykieta}</span>' in t
+    assert f'?werdykt={kod}"' in t
