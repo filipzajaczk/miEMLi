@@ -1,0 +1,9 @@
+<form class="werdykt" hx-post="{% url 'analizy:werdykt' analiza.pk %}" hx-trigger="change" hx-swap="outerHTML"
+      title="Werdykt analityka — widoczny na liście analiz">
+  {% csrf_token %}
+  <label for="werdykt-{{ analiza.pk }}">Werdykt</label>
+  <select id="werdykt-{{ analiza.pk }}" name="werdykt">
+    <option value=""{% if not analiza.werdykt %} selected{% endif %}>—</option>
+    {% for kod, nazwa in werdykty %}<option value="{{ kod }}"{% if analiza.werdykt == kod %} selected{% endif %}>{{ nazwa }}</option>{% endfor %}
+  </select>
+</form>

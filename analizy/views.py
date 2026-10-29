@@ -46,13 +46,23 @@ SZABLON_PODGLADU = (
 )
 
 
+FILTRY_WERDYKTU = [("", "Wszystkie"), ("brak", "Bez werdyktu")] + list(Analiza.WERDYKTY)
+
+
 def _lista(request, form=None, blad=None, status=200):
-    analizy = Analiza.objects.select_related("utworzyl")[:50]
+    analizy = Analiza.objects.select_related("utworzyl")
+    filtr = request.GET.get("werdykt", "")
+    if filtr == "brak":
+        analizy = analizy.filter(werdykt="")
+    elif filtr in dict(Analiza.WERDYKTY):
+        analizy = analizy.filter(werdykt=filtr)
+    else:
+        filtr = ""
     return render(
         request,
         "analizy/lista.html",
-        {"analizy": analizy, "form": form or UploadForm(), "blad": blad,
-         "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY)},
+        {"analizy": analizy[:50], "form": form or UploadForm(), "blad": blad,
+         "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY), "filtry": FILTRY_WERDYKTU, "filtr": filtr},
         status=status,
     )
 
@@ -118,6 +128,7 @@ def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> di
     ioc = prezentacja.drzewo_ioc(analiza)
     kontekst = {
         "analiza": analiza,
+        "werdykty": Analiza.WERDYKTY,
         "sekcja": sekcja,
         "sekcje": prezentacja.SEKCJE,
         "wid": wid,
@@ -225,6 +236,21 @@ def odswiez(request, pk):
     n = zaplanuj(analiza, wymus=True)
     Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="odswiezenie", szczegoly={"zadania": n})
     return redirect("analizy:szczegoly", pk=analiza.pk)
+
+
+@login_required
+@require_POST
+def werdykt(request, pk):
+    analiza = get_object_or_404(Analiza, pk=pk)
+    nowy = request.POST.get("werdykt", "")
+    if nowy and nowy not in dict(Analiza.WERDYKTY):
+        return HttpResponse("Nieprawidłowy werdykt.", status=400)
+    if nowy != analiza.werdykt:
+        Zdarzenie.objects.create(uzytkownik=request.user, analiza=analiza, typ="werdykt",
+                                 szczegoly={"z": analiza.werdykt, "na": nowy})
+        analiza.werdykt = nowy
+        analiza.save(update_fields=["werdykt"])
+    return render(request, "analizy/_werdykt.html", {"analiza": analiza, "werdykty": Analiza.WERDYKTY})
 
 
 @login_required

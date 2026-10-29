@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load miemli %}
 {% block tresc %}
 <main class="tresc lista">
   <section class="karta upload">
@@ -17,9 +18,12 @@
 
   <section>
     <h2>Ostatnie analizy</h2>
+    <nav class="filtry">
+      {% for kod, nazwa in filtry %}<a href="?werdykt={{ kod }}"{% if filtr == kod %} class="on"{% endif %}>{{ nazwa }}</a>{% endfor %}
+    </nav>
     {% if analizy %}
     <table>
-      <thead><tr><th>Data</th><th>Plik</th><th>Temat</th><th>Ticket</th><th>Analityk</th></tr></thead>
+      <thead><tr><th>Data</th><th>Plik</th><th>Temat</th><th>Werdykt</th><th>Ticket</th><th>Analityk</th></tr></thead>
       <tbody>
       {% for a in analizy %}
         <tr class="klikalny" data-szczegoly="{% url 'analizy:opcje' a.pk %}" data-cel="opcje-{{ a.pk }}"
@@ -27,15 +31,16 @@
           <td class="muted">{{ a.utworzono|date:"Y-m-d H:i" }}</td>
           <td><a href="{% url 'analizy:szczegoly' a.pk %}">{{ a.nazwa_pliku }}</a></td>
           <td>{{ a.temat|default:"—" }}</td>
+          <td>{% if a.werdykt %}<span class="b {{ a.werdykt|klasa_werdyktu_analityka }}">{{ a.get_werdykt_display }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
           <td class="muted">{% if a.ticket_id %}#{{ a.ticket_id }}{% else %}—{% endif %}</td>
           <td class="muted">{{ a.utworzyl.username }}{% if a.notatka %} <span class="b neutral" title="{{ a.notatka|truncatechars:200 }}">komentarz</span>{% endif %}</td>
         </tr>
-        <tr class="wiersz-szczegolow"><td colspan="5" id="opcje-{{ a.pk }}"></td></tr>
+        <tr class="wiersz-szczegolow"><td colspan="6" id="opcje-{{ a.pk }}"></td></tr>
       {% endfor %}
       </tbody>
     </table>
     {% else %}
-    <p class="muted">Brak analiz.</p>
+    <p class="muted">{% if filtr %}Brak analiz z tym werdyktem.{% else %}Brak analiz.{% endif %}</p>
     {% endif %}
   </section>
 </main>

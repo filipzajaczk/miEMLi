@@ -2,6 +2,7 @@
 {% block tytul %}{{ analiza.nazwa_pliku }} · miemli{% endblock %}
 {% block pasek %}
   <span class="muted">{% if analiza.ticket_id %}RTIR #{{ analiza.ticket_id }} · {% endif %}{{ analiza.nazwa_pliku }}</span>
+  {% include "analizy/_werdykt.html" %}
   <form method="post" action="{% url 'analizy:odswiez' analiza.pk %}">{% csrf_token %}<button class="btn" type="submit" title="Sprawdź ponownie wszystkie IOC w GTI i Censys (z pominięciem cache)">Odśwież</button></form>
 {% endblock %}
 {% block tresc %}

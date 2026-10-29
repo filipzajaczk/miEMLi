@@ -235,3 +235,10 @@ label.checkbox input { width: auto; margin: 0; }
 .joe-wysylka { margin: 14px 0 22px; }
 .joe-wysylka form { display: flex; gap: 12px; align-items: center; }
 .joe-wysylka input[type=file] { margin: 0; max-width: 420px; }
+/* Werdykt analityka */
+form.werdykt { display: flex; align-items: center; gap: 8px; }
+form.werdykt label { margin: 0; }
+form.werdykt select { width: auto; margin: 0; padding: 5px 8px; }
+nav.filtry { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+nav.filtry a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); font-size: 12px; }
+nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--fg); text-decoration: none; }

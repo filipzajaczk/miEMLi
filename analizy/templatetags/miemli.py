@@ -177,3 +177,8 @@ def pierwsza_podejrzana_uwaga(obraz):
     from analizy.prezentacja import PODEJRZANE_UWAGI
 
     return next((u["kod"] for u in (obraz or {}).get("uwagi", []) if u["kod"] in PODEJRZANE_UWAGI), None)
+
+
+@register.filter
+def klasa_werdyktu_analityka(kod):
+    return {"phishing": "bad", "spam": "warn", "czysty": "ok", "do_weryfikacji": "neutral"}.get(kod, "neutral")
