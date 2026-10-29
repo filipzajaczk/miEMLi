@@ -80,3 +80,42 @@ def test_ponownie_oczysc_zostawia_png():
     from mailcore.html_bezpieczny import ponownie_oczysc
 
     assert 'src="data:image/png;base64,iVBORw0KGgo="' in ponownie_oczysc('<img src="data:image/png;base64,iVBORw0KGgo=">')
+
+
+def test_przycisk_zachowuje_styl():
+    wynik = bezpieczny_html(
+        '<a href="https://evil.example/p" style="background-color:#d40511;color:#fff;padding:14px">Zapłać</a>', [])
+    assert "background-color" in wynik and "padding" in wynik and "Zapłać" in wynik
+    assert "href" not in wynik and 'class="link"' in wynik and "evil[.]example" in wynik
+
+
+def test_styl_przycisku_bez_url():
+    wynik = bezpieczny_html('<a href="https://x.example" style="background:url(http://x.example/a.png);color:red">x</a>', [])
+    assert "url(" not in wynik and "color" in wynik
+
+
+def test_obraz_zewnetrzny():
+    wynik = bezpieczny_html('<p><img src="https://dhl-paczka.example/logo.png?u=jan.kowalski" alt="DHL"></p>', [])
+    assert "[obraz zewnętrzny: dhl-paczka[.]example]" in wynik and 'class="obraz-zewnetrzny"' in wynik
+    assert "logo.png" not in wynik and "jan.kowalski" not in wynik and "<img" not in wynik
+
+
+@pytest.mark.parametrize("src", ["javascript:alert(1)", "//", "data:image/svg+xml,x"])
+def test_obraz_bez_hosta_usuniety(src):
+    wynik = bezpieczny_html(f'<img src="{src}" alt="a">', [])
+    assert "obraz zewnętrzny" not in wynik and "svg" not in wynik and "javascript" not in wynik
+
+
+def test_obraz_cid_bez_zmian():
+    wynik = bezpieczny_html('<img src="cid:logo">', [], {"logo": b"\x89PNG"})
+    assert 'src="data:image/png;base64,' in wynik and "obraz zewnętrzny" not in wynik
+
+
+@pytest.mark.parametrize("src,napis", [
+    ("https://konto zablokowane zadzwon 555.evil.com/a.png", "[obraz zewnętrzny]"),
+    ("https://раураl.com/a.png", "[obraz zewnętrzny: xn--l-7sba6dbr[.]com]"),
+    ("https://" + "a" * 300 + ".com/x.png", "[obraz zewnętrzny]"),
+    ("https://", "[obraz zewnętrzny]"),
+])
+def test_host_obrazu_ograniczony(src, napis):
+    assert napis in bezpieczny_html(f'<img src="{src}">', [])

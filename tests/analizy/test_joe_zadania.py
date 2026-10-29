@@ -310,3 +310,14 @@ def test_wiszace_zgloszenie_wygasa_w_widoku(analiza, analityk):
     kontekst = _kontekst_joe(Zadanie(), analiza)
     z.refresh_from_db()
     assert z.status == "czas_minal" and kontekst["joe_trwa"] is False
+
+
+def test_odrzucony_klucz_przy_wysylce_zmienia_stan(zgloszenie, kolejka, joe_atrapa, z_kluczem):
+    from analizy.models import ProfilAnalityka
+
+    z, szyfrogram = zgloszenie
+    ProfilAnalityka.objects.filter(uzytkownik=z_kluczem).update(joe_klucz_stan="dziala")
+    joe_atrapa["wyslij"] = WynikJoe("odrzucony", blad="Klucz Joe odrzucony — sprawdź go w profilu.",
+                                    klucz_odrzucony=True)
+    jz.wyslij_do_joe(z.pk, szyfrogram)
+    assert ProfilAnalityka.objects.get(uzytkownik=z_kluczem).joe_klucz_stan == "odrzucony"

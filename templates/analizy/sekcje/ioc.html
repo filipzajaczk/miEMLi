@@ -1,9 +1,9 @@
-<h2>IOC</h2>
+<h2>Artefakty</h2>
 {% if ioc %}
 <table class="tabela-ioc">
   <thead><tr><th>Typ</th><th>Wartość</th><th>GTI</th><th>Censys</th><th>Źródło</th></tr></thead>
   <tbody id="tabela-ioc-cialo">{% include "analizy/_wiersze_ioc.html" %}</tbody>
 </table>
 {% else %}
-<p class="muted">Nie znaleziono IOC.</p>
+<p class="muted">Nie znaleziono artefaktów.</p>
 {% endif %}

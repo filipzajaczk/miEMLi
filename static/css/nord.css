@@ -106,7 +106,7 @@ h2 { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
 
 /* Formularze */
 label { display: block; color: var(--muted); margin-bottom: 4px; }
-input[type=text], input[type=password], input[type=file], textarea, select {
+input[type=text], input[type=password], input[type=file], input[type=date], textarea, select {
   width: 100%;
   background: var(--bg2);
   border: 1px solid var(--line);
@@ -235,3 +235,19 @@ label.checkbox input { width: auto; margin: 0; }
 .joe-wysylka { margin: 14px 0 22px; }
 .joe-wysylka form { display: flex; gap: 12px; align-items: center; }
 .joe-wysylka input[type=file] { margin: 0; max-width: 420px; }
+/* Werdykt analityka */
+form.werdykt { display: flex; align-items: center; gap: 8px; }
+form.werdykt label { margin: 0; }
+form.werdykt select { width: auto; margin: 0; padding: 5px 8px; }
+nav.filtry { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+nav.filtry a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); font-size: 12px; }
+nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--fg); text-decoration: none; }
+/* Audyt */
+.filtry-audytu { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 12px 0 18px; }
+.filtry-audytu label { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.filtry-audytu select, .filtry-audytu input { width: auto; margin: 0; }
+.tabela-audytu td { overflow-wrap: anywhere; }
+.stronicowanie { display: flex; gap: 16px; margin-top: 12px; }
+.profil form ul { margin: 0 0 8px 18px; color: var(--muted); font-size: 12px; }
+.profil .helptext { color: var(--muted); font-size: 12px; }
+.filtry-audytu input[type=date] { color-scheme: dark; }

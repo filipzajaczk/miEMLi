@@ -31,6 +31,13 @@
   śledzenie statusu i werdyktu, limity, audyt. Sprawdzone na prawdziwym koncie: .eml przyjęty, werdykt OK.
   Worker z `maintenance_interval=60` (scheduler RQ startuje do minuty po restarcie, nie do 10 min).
 - Przy integracji z RTIR: źródło oryginału dla Joe = pobranie z RTIR w workerze (`zlec_wysylke` przyjmuje bajty).
+- 2026-10-29: etap A (branch `etap-a`): werdykt analityka (ekran + kolumna i filtr na liście), zmiana
+  hasła w profilu (inne sesje wylogowane), audyt `/audyt/` tylko dla `is_staff`, „IOC” → „Artefakty”
+  w interfejsie, podgląd HTML z przyciskami i ramkami obrazów zewnętrznych (dwa commity: „Podgląd HTML:
+  wygląd przycisków…” i „Podgląd HTML: link zawsze widoczny…” — `git revert` obu przywraca poprzedni
+  wygląd; dotyczy analiz utworzonych po zmianie), 11 poprawek z przeglądów + poprawki z końcowego przeglądu.
+- Plan dalej: etap B — oś czasu nagłówków + wyszukiwarka analiz (wykorzysta kolumnę `temat_wiadomosci`);
+  etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
 ## Na później (2026-10-27)
@@ -38,18 +45,20 @@
 - RTIR odłożony na później (decyzja użytkownika) — najpierw integracja z Joe Sandbox.
 - Proxy wychodzące dla workera: zawęzić ruch do GTI, Censys i Joe (dziś worker ma ogólny dostęp do internetu).
 
-## Odłożone drobiazgi z przeglądu Joe (2026-10-27)
-
-- 401/403 w trakcie wysyłki lub śledzenia nie zmienia stanu klucza w profilu na „odrzucony”.
-- Brak łącznego limitu czasu na odpowiedź Joe (timeout httpx liczony na pojedynczy odczyt).
-
 ## Odłożone drobiazgi z przeglądu sandboxa (2026-10-27)
 
-- Drzewo `wiadomosc` z parsera walidowane tylko płytko — przejęty parser może wywołać błąd 500 jednej analizy.
-- OOM-kill kontenera parsera raportowany jako „czas”, nie „pamięć”.
 - Kolejka 8 w parserze praktycznie nieosiągalna (3 workery gunicorna, timeout klienta 90 s).
 - Parser widzi `web:8000` bezpośrednio (strona logowania z pominięciem Caddy) — rozważyć limit prób logowania.
 - Sprzątanie procesów w kontenerze parsera zabija też sesje `docker compose exec parser …` (diagnostyka).
+
+## Odłożone z etapu A (2026-10-29)
+
+- Wyścig przy dwóch równoczesnych uploadach tego samego pliku, sprzątanie starych `Wzbogacenie`,
+  kolizje ponowień zadań, limit prób logowania.
+- Z końcowego przeglądu: proces parsera blokujący SIGXCPU (limit CPU) raportowany jako „pamięć”;
+  `rozbroj_tekst` nie rozbraja IP i domen z Unicode w danych GTI (tekst i tak nie jest klikalny);
+  otwarte szczegóły artefaktu są pobierane ponownie przy każdym odpytywaniu (co 2 s).
+- Usunięcie analizy kasuje (CASCADE) jej zdarzenia — w audycie zostaje tylko wpis „Usunięcie analizy”.
 
 ## Znane ograniczenia
 

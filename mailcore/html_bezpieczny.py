@@ -4,6 +4,8 @@ To pierwsza warstwa. Druga to iframe sandbox + CSP `default-src 'none'; img-src 
 """
 
 import base64
+import re
+from urllib.parse import urlsplit
 
 import nh3
 from bs4 import BeautifulSoup
@@ -30,6 +32,8 @@ STYLE = {
     "border", "border-top", "border-right", "border-bottom", "border-left", "border-color",
     "border-width", "border-style", "border-collapse", "border-spacing", "border-radius",
 }
+KLASY_ZASTRZEZONE = {"link", "obraz-zewnetrzny", "obrazek-pominiety"}
+_HOST = re.compile(r"[a-z0-9.-]{1,253}|[0-9a-f:.]{2,45}")
 USUWANE_Z_TRESCIA = {"script", "style", "head", "title", "form", "iframe", "object", "embed", "noscript", "template", "svg", "math"}
 
 
@@ -42,10 +46,21 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
     for tag in soup.find_all(["meta", "base", "link"]):
         tag.decompose()
 
+    # Dymki i klasy zastępników nadaje wyłącznie sanitizer — mail nie może ich podrobić
+    for tag in soup.find_all(True):
+        tag.attrs.pop("title", None)
+        klasy = [k for k in tag.get("class") or [] if k not in KLASY_ZASTRZEZONE]
+        if klasy:
+            tag["class"] = klasy
+        else:
+            tag.attrs.pop("class", None)
+
     for a in soup.find_all("a"):
         href = (a.get("href") or "").strip()
+        styl = a.get("style")
         a.name = "span"
-        a.attrs = {"class": "link"}
+        # styl zostaje (przyciski wyglądają jak u ofiary) — filtruje go allowlista właściwości nh3
+        a.attrs = {"class": "link", **({"style": styl} if styl else {})}
         if href.lower().startswith(("http://", "https://")):
             a["title"] = rozbroj("url", rozpakuj_przekierowanie(href) or href)
 
@@ -63,12 +78,29 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
                     zastepczy = soup.new_tag("span", attrs={"class": "obrazek-pominiety"})
                     zastepczy.string = f"[obrazek pominięty{powod}]"
                     tag.replace_with(zastepczy)
+            elif src.lower().startswith(("http://", "https://")):
+                # tylko host: ścieżka i parametry bywają identyfikatorem ofiary (piksel śledzący)
+                host = _host_zewnetrzny(src)
+                zastepczy = soup.new_tag("span", attrs={"class": "obraz-zewnetrzny"})
+                zastepczy.string = f"[obraz zewnętrzny: {rozbroj('domena', host)}]" if host else "[obraz zewnętrzny]"
+                tag.replace_with(zastepczy)
             else:
                 tag.attrs.pop("src", None)
         else:
             tag.attrs.pop("src", None)
 
     return ponownie_oczysc(str(soup))
+
+
+def _host_zewnetrzny(src: str) -> str | None:
+    """Host w postaci ASCII (punycode — homoglify widoczne), albo None, gdy nie wygląda na domenę/IP:
+    tekst ramki nie może być dowolnym napisem atakującego."""
+    try:
+        host = urlsplit(src).hostname or ""
+        host = host.encode("idna").decode("ascii")
+    except (ValueError, UnicodeError):
+        return None
+    return host if _HOST.fullmatch(host) else None
 
 
 def ponownie_oczysc(html: str) -> str:

@@ -39,6 +39,7 @@ def utworz_lub_otworz(
             sha256=sha256,
             nazwa_pliku=nazwa[:255],
             wynik=bez_nul({k: wynik[k] for k in ("wiadomosc", "analiza")} | {"ioc": wynik["ioc"]}),
+            temat_wiadomosci=bez_nul(wynik["wiadomosc"].get("temat") or "")[:500],
             utworzyl=uzytkownik,
         )
         po_numerze: dict[int, IOC] = {}

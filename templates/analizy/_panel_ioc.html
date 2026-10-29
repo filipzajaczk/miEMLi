@@ -1,5 +1,5 @@
 {% load miemli %}
-<div class="label">IOC · {{ ioc|length }}</div>
+<div class="label">Artefakty · {{ ioc|length }}</div>
 {% for i, glebokosc in ioc %}
   <a class="wiersz-ioc" href="?sekcja=ioc&wiadomosc={{ wid }}" hx-get="?sekcja=ioc&wiadomosc={{ wid }}"
      hx-target="#glowna" hx-push-url="true">
@@ -8,5 +8,5 @@
     <span class="mono wartosc">{% if glebokosc %}<span class="muted">└ </span>{% endif %}{% if i.typ == "plik" %}{{ i.etykieta }}{% else %}{{ i|rozbrojony }}{% endif %}</span>
   </a>
 {% empty %}
-  <p class="muted">Nie znaleziono IOC.</p>
+  <p class="muted">Nie znaleziono artefaktów.</p>
 {% endfor %}

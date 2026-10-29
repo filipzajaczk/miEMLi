@@ -115,6 +115,49 @@ def test_walidacja(wynik_probki, sposob):
     assert e.value.powod == "nieprawidlowa_odpowiedz"
 
 
+def _gleboko(poziomy):
+    w = {"id": "0", "naglowki": [], "zalaczniki": [], "obrazki": [], "ostrzezenia": [], "do": []}
+    gora = w
+    for n in range(poziomy):
+        dziecko = dict(w, id=f"0.{n}", zalaczniki=[])
+        gora["zalaczniki"] = [{"nazwa": "m.eml", "sha256": "a" * 64, "rozmiar": 1, "dzieci": [],
+                               "wiadomosc": dziecko}]
+        gora = dziecko
+    return w
+
+
+@pytest.mark.parametrize("zepsuj", [
+    lambda w: w["wiadomosc"].update(temat=["lista"]),
+    lambda w: w["wiadomosc"].update(naglowki=[["a"]]),
+    lambda w: w["wiadomosc"].update(naglowki=[[1, "x"]]),
+    lambda w: w["wiadomosc"].update(do="jan@x"),
+    lambda w: w["wiadomosc"].update(html_bezpieczny=5),
+    lambda w: w["wiadomosc"].update(zalaczniki="x"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(sha256="zly"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(rozmiar="1"),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(nazwa=None),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(dzieci=[1]),
+    lambda w: w["wiadomosc"]["zalaczniki"][0].update(wiadomosc="x"),
+    lambda w: w["wiadomosc"].update(obrazki=["x"]),
+    lambda w: w["wiadomosc"].update(ostrzezenia=[{"kod": 1}]),
+    lambda w: w.update(wiadomosc=_gleboko(11)),
+    lambda w: w["analiza"].update({"0": []}),
+    lambda w: w["analiza"].update({"0": {"received": "x", "sygnaly": [], "linki": []}}),
+    lambda w: w["analiza"].update({"0": {"received": [], "sygnaly": [], "linki": None}}),
+])
+def test_walidacja_drzewa(wynik_probki, zepsuj):
+    w = copy.deepcopy(wynik_probki)
+    zepsuj(w)
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)
+
+
+def test_walidacja_glebokosc_10_ok(wynik_probki):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"] = _gleboko(10)
+    assert waliduj_wynik(w) is w
+
+
 def test_walidacja_poprawnego(wynik_probki):
     assert waliduj_wynik(wynik_probki) is wynik_probki
 
@@ -193,3 +236,29 @@ def test_pusty_url_na_produkcji_odmawia(zalogowany, settings, probka):
     r = upload(zalogowany, probka("zip_exe"))
     assert "Sandbox analizy niedostępny" in r.content.decode()
     assert not Analiza.objects.exists()
+
+
+def _gleboko_dzieci(poziomy):
+    z = {"nazwa": "a.zip", "sha256": "a" * 64, "rozmiar": 1, "dzieci": [], "wiadomosc": None}
+    gora = z
+    for _ in range(poziomy):
+        nowy = dict(z, dzieci=[])
+        gora["dzieci"] = [nowy]
+        gora = nowy
+    return z
+
+
+@pytest.mark.parametrize("poziomy", [11, 2000])
+def test_walidacja_glebokie_dzieci(wynik_probki, poziomy):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"]["zalaczniki"] = [_gleboko_dzieci(poziomy)]
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)
+
+
+@pytest.mark.parametrize("uwagi", ["x", ["x"], [{"kod": 1}]])
+def test_walidacja_uwag_obrazkow(wynik_probki, uwagi):
+    w = copy.deepcopy(wynik_probki)
+    w["wiadomosc"]["obrazki"] = [{"sha256": "a" * 64, "uwagi": uwagi}]
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(w)

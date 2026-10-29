@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block tytul %}Audyt · miemli{% endblock %}
+{% block tresc %}
+<main class="tresc">
+  <h1>Audyt</h1>
+  <form method="get" class="filtry-audytu">
+    <label>Użytkownik
+      <select name="uzytkownik">
+        <option value="">wszyscy</option>
+        {% for u in uzytkownicy %}<option value="{{ u.pk }}"{% if filtry.uzytkownik == u.pk|stringformat:"d" %} selected{% endif %}>{{ u.username }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Typ
+      <select name="typ">
+        <option value="">wszystkie</option>
+        {% for kod, opis in typy %}<option value="{{ kod }}"{% if filtry.typ == kod %} selected{% endif %}>{{ opis }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Od <input type="date" name="od" value="{{ filtry.od }}"></label>
+    <label>Do <input type="date" name="do" value="{{ filtry.do }}"></label>
+    <button class="btn" type="submit">Filtruj</button>
+  </form>
+  {% if strona.object_list %}
+  <table class="tabela-audytu">
+    <thead><tr><th>Czas</th><th>Użytkownik</th><th>Zdarzenie</th><th>Analiza</th><th>Szczegóły</th></tr></thead>
+    <tbody>
+    {% for z in strona.object_list %}
+      <tr>
+        <td class="muted">{{ z.czas|date:"Y-m-d H:i:s" }}</td>
+        <td>{{ z.uzytkownik.username }}</td>
+        <td>{{ z.opis }}</td>
+        <td>{% if z.analiza %}<a href="{% url 'analizy:szczegoly' z.analiza.pk %}">{{ z.analiza.nazwa_pliku }}</a>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="mono">{% for k, v in z.szczegoly.items %}{{ k }}: {{ v|default:"—" }}{% if not forloop.last %} · {% endif %}{% endfor %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="stronicowanie muted">
+    {% if strona.has_previous %}<a href="?{{ zapytanie }}&strona={{ strona.previous_page_number }}">← nowsze</a>{% endif %}
+    strona {{ strona.number }} z {{ strona.paginator.num_pages }} · {{ strona.paginator.count }} zdarzeń
+    {% if strona.has_next %}<a href="?{{ zapytanie }}&strona={{ strona.next_page_number }}">starsze →</a>{% endif %}
+  </p>
+  {% else %}
+  <p class="muted">Brak zdarzeń.</p>
+  {% endif %}
+</main>
+{% endblock %}

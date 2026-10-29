@@ -6,8 +6,12 @@ from django.db import models
 
 class Analiza(models.Model):
     WERDYKTY = [
-        ("phishing", "Phishing"),
+        ("phishing", "Phishing"),            # wyłudzenie danych logowania / płatności
+        ("malware", "Malware"),              # złośliwy załącznik lub link do pobrania
+        ("bec", "BEC"),                      # podszycie pod firmę / przełożonego (fałszywe faktury, przelewy)
+        ("oszustwo", "Oszustwo / scam"),     # sextortion, oszustwa inwestycyjne, „nagrody”
         ("spam", "Spam"),
+        ("symulacja", "Symulacja"),          # test / kampania phishingowa organizacji
         ("czysty", "Czysty"),
         ("do_weryfikacji", "Do weryfikacji"),
     ]
@@ -18,6 +22,8 @@ class Analiza(models.Model):
     nazwa_pliku = models.CharField(max_length=255)
     wynik = models.JSONField()
     werdykt = models.CharField(max_length=20, blank=True, choices=WERDYKTY)
+    # kopia tematu z wyniku — lista analiz nie musi ładować (dużego) pola wynik
+    temat_wiadomosci = models.CharField(max_length=500, blank=True, default="")
     notatka = models.TextField(blank=True)
     utworzyl = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="analizy")
     utworzono = models.DateTimeField(auto_now_add=True)
@@ -53,8 +59,8 @@ class IOC(models.Model):
         # Bez unikalnego indeksu na wartosc: długie URL-e przekraczają limit indeksu btree
         # w Postgresie. Unikalność (typ, wartosc) zapewnia mailcore.analiza.ioc.
         ordering = ["numer"]
-        verbose_name = "IOC"
-        verbose_name_plural = "IOC"
+        verbose_name = "artefakt"
+        verbose_name_plural = "artefakty"
 
     def __str__(self):
         return f"{self.typ}: {self.wartosc}"

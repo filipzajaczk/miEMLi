@@ -84,3 +84,10 @@ def test_400_nieprawidlowy_wskaznik():
     respx.get(URL).respond(400, json={"error": {"code": "InvalidArgumentError"}})
     w = wynik()
     assert w.status == "brak_danych" and w.ponawiac is False
+
+
+@pytest.mark.parametrize("zly", ["https://api.example/x\x00y", "ftp://api.example/x", "https://exa mple/\n"])
+def test_nieprawidlowy_adres(zly):
+    with nowy_klient() as k:
+        w = wykonaj(k, zly, {}, parsuj, "L")
+    assert (w.status, w.blad, w.ponawiac) == ("blad", "Nieprawidłowy adres.", False)

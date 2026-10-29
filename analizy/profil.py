@@ -1,9 +1,12 @@
-"""Profil analityka: klucz Joe Sandbox (zapis szyfrogramu, nigdy odczyt)."""
+"""Profil analityka: klucz Joe Sandbox (zapis szyfrogramu, nigdy odczyt) i zmiana hasła."""
 
 import re
 
 from django.conf import settings
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.views.decorators.http import require_POST
 from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -13,6 +16,19 @@ from .klucze_joe import zaszyfruj_klucz
 from .models import Zdarzenie, profil_dla
 
 FORMAT_KLUCZA = re.compile(r"[A-Za-z0-9]{20,128}")
+
+
+class FormularzHasla(PasswordChangeForm):
+    """Same pola, bez opisów — reguły haseł działają nadal i wracają jako komunikaty błędów."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for pole in self.fields.values():
+            pole.help_text = ""
+            pole.widget.attrs.pop("autofocus", None)
+        self.fields["old_password"].label = "Obecne hasło"
+        self.fields["new_password1"].label = "Nowe hasło"
+        self.fields["new_password2"].label = "Powtórz nowe hasło"
 
 
 @sensitive_post_parameters("klucz_joe")
@@ -49,4 +65,27 @@ def profil(request):
             p.save()
             Zdarzenie.objects.create(uzytkownik=request.user, typ="joe_klucz_usuniety")
             return redirect("profil")
-    return render(request, "analizy/profil.html", {"profil": p, "blad": blad, "joe_wlaczone": wlaczone})
+    return _strona(request, p, blad)
+
+
+def _strona(request, p, blad=None, form_hasla=None, status=200):
+    return render(request, "analizy/profil.html", {
+        "profil": p, "blad": blad, "joe_wlaczone": bool(settings.JOE_KLUCZ_PUBLICZNY),
+        "form_hasla": form_hasla or FormularzHasla(request.user),
+        "haslo_zmienione": request.session.pop("haslo_zmienione", False),
+    }, status=status)
+
+
+@sensitive_post_parameters("old_password", "new_password1", "new_password2")
+@login_required
+@require_POST
+def zmien_haslo(request):
+    form = FormularzHasla(request.user, request.POST)
+    if not form.is_valid():
+        return _strona(request, profil_dla(request.user), form_hasla=form)
+    form.save()
+    # Bieżąca sesja zostaje; pozostałe tracą ważność, bo skrót sesji zależy od hasła
+    update_session_auth_hash(request, form.user)
+    Zdarzenie.objects.create(uzytkownik=request.user, typ="haslo_zmienione")
+    request.session["haslo_zmienione"] = True
+    return redirect("profil")

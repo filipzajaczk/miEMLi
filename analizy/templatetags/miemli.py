@@ -1,3 +1,5 @@
+import re
+
 from django import template
 
 from mailcore.rozbrajanie import rozbroj as _rozbroj
@@ -8,6 +10,19 @@ register = template.Library()
 @register.filter
 def rozbroj(wartosc, typ):
     return _rozbroj(typ, wartosc) if wartosc else wartosc
+
+
+_HTTP = re.compile(r"http", re.I)
+_DOMENOPODOBNE = re.compile(r"\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b", re.I)
+
+
+@register.filter
+def rozbroj_tekst(wartosc):
+    """Dowolny tekst od dostawcy (nazwy plików, tagi): http → hxxp, kropki w nazwach domenopodobnych → [.]."""
+    if not isinstance(wartosc, str):
+        wartosc = str(wartosc)
+    wartosc = _HTTP.sub("hxxp", wartosc)
+    return _DOMENOPODOBNE.sub(lambda m: m.group(0).replace(".", "[.]"), wartosc)
 
 
 @register.filter
@@ -78,9 +93,10 @@ def _dni(epoch) -> int | None:
     if epoch is None:
         return None
     try:
-        return int((time.time() - float(epoch)) // 86400)
-    except (TypeError, ValueError):
+        dni = int((time.time() - float(epoch)) // 86400)
+    except (TypeError, ValueError, OverflowError):
         return None
+    return dni if dni >= 0 else None  # data z przyszłości — błąd danych, nie „nowa domena”
 
 
 @register.filter
@@ -177,3 +193,9 @@ def pierwsza_podejrzana_uwaga(obraz):
     from analizy.prezentacja import PODEJRZANE_UWAGI
 
     return next((u["kod"] for u in (obraz or {}).get("uwagi", []) if u["kod"] in PODEJRZANE_UWAGI), None)
+
+
+@register.filter
+def klasa_werdyktu_analityka(kod):
+    return {"phishing": "bad", "malware": "bad", "bec": "bad", "oszustwo": "bad", "spam": "warn",
+            "czysty": "ok"}.get(kod, "neutral")
