@@ -36,8 +36,10 @@
   w interfejsie, podgląd HTML z przyciskami i ramkami obrazów zewnętrznych (dwa commity: „Podgląd HTML:
   wygląd przycisków…” i „Podgląd HTML: link zawsze widoczny…” — `git revert` obu przywraca poprzedni
   wygląd; dotyczy analiz utworzonych po zmianie), 11 poprawek z przeglądów + poprawki z końcowego przeglądu.
-- Plan dalej: etap B — oś czasu nagłówków + wyszukiwarka analiz (wykorzysta kolumnę `temat_wiadomosci`);
-  etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
+- 2026-10-29: etap B (branch `etap-b`): oś czasu nagłówków (anomalie przeskoków, `DATA_ODLEGLA`, kraj/ASN
+  z wzbogacenia, klient, ARC; `X-Originating-IP` jako artefakt), wyszukiwarka `/szukaj/`, odznaki
+  „w N innych analizach” (`IOC.skrot`). Nowe pola analizy mają tylko analizy utworzone po zmianie.
+- Plan dalej: etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
 ## Na później (2026-10-27)

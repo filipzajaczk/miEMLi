@@ -19,8 +19,16 @@ Aplikacja: `https://<MIEMLI_HOST>/`. Konta analityków zakłada się w `/admin/`
 swoje hasło w profilu (kliknięcie nazwy użytkownika w pasku). Konta z uprawnieniem „w zespole” (`is_staff`)
 widzą w pasku „Audyt” — dziennik zdarzeń (werdykty, usunięcia, wysyłki do Joe, zmiany haseł) z filtrami.
 
-Werdykt analityka (phishing / spam / czysty / do weryfikacji) ustawia się na ekranie analizy; widać go
-na liście analiz, którą można po nim filtrować.
+Werdykt analityka (phishing, malware, BEC, oszustwo, spam, test, czysty, do weryfikacji) ustawia się na
+ekranie analizy; widać go na liście analiz, którą można po nim filtrować.
+
+**Wyszukiwarka** (pole w pasku): hash, IP, e-mail, URL, domena (razem z subdomenami) albo fragment tematu,
+nazwy pliku lub komentarza; wartości rozbrojone (`hxxp`, `[.]`) też działają. Przy artefaktach, które
+wystąpiły w innych analizach, widać odznakę „w N innych analizach” (kliknięcie → wyniki wyszukiwania).
+
+**Oś czasu nagłówków** (sekcja Received): serwery z krajem i ASN (z GTI/Censys), anomalie czasu (cofanie,
+długie postoje, czas w przyszłości, odległa data wysłania), X-Mailer/User-Agent/X-Originating-IP oraz
+łańcuch ARC (wyniki deklarowane przez serwery — bez weryfikacji kryptograficznej).
 
 ### Klucze API (wzbogacenie IOC)
 

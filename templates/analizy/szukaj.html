@@ -4,7 +4,7 @@
 {% block tresc %}
 <main class="tresc">
   <h1>Szukaj</h1>
-  <p class="muted">Hash, IP, adres e-mail, URL, domena (z subdomenami) albo fragment tematu, nazwy pliku lub komentarza. Wartości rozbrojone (hxxp, [.]) też działają.</p>
+  <p class="muted adnotacja">Hash, IP, adres e-mail, URL, domena (z subdomenami) albo fragment tematu, nazwy pliku lub komentarza. Wartości rozbrojone (hxxp, [.]) też działają.</p>
   {% if wynik.komunikat %}<p class="blad">{{ wynik.komunikat }}</p>{% endif %}
   {% if q and not wynik.komunikat %}
     {% if wynik.analizy %}
