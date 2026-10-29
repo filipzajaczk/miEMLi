@@ -15,6 +15,7 @@
     {% block pasek %}{% endblock %}
     <span class="sp"></span>
     {% if user.is_authenticated %}
+      {% if user.is_staff %}<a class="muted" href="{% url 'audyt' %}">Audyt</a>{% endif %}
       <a class="muted" href="{% url 'profil' %}">{{ user.username }}</a>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
     {% endif %}

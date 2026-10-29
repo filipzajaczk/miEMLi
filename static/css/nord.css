@@ -242,3 +242,9 @@ form.werdykt select { width: auto; margin: 0; padding: 5px 8px; }
 nav.filtry { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 nav.filtry a { padding: 4px 10px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); font-size: 12px; }
 nav.filtry a.on, nav.filtry a:hover { border-color: var(--accent); color: var(--fg); text-decoration: none; }
+/* Audyt */
+.filtry-audytu { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 12px 0 18px; }
+.filtry-audytu label { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.filtry-audytu select, .filtry-audytu input { width: auto; margin: 0; }
+.tabela-audytu td { overflow-wrap: anywhere; }
+.stronicowanie { display: flex; gap: 16px; margin-top: 12px; }

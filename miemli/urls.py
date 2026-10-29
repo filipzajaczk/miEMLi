@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
+from analizy.audyt import audyt
 from analizy.profil import profil, zmien_haslo
 
 urlpatterns = [
@@ -10,5 +11,6 @@ urlpatterns = [
     path("wyloguj/", auth_views.LogoutView.as_view(), name="logout"),
     path("profil/", profil, name="profil"),
     path("profil/haslo/", zmien_haslo, name="haslo"),
+    path("audyt/", audyt, name="audyt"),
     path("", include("analizy.urls")),
 ]
