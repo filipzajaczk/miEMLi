@@ -15,7 +15,7 @@ SEKCJE = [
     ("received", "Received"),
     ("zalaczniki", "Załączniki"),
     ("linki", "Linki"),
-    ("ioc", "IOC"),
+    ("ioc", "Artefakty"),
 ]
 
 

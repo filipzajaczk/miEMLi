@@ -53,8 +53,8 @@ class IOC(models.Model):
         # Bez unikalnego indeksu na wartosc: długie URL-e przekraczają limit indeksu btree
         # w Postgresie. Unikalność (typ, wartosc) zapewnia mailcore.analiza.ioc.
         ordering = ["numer"]
-        verbose_name = "IOC"
-        verbose_name_plural = "IOC"
+        verbose_name = "artefakt"
+        verbose_name_plural = "artefakty"
 
     def __str__(self):
         return f"{self.typ}: {self.wartosc}"
