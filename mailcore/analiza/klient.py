@@ -55,19 +55,23 @@ def klient(w: Wiadomosc) -> Klient:
                   _ip(w.naglowek("X-Originating-IP")))
 
 
-def _po_numerze(w: Wiadomosc, nazwa: str) -> dict[int, str]:
+def _po_numerze(w: Wiadomosc, nazwa: str, duplikaty: set[int]) -> dict[int, str]:
     wynik = {}
     for wartosc in w.naglowki_wszystkie(nazwa):
         znaleziony = _NUMER.match(wartosc)
         if znaleziony:
-            wynik.setdefault(int(znaleziony.group(1)), wartosc)
+            i = int(znaleziony.group(1))
+            if i in wynik:
+                duplikaty.add(i)  # dwa zestawy o tym samym i= — łańcuch podejrzany
+            wynik.setdefault(i, wartosc)
     return wynik
 
 
 def lancuch_arc(w: Wiadomosc) -> LancuchArc | None:
-    wyniki = _po_numerze(w, "ARC-Authentication-Results")
-    pieczecie = _po_numerze(w, "ARC-Seal")
-    podpisy = _po_numerze(w, "ARC-Message-Signature")
+    duplikaty: set[int] = set()
+    wyniki = _po_numerze(w, "ARC-Authentication-Results", duplikaty)
+    pieczecie = _po_numerze(w, "ARC-Seal", duplikaty)
+    podpisy = _po_numerze(w, "ARC-Message-Signature", duplikaty)
     if not (w.naglowki_wszystkie("ARC-Authentication-Results") or w.naglowki_wszystkie("ARC-Seal")
             or w.naglowki_wszystkie("ARC-Message-Signature")):
         return None
@@ -78,7 +82,7 @@ def lancuch_arc(w: Wiadomosc) -> LancuchArc | None:
         ogniwa.append(OgniwoArc(i, _tekst(serwer), _wynik(naglowek, "spf"), _wynik(naglowek, "dkim"),
                                 _wynik(naglowek, "dmarc")))
     numery = set(wyniki) | set(pieczecie) | set(podpisy)
-    kompletny = bool(numery) and numery == set(range(1, max(numery) + 1)) and all(
+    kompletny = bool(numery) and not duplikaty and numery == set(range(1, max(numery) + 1)) and all(
         i in wyniki and i in pieczecie and i in podpisy for i in numery)
     cv = _wynik(pieczecie[max(pieczecie)], "cv") if pieczecie else None
     return LancuchArc(ogniwa, kompletny, cv)

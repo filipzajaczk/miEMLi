@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import time
+from datetime import datetime
 from urllib.parse import quote
 
 import httpx
@@ -104,6 +105,20 @@ def _arc_ok(arc) -> bool:
         for o in ogniwa)
 
 
+def _czas_ok(czas) -> bool:
+    if czas is None:
+        return True
+    try:
+        return isinstance(czas, str) and len(czas) <= 64 and bool(datetime.fromisoformat(czas))
+    except ValueError:
+        return False
+
+
+def _hop_ok(h: dict) -> bool:
+    return (all(p in h and _krotki_tekst(h[p], 1000) for p in ("od", "przez", "ip")) and "czas" in h
+            and _czas_ok(h["czas"]) and _uwagi_ok(h.get("uwagi", [])))
+
+
 def _uwagi_ok(uwagi) -> bool:
     return _lista(uwagi, dict) and all(isinstance(u.get("kod"), str) and isinstance(u.get("opis"), str)
                                        for u in uwagi)
@@ -113,7 +128,7 @@ def _analiza_ok(a) -> bool:
     return isinstance(a, dict) and all(
         isinstance(k, str) and isinstance(v, dict)
         and all(_lista(v.get(p, []), dict) for p in ("received", "sygnaly", "linki"))
-        and all(_uwagi_ok(h.get("uwagi", [])) for h in v.get("received", []))
+        and all(_hop_ok(h) for h in v.get("received", []))
         and _klient_ok(v.get("klient")) and _arc_ok(v.get("arc"))
         for k, v in a.items()
     )

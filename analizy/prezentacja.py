@@ -1,8 +1,9 @@
 """Przekształcenie zapisanego wyniku analizy (JSON) w dane dla szablonów."""
 
+import ipaddress
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.db.models import Count
 from django.utils import timezone
@@ -47,11 +48,28 @@ def liczba_zalacznikow(w: dict) -> int:
     return sum(1 for _ in _zalaczniki(w["zalaczniki"]))
 
 
+def _czas_utc(tekst) -> datetime | None:
+    """Czas bez strefy (nagłówek z „-0000”) traktujemy jako UTC — mieszanie z czasami ze strefą nie może rzucić."""
+    try:
+        czas = datetime.fromisoformat(tekst) if tekst else None
+    except (TypeError, ValueError):
+        return None
+    return czas.replace(tzinfo=UTC) if czas and czas.tzinfo is None else czas
+
+
+def _ip_kanoniczne(ip) -> str | None:
+    try:
+        return str(ipaddress.ip_address(ip))
+    except (TypeError, ValueError):
+        return ip if isinstance(ip, str) else None
+
+
 def hopy(received: list[dict]) -> list[dict]:
     """Hopy z opóźnieniem względem poprzedniego (sekundy) — długie przerwy bywają podejrzane."""
     wynik, poprzedni = [], None
     for numer, hop in enumerate(received, start=1):
-        czas = datetime.fromisoformat(hop["czas"]) if hop["czas"] else None
+        czas = _czas_utc(hop.get("czas"))
+        hop = {**hop, "ip_kan": _ip_kanoniczne(hop.get("ip"))}
         opoznienie = int((czas - poprzedni).total_seconds()) if czas and poprzedni else None
         wynik.append({**hop, "lp": numer, "czas_dt": czas, "opoznienie": opoznienie})
         poprzedni = czas or poprzedni

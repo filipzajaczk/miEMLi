@@ -1,10 +1,10 @@
-{% load miemli %}{% for h in hopy %}{% with g=geo|klucz:h.ip %}
+{% load miemli %}{% for h in hopy %}{% with g=geo|klucz:h.ip_kan %}
     <tr>
       <td class="muted">{{ h.lp }}</td>
       <td class="mono">{{ h.od|default:"—" }}</td>
       <td class="mono">{{ h.przez|default:"—" }}</td>
       <td class="mono">{% if h.ip %}{{ h.ip|rozbroj:"ip" }}
-        <div class="geo">{% if not h.ip|ip_publiczny %}<span class="muted">sieć wewnętrzna</span>{% elif not g or g.stan == "oczekuje" %}<span class="muted pulsuje">…</span>{% elif g.stan == "brak" %}<span class="muted">—</span>{% else %}{{ g.kraj|default:"?" }}{% if g.asn %} · AS{{ g.asn }}{% endif %}{% if g.wlasciciel %} <span class="muted">{{ g.wlasciciel }}</span>{% endif %}{% endif %}</div>
+        <div class="geo">{% if not h.ip|ip_publiczny %}<span class="muted">sieć wewnętrzna</span>{% elif g.stan == "oczekuje" %}<span class="muted pulsuje">…</span>{% elif not g or g.stan == "brak" %}<span class="muted">—</span>{% else %}{{ g.kraj|default:"?" }}{% if g.asn %} · AS{{ g.asn }}{% endif %}{% if g.wlasciciel %} <span class="muted">{{ g.wlasciciel }}</span>{% endif %}{% endif %}</div>
       {% else %}—{% endif %}</td>
       <td class="muted">{% if h.czas_dt %}{{ h.czas_dt|date:"Y-m-d H:i:s O" }}{% else %}—{% endif %}</td>
       <td>{% if h.opoznienie is not None %}{{ h.opoznienie }} s{% else %}—{% endif %}</td>

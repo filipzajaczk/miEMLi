@@ -88,3 +88,25 @@ def test_oob_os_czasu(zalogowany, analiza):
     t = zalogowany.get(reverse("analizy:wzbogacenie", args=[analiza.pk]) + "?wiadomosc=0").content.decode()
     assert 'id="os-czasu-cialo" hx-swap-oob="true"' in t
     assert zalogowany.get(reverse("analizy:wzbogacenie", args=[analiza.pk]) + "?wiadomosc=9").status_code == 404
+
+
+def test_mieszane_strefy_bez_500(zalogowany, analiza):
+    w = copy.deepcopy(analiza.wynik)
+    hopy = w["analiza"]["0"]["received"]
+    hopy[0]["czas"] = "2026-10-26T09:59:00"           # nagłówek z -0000 (bez strefy)
+    hopy[1]["czas"] = "2026-10-26T10:00:00+00:00"
+    Analiza.objects.filter(pk=analiza.pk).update(wynik=w)
+    for sekcja_ in ("wiadomosc", "received"):
+        r = zalogowany.get(reverse("analizy:szczegoly", args=[analiza.pk]) + f"?sekcja={sekcja_}")
+        assert r.status_code == 200
+    assert zalogowany.get(reverse("analizy:wzbogacenie", args=[analiza.pk]) + "?wiadomosc=0").status_code == 200
+    assert "2026-10-26 10:59:00 +0100" in sekcja(zalogowany, analiza)  # UTC pokazane w czasie Europe/Warsaw
+
+
+def test_geo_ip_niekanoniczne_i_bez_artefaktu(zalogowany, analiza):
+    w = copy.deepcopy(analiza.wynik)
+    w["analiza"]["0"]["received"][0]["ip"] = "2001:4860:0:0::8888"
+    w["analiza"]["0"]["received"][1]["ip"] = "8.8.4.4"  # publiczne, ale bez artefaktu
+    Analiza.objects.filter(pk=analiza.pk).update(wynik=w)
+    t = sekcja(zalogowany, analiza).split('id="os-czasu-cialo"')[1]
+    assert "pulsuje" not in t

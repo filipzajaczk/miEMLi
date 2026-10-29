@@ -58,3 +58,7 @@ def test_arc_smieci(zbuduj_mail):
 
 def test_bez_arc(zbuduj_mail):
     assert lancuch_arc(wiad(zbuduj_mail, [])) is None
+
+
+def test_arc_duplikat_niekompletny(zbuduj_mail):
+    assert lancuch_arc(wiad(zbuduj_mail, ogniwo(1) + ogniwo(1, spf="fail"))).kompletny is False

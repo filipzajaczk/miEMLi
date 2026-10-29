@@ -297,3 +297,15 @@ def test_walidacja_bez_nowych_pol(wynik_probki):
         for h in a["received"]:
             h.pop("uwagi", None)
     assert waliduj_wynik(w) is w
+
+
+@pytest.mark.parametrize("hop", [
+    {"od": None, "przez": None, "ip": ["1.2.3.4"], "czas": None},
+    {"od": None, "przez": None, "ip": None, "czas": 5},
+    {"od": None, "przez": None, "ip": None, "czas": "abc"},
+    {"od": 1, "przez": None, "ip": None, "czas": None},
+    {"przez": None, "ip": None, "czas": None},
+])
+def test_walidacja_pol_hopu(wynik_probki, hop):
+    with pytest.raises(AnalizaPrzerwana):
+        waliduj_wynik(_z_analiza(wynik_probki, received=[hop]))

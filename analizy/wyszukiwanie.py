@@ -6,6 +6,7 @@ Zapytanie nie trafia do audytu ani logów — bywa adresem e-mail ofiary.
 import ipaddress
 import re
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -54,10 +55,10 @@ def rozpoznaj(tekst: str) -> tuple[str, str]:
         return "ip", str(ipaddress.ip_address(t))
     except ValueError:
         pass
+    if t.lower().startswith(("http://", "https://")):  # przed e-mailem: URL-e phishingowe często mają „@”
+        return "url", t
     if _EMAIL.fullmatch(t):
         return "email", t.lower()
-    if t.lower().startswith(("http://", "https://")):
-        return "url", t
     if " " not in t and "." in t and (d := _domena(t)):
         return "domena", d
     if len(t) < MIN_TEKST:
@@ -83,7 +84,16 @@ def _artefakty(warunek: Q) -> dict[int, str]:
 
 
 def _domeny(d: str) -> Q:
-    return Q(typ="domena") & (Q(wartosc=d) | Q(wartosc__endswith="." + d))
+    """Domena i subdomeny — w zapisie ASCII (punycode) i Unicode, bo parser zapisuje domeny IDN w Unicode."""
+    formy = {d}
+    try:
+        formy.add(d.encode("ascii").decode("idna"))
+    except UnicodeError:
+        pass
+    warunek = Q()
+    for f in formy:
+        warunek |= Q(wartosc=f) | Q(wartosc__endswith="." + f)
+    return Q(typ="domena") & warunek
 
 
 def szukaj(tekst: str) -> WynikWyszukiwania:
@@ -100,8 +110,19 @@ def szukaj(tekst: str) -> WynikWyszukiwania:
         dopasowania = _artefakty(Q(typ=rodzaj, wartosc=wartosc))
     elif rodzaj == "url":
         dopasowania = _artefakty(Q(typ="url", wartosc=wartosc))
-        if host := _domena(re.sub(r"^https?://", "", wartosc, flags=re.I).split("/")[0].split(":")[0]):
-            for pk, opis in _artefakty(_domeny(host)).items():
+        try:
+            host = urlsplit(wartosc).hostname or ""
+        except ValueError:
+            host = ""
+        rodzaj_hosta, host = rozpoznaj(host) if host else ("", "")
+        if rodzaj_hosta == "ip":
+            warunek_hosta = Q(typ="ip", wartosc=host)
+        elif rodzaj_hosta == "domena":
+            warunek_hosta = _domeny(host)
+        else:
+            warunek_hosta = None
+        if warunek_hosta is not None:
+            for pk, opis in _artefakty(warunek_hosta).items():
                 dopasowania.setdefault(pk, opis)
     elif rodzaj == "domena":
         dopasowania = _artefakty(_domeny(wartosc))

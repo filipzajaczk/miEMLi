@@ -131,3 +131,28 @@ def test_wrogie_q(zalogowany, phish, caplog):
 def test_pole_w_pasku(zalogowany):
     t = zalogowany.get(reverse("analizy:lista")).content.decode()
     assert 'action="/szukaj/"' in t and 'name="q"' in t
+
+
+@pytest.mark.parametrize("url,host", [
+    ("http://paypal.com@evil.com/login", "evil.com"),
+    ("https://evil.com/l?u=victim@corp.pl", "evil.com"),
+    ("https://u:p@evil.com:8443/", "evil.com"),
+])
+def test_url_z_malpa(phish, url, host):
+    assert rozpoznaj(url) == ("url", url)
+    artefakt(phish, "url", url)
+    artefakt(phish, "domena", host)
+    w = szukaj(url)
+    assert pk(w) == [phish.pk]
+
+
+def test_url_ipv6_host(phish):
+    artefakt(phish, "ip", "2001:db8::1")
+    assert rozpoznaj("http://[2001:db8::1]/x")[0] == "url"
+
+
+def test_domena_idn(phish, zip_):
+    artefakt(phish, "domena", "päypal.com")
+    artefakt(zip_, "domena", "login.päypal.com")
+    assert set(pk(szukaj("päypal.com"))) == {phish.pk, zip_.pk}
+    assert set(pk(szukaj("xn--pypal-gra.com"))) == {phish.pk, zip_.pk}
