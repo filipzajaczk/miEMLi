@@ -4,6 +4,7 @@ To pierwsza warstwa. Druga to iframe sandbox + CSP `default-src 'none'; img-src 
 """
 
 import base64
+from urllib.parse import urlsplit
 
 import nh3
 from bs4 import BeautifulSoup
@@ -44,8 +45,10 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
 
     for a in soup.find_all("a"):
         href = (a.get("href") or "").strip()
+        styl = a.get("style")
         a.name = "span"
-        a.attrs = {"class": "link"}
+        # styl zostaje (przyciski wyglądają jak u ofiary) — filtruje go allowlista właściwości nh3
+        a.attrs = {"class": "link", **({"style": styl} if styl else {})}
         if href.lower().startswith(("http://", "https://")):
             a["title"] = rozbroj("url", rozpakuj_przekierowanie(href) or href)
 
@@ -63,12 +66,26 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
                     zastepczy = soup.new_tag("span", attrs={"class": "obrazek-pominiety"})
                     zastepczy.string = f"[obrazek pominięty{powod}]"
                     tag.replace_with(zastepczy)
+            elif host := _host_zewnetrzny(src):
+                # tylko host: ścieżka i parametry bywają identyfikatorem ofiary (piksel śledzący)
+                zastepczy = soup.new_tag("span", attrs={"class": "obraz-zewnetrzny"})
+                zastepczy.string = f"[obraz zewnętrzny: {rozbroj('domena', host)}]"
+                tag.replace_with(zastepczy)
             else:
                 tag.attrs.pop("src", None)
         else:
             tag.attrs.pop("src", None)
 
     return ponownie_oczysc(str(soup))
+
+
+def _host_zewnetrzny(src: str) -> str | None:
+    if not src.lower().startswith(("http://", "https://")):
+        return None
+    try:
+        return urlsplit(src).hostname or None
+    except ValueError:
+        return None
 
 
 def ponownie_oczysc(html: str) -> str:

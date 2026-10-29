@@ -41,7 +41,7 @@ SZABLON_PODGLADU = (
     "body{font-family:system-ui,sans-serif;font-size:14px;margin:16px;color:#222;background:#fff}"
     ".link{color:#0645ad;text-decoration:underline;cursor:help}"
     "img{max-width:100%;height:auto}"
-    ".obrazek-pominiety{display:inline-block;border:1px dashed #999;color:#666;padding:4px 8px;font-size:12px}"
+    ".obrazek-pominiety,.obraz-zewnetrzny{display:inline-block;border:1px dashed #999;color:#666;padding:4px 8px;font-size:12px}"
     "</style></head><body>{tresc}</body></html>"
 )
 
