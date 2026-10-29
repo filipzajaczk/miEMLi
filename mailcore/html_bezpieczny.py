@@ -31,6 +31,7 @@ STYLE = {
     "border", "border-top", "border-right", "border-bottom", "border-left", "border-color",
     "border-width", "border-style", "border-collapse", "border-spacing", "border-radius",
 }
+KLASY_ZASTRZEZONE = {"link", "obraz-zewnetrzny", "obrazek-pominiety"}
 USUWANE_Z_TRESCIA = {"script", "style", "head", "title", "form", "iframe", "object", "embed", "noscript", "template", "svg", "math"}
 
 
@@ -42,6 +43,15 @@ def bezpieczny_html(html: str, zalaczniki: list[Zalacznik], obrazy: dict[str, by
 
     for tag in soup.find_all(["meta", "base", "link"]):
         tag.decompose()
+
+    # Dymki i klasy zastępników nadaje wyłącznie sanitizer — mail nie może ich podrobić
+    for tag in soup.find_all(True):
+        tag.attrs.pop("title", None)
+        klasy = [k for k in tag.get("class") or [] if k not in KLASY_ZASTRZEZONE]
+        if klasy:
+            tag["class"] = klasy
+        else:
+            tag.attrs.pop("class", None)
 
     for a in soup.find_all("a"):
         href = (a.get("href") or "").strip()
