@@ -3,7 +3,7 @@
 Wewnętrzne narzędzie zespołu CSIRT do analizy podejrzanych wiadomości `.eml` / `.msg`
 dołączanych do incydentów w RTIR: czytelny podgląd wiadomości, analiza nagłówków
 (SPF/DKIM/DMARC, Received, podszywanie), linki, załączniki z archiwami i zagnieżdżonymi
-mailami oraz IOC z relacjami „skąd pochodzi”.
+mailami oraz artefakty (adresy, domeny, IP, URL-e, pliki) z relacjami „skąd pochodzi”.
 
 Specyfikacja: `docs/superpowers/specs/2026-10-26-miemli-design.md`
 
@@ -15,7 +15,12 @@ docker compose up -d --build
 docker compose exec web python manage.py createsuperuser
 ```
 
-Aplikacja: `https://<MIEMLI_HOST>/`. Konta analityków zakłada się w `/admin/`.
+Aplikacja: `https://<MIEMLI_HOST>/`. Konta analityków zakłada się w `/admin/`. Każdy analityk zmienia
+swoje hasło w profilu (kliknięcie nazwy użytkownika w pasku). Konta z uprawnieniem „w zespole” (`is_staff`)
+widzą w pasku „Audyt” — dziennik zdarzeń (werdykty, usunięcia, wysyłki do Joe, zmiany haseł) z filtrami.
+
+Werdykt analityka (phishing / spam / czysty / do weryfikacji) ustawia się na ekranie analizy; widać go
+na liście analiz, którą można po nim filtrować.
 
 ### Klucze API (wzbogacenie IOC)
 
