@@ -143,3 +143,13 @@ def test_brak_zalacznikow_pod_wiadomoscia(zalogowany, analiza):
 def test_zagniezdzona_wiadomosc_jako_zalacznik(zalogowany, analiza):
     s = sekcja_zalacznikow(zalogowany.get(url(analiza("mail_w_mailu"))).content.decode())
     assert "zgloszenie.eml" in s and "wiadomosc=0.1" in s
+
+
+def test_linki_obraz_zewnetrzny_oznaczony():
+    from django.template.loader import render_to_string
+
+    a = {"linki": [{"url": "https://tracker.evil.com/p.gif", "docelowy": "https://tracker.evil.com/p.gif",
+                    "tekst": None, "niezgodny": False, "zrodlo": "obraz"}]}
+    tresc = render_to_string("analizy/sekcje/linki.html", {"a": a})
+    assert "hxxps://tracker[.]evil[.]com/p.gif" in tresc
+    assert "obraz zewnętrzny" in tresc

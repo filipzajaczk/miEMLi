@@ -6,10 +6,11 @@
   <tbody>
   {% for l in a.linki %}
     <tr>
-      <td>{{ l.tekst|default:"—" }}</td>
+      <td>{% if l.zrodlo == "obraz" %}{% if l.tekst %}<span class="muted">alt:</span> {{ l.tekst }}{% else %}—{% endif %}{% else %}{{ l.tekst|default:"—" }}{% endif %}</td>
       <td class="mono">{{ l.docelowy|rozbroj:"url" }}
         {% if l.url != l.docelowy %}<div class="muted">przez {{ l.url|rozbroj:"url"|truncatechars:90 }}</div>{% endif %}</td>
-      <td>{% if l.niezgodny %}<span class="b bad" title="Tekst linku wskazuje inną domenę niż adres docelowy">niezgodny tekst</span>{% endif %}</td>
+      <td>{% if l.niezgodny %}<span class="b bad" title="Tekst linku wskazuje inną domenę niż adres docelowy">niezgodny tekst</span>{% endif %}
+        {% if l.zrodlo == "obraz" %}<span class="b warn" title="Obraz z zewnętrznego serwera, pobierany przy otwarciu wiadomości — może być pikselem śledzącym">obraz zewnętrzny</span>{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>

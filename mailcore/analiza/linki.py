@@ -26,7 +26,7 @@ class Link:
     docelowy: str
     tekst: str | None
     niezgodny: bool
-    zrodlo: str  # "html" | "tekst"
+    zrodlo: str  # "html" | "tekst" | "obraz" (zewnętrzny <img src>, pobierany przy otwarciu maila)
 
 
 def _host(url: str) -> str | None:
@@ -103,16 +103,20 @@ def wyciagnij_linki(w: Wiadomosc) -> list[Link]:
     def dodaj(url: str, tekst: str | None, zrodlo: str) -> None:
         if len(wynik) >= MAKS_LINKOW or not re.match(r"https?://", url, re.IGNORECASE):
             return
-        klucz = url if zrodlo == "tekst" else f"{url}\x00{tekst}"
+        klucz = {"tekst": url, "obraz": f"obraz\x00{url}"}.get(zrodlo, f"{url}\x00{tekst}")
         if klucz in widziane or (zrodlo == "tekst" and any(l.url == url for l in wynik)):
             return
         widziane.add(klucz)
         docelowy = _docelowy(url)
-        wynik.append(Link(url, docelowy, tekst, _niezgodny(tekst, docelowy), zrodlo))
+        niezgodny = zrodlo != "obraz" and _niezgodny(tekst, docelowy)
+        wynik.append(Link(url, docelowy, tekst, niezgodny, zrodlo))
 
     if w.html:
-        for a in BeautifulSoup(w.html, "html.parser").find_all("a", href=True):
+        soup = BeautifulSoup(w.html, "html.parser")
+        for a in soup.find_all("a", href=True):
             dodaj(a["href"].strip(), a.get_text(" ", strip=True) or None, "html")
+        for img in soup.find_all("img", src=True):
+            dodaj(img["src"].strip(), (img.get("alt") or "").strip() or None, "obraz")
         for url in _urle_z_tekstu(tekst_z_html(w.html)):
             dodaj(url, None, "tekst")
     if w.tekst:

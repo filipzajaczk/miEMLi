@@ -68,3 +68,25 @@ def test_bez_duplikatow_html_i_tekst(zbuduj_mail):
 def test_pomija_mailto_i_kotwice(zbuduj_mail):
     wynik = linki(zbuduj_mail, html='<a href="mailto:a@b.pl">a</a><a href="#top">x</a><a href="javascript:x()">y</a>')
     assert wynik == []
+
+
+def test_obraz_zewnetrzny(zbuduj_mail):
+    wynik = linki(zbuduj_mail, html='<p>Hej</p><img src="https://tracker.evil.com/p.gif?id=42" alt="logo">')
+    assert [(l.url, l.tekst, l.zrodlo, l.niezgodny) for l in wynik] == [
+        ("https://tracker.evil.com/p.gif?id=42", "logo", "obraz", False)
+    ]
+
+
+def test_obraz_w_linku_osobno(zbuduj_mail):
+    wynik = linki(zbuduj_mail, html='<a href="https://evil.com/login"><img src="https://cdn.evil.com/btn.png"></a>')
+    assert [(l.url, l.zrodlo) for l in wynik] == [
+        ("https://evil.com/login", "html"), ("https://cdn.evil.com/btn.png", "obraz")
+    ]
+
+
+def test_obraz_bez_duplikatow_i_pomija_cid_data(zbuduj_mail):
+    wynik = linki(zbuduj_mail, html=(
+        '<img src="https://evil.com/a.png"><img src="https://evil.com/a.png" alt="x">'
+        '<img src="cid:logo@x"><img src="data:image/png;base64,AAAA">'
+    ))
+    assert [(l.url, l.zrodlo) for l in wynik] == [("https://evil.com/a.png", "obraz")]
