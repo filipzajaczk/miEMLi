@@ -83,6 +83,17 @@ def klasa_werdyktu(werdykt):
 
 
 @register.filter
+def klasa_gti(skrot):
+    """Jak klasa_werdyktu, ale nawet pojedyncze wykrycia silników (np. 2/94) nie zostają szare ani zielone."""
+    skrot = skrot or {}
+    klasa = klasa_werdyktu(skrot.get("werdykt"))
+    wykrycia = skrot.get("wykrycia")
+    if klasa in ("neutral", "ok") and wykrycia and wykrycia[0] > 0:
+        return "warn"
+    return klasa
+
+
+@register.filter
 def opis_werdyktu(werdykt):
     return WERDYKTY_OPISY.get(werdykt, "niewykryty")
 

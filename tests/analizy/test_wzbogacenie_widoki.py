@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from analizy import zadania
 from analizy.models import Wzbogacenie
-from analizy.templatetags.miemli import wiek
+from analizy.templatetags.miemli import klasa_gti, wiek
 from analizy.uslugi import utworz_lub_otworz
 
 pytestmark = pytest.mark.django_db
@@ -66,6 +66,28 @@ def test_komorka_gti_zlosliwy(zalogowany, analiza):
     t = strona(zalogowany, analiza, sekcja="ioc")
     assert "złośliwy · 80 · 12/90" in t
     assert 'class="b bad"' in t
+
+
+@pytest.mark.parametrize("skrot, klasa", [
+    ({"werdykt": "niewykryty", "wykrycia": [0, 94]}, "neutral"),
+    ({"werdykt": "niewykryty", "wykrycia": None}, "neutral"),
+    ({"werdykt": "niewykryty", "wykrycia": [2, 94]}, "warn"),
+    ({"werdykt": "nieszkodliwy", "wykrycia": [1, 94]}, "warn"),
+    ({"werdykt": "nieszkodliwy", "wykrycia": [0, 94]}, "ok"),
+    ({"werdykt": "podejrzany", "wykrycia": [0, 94]}, "warn"),
+    ({"werdykt": "zlosliwy", "wykrycia": [2, 94]}, "bad"),
+    (None, "neutral"),
+])
+def test_klasa_gti(skrot, klasa):
+    assert klasa_gti(skrot) == klasa
+
+
+def test_komorka_gti_pojedyncze_wykrycia_nie_sa_szare(zalogowany, analiza):
+    wszystkie_gotowe(analiza)
+    wpis("gti", "url", "https://pko-platnosci.example/login",
+         skrot={"werdykt": "niewykryty", "wykrycia": [2, 94]})
+    t = strona(zalogowany, analiza, sekcja="ioc")
+    assert '<span class="b warn">niewykryty · 2/94</span>' in t
 
 
 def test_nowa_domena(zalogowany, analiza):

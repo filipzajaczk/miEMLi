@@ -26,7 +26,7 @@
     <div class="label">GTI</div>
     {% if w.status == "gotowe" %}{% with s=w.skrot %}
     <dl class="meta">
-      <dt>Werdykt</dt><dd><span class="b {{ s.werdykt|klasa_werdyktu }}">{{ s.werdykt|opis_werdyktu }}</span>{% if s.ocena is not None %} ocena {{ s.ocena }}{% endif %}{% if s.waznosc %} · {{ s.waznosc }}{% endif %}</dd>
+      <dt>Werdykt</dt><dd><span class="b {{ s|klasa_gti }}">{{ s.werdykt|opis_werdyktu }}</span>{% if s.ocena is not None %} ocena {{ s.ocena }}{% endif %}{% if s.waznosc %} · {{ s.waznosc }}{% endif %}</dd>
       {% if s.wykrycia %}<dt>Wykrycia</dt><dd>{{ s.wykrycia.0 }} / {{ s.wykrycia.1 }}</dd>{% endif %}
       {% if s.typ_pliku %}<dt>Typ pliku</dt><dd>{{ s.typ_pliku }}</dd>{% endif %}
       {% if s.nazwy %}<dt>Nazwy</dt><dd>{% for n in s.nazwy %}{{ n|rozbroj_tekst }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>{% endif %}
