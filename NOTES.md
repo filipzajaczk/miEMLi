@@ -76,6 +76,11 @@
 - Limity: 1000 plików na archiwum, 1000 części na wiadomość, 500 linków, 20 haseł, QR z max 20 obrazów ≤ 20 Mpx.
 - Hasła do archiwów wykrywane tylko w formie z separatorem („Hasło: X”, „password=X”).
 - Porównanie domen (podszywanie, niezgodne linki) bez pełnej listy Public Suffix.
+- Typosquatting (`DOMENA_PODOBNA`, `mailcore/analiza/podobne_domeny.py`): porównanie tylko z odbiorcami (To, Cc)
+  i `MIEMLI_IGNOROWANE_DOMENY`. Nie wykrywa doklejonych słów (`zwik-poczta.pl`) ani podszycia pod marki
+  (`pk0.pl` w mailu do `zwik.pl`) — ewentualny kolejny krok: lista chronionych marek.
+  Sygnał tylko w nowych analizach. Bez ustawionych domen firmy prawdziwy nadawca może dostać sygnał przy
+  podobnej domenie odbiorcy.
 
 ## Następna sesja
 

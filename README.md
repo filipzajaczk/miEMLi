@@ -2,7 +2,7 @@
 
 Narzędzie do analizy podejrzanych wiadomości `.eml` / `.msg`
 dołączanych do incydentów w RTIR: czytelny podgląd wiadomości, analiza nagłówków
-(SPF/DKIM/DMARC, Received, podszywanie), linki, załączniki z archiwami i zagnieżdżonymi
+(SPF/DKIM/DMARC, Received, podszywanie, domeny łudząco podobne do domeny odbiorcy lub firmy), linki, załączniki z archiwami i zagnieżdżonymi
 mailami oraz artefakty (adresy, domeny, IP, URL-e, pliki) z relacjami „skąd pochodzi”.
 
 Specyfikacja: `docs/superpowers/specs/2026-10-26-miemli-design.md`

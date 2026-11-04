@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from ..model import Wiadomosc, Zalacznik
 from .ioc import IOC, zbuduj_ioc
 from .linki import Link, wyciagnij_linki
+from .podobne_domeny import wykryj_podobne_domeny
 from .podszywanie import Sygnal, wykryj_podszywanie
 from .klient import Klient, LancuchArc, klient, lancuch_arc
 from .received import Hop, sciezka_received, sygnaly_czasu
@@ -45,8 +46,9 @@ def analizuj(w: Wiadomosc, ignorowane_domeny: frozenset[str] = frozenset()) -> W
     wiadomosci = {}
     for x in wszystkie_wiadomosci(w):
         hopy = sciezka_received(x)
+        linki = wyciagnij_linki(x)
+        sygnaly = wykryj_podszywanie(x) + wykryj_podobne_domeny(x, linki, ignorowane_domeny) + sygnaly_czasu(x, hopy)
         wiadomosci[x.id] = AnalizaWiadomosci(
-            sprawdz_uwierzytelnienie(x), hopy, wykryj_podszywanie(x) + sygnaly_czasu(x, hopy), wyciagnij_linki(x),
-            klient(x), lancuch_arc(x),
+            sprawdz_uwierzytelnienie(x), hopy, sygnaly, linki, klient(x), lancuch_arc(x),
         )
     return WynikAnalizy(wiadomosci, zbuduj_ioc(w, wiadomosci, ignorowane_domeny))
