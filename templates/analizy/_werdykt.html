@@ -1,9 +1,13 @@
-<form class="werdykt" hx-post="{% url 'analizy:werdykt' analiza.pk %}" hx-trigger="change" hx-swap="outerHTML"
-      title="Werdykt analityka — widoczny na liście analiz">
+{% load miemli %}<form class="werdykt" hx-post="{% url 'analizy:werdykt' analiza.pk %}" hx-swap="outerHTML"
+      aria-label="Werdykt analityka, widoczny na liście analiz">
   {% csrf_token %}
-  <label for="werdykt-{{ analiza.pk }}">Werdykt</label>
-  <select id="werdykt-{{ analiza.pk }}" name="werdykt">
-    <option value=""{% if not analiza.werdykt %} selected{% endif %}>—</option>
-    {% for kod, nazwa in werdykty %}<option value="{{ kod }}"{% if analiza.werdykt == kod %} selected{% endif %}>{{ nazwa }}</option>{% endfor %}
-  </select>
+  <div class="werdykt-tytul"><span>Werdykt</span>{% if analiza.werdykt %}<button class="link" type="submit" name="werdykt" value="">Wyczyść</button>{% endif %}</div>
+  <div class="przyciski">
+    {% for kod, nazwa in werdykty %}
+      <button type="submit" name="werdykt" value="{{ kod }}" data-skrot="{{ kod|skrot_werdyktu }}"
+              class="{{ kod|klasa_werdyktu_analityka }}{% if analiza.werdykt == kod %} on{% endif %}"
+              aria-pressed="{% if analiza.werdykt == kod %}true{% else %}false{% endif %}"
+              title="Skrót klawiszowy: {{ kod|skrot_werdyktu }}">{{ nazwa }}<kbd>{{ kod|skrot_werdyktu }}</kbd></button>
+    {% endfor %}
+  </div>
 </form>

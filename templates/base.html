@@ -5,22 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block tytul %}miemli{% endblock %}</title>
   <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false}'>
-  <link rel="stylesheet" href="{% static 'css/nord.css' %}">
+  <link rel="preload" href="{% static 'fonts/geist-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/miemli.css' %}">
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/miemli.js' %}" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="pasek">
-    <a class="logo" href="{% url 'analizy:lista' %}">miemli</a>
+    <a class="logo" href="{% url 'analizy:lista' %}"><span class="znak" aria-hidden="true"></span>miemli</a>
+    {% if user.is_authenticated %}
+    <nav class="pasek-nav">
+      {% url 'analizy:lista' as u_lista %}{% url 'szukaj' as u_szukaj %}{% url 'audyt' as u_audyt %}
+      <a href="{{ u_lista }}"{% if request.path == u_lista %} class="on"{% endif %}>Analizy</a>
+      <a href="{{ u_szukaj }}"{% if request.path == u_szukaj %} class="on"{% endif %}>Szukaj</a>
+      {% if user.is_staff %}<a href="{{ u_audyt }}"{% if request.path == u_audyt %} class="on"{% endif %}>Audyt</a>{% endif %}
+    </nav>
+    {% endif %}
     {% block pasek %}{% endblock %}
     <span class="sp"></span>
     {% if user.is_authenticated %}
       <form class="szukaj" method="get" action="{% url 'szukaj' %}" role="search">
         <input type="search" name="q" value="{{ q|default:'' }}" placeholder="Szukaj: domena, IP, hash, temat…" maxlength="2048" aria-label="Szukaj w analizach">
       </form>
-      {% if user.is_staff %}<a class="muted" href="{% url 'audyt' %}">Audyt</a>{% endif %}
-      <a class="muted" href="{% url 'profil' %}">{{ user.username }}</a>
-      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn" type="submit">Wyloguj</button></form>
+      <a class="uzytkownik" href="{% url 'profil' %}" title="Profil">{{ user.username }}</a>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="btn cichy" type="submit">Wyloguj</button></form>
     {% endif %}
   </header>
   {% if ostrzezenie_gvisor %}<div class="baner-ostrzezenie">Uwaga: parser nie działa w gVisor — izolacja analizy plików jest osłabiona. Sprawdź PARSER_RUNTIME na serwerze.</div>{% endif %}

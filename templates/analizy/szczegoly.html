@@ -1,14 +1,23 @@
 {% extends "base.html" %}
 {% block tytul %}{{ analiza.nazwa_pliku }} · miemli{% endblock %}
-{% block pasek %}
-  <span class="muted">{% if analiza.ticket_id %}RTIR #{{ analiza.ticket_id }} · {% endif %}{{ analiza.nazwa_pliku }}</span>
-  {% include "analizy/_werdykt.html" %}
-  <form method="post" action="{% url 'analizy:odswiez' analiza.pk %}">{% csrf_token %}<button class="btn" type="submit" title="Sprawdź ponownie wszystkie artefakty w GTI i Censys (z pominięciem cache)">Odśwież</button></form>
-{% endblock %}
 {% block tresc %}
 <div class="analiza">
-  <div id="glowna" class="glowna">{% include "analizy/_glowna.html" %}</div>
-  <aside id="panel-ioc" class="panel-ioc">{% include "analizy/_panel_ioc.html" %}</aside>
+  <aside class="triage" aria-label="Ocena analizy">
+    <header class="triage-naglowek">
+      <h1>{{ analiza.temat_wiadomosci|default:"(bez tematu)" }}</h1>
+      <div class="muted">{{ analiza.nazwa_pliku }}{% if analiza.ticket_id %}, RTIR #{{ analiza.ticket_id }}{% endif %}</div>
+      <div class="muted">Przesłał {{ analiza.utworzyl.username }}, {{ analiza.utworzono|date:"Y-m-d H:i" }}</div>
+    </header>
+    <div id="dowody" class="dowody">{% include "analizy/_dowody.html" %}</div>
+    <footer class="decyzja">
+      {% include "analizy/_werdykt.html" %}
+      <form method="post" action="{% url 'analizy:odswiez' analiza.pk %}">{% csrf_token %}<button class="btn cichy" type="submit" title="Sprawdź ponownie wszystkie artefakty w GTI i Censys (z pominięciem cache)">Odśwież</button></form>
+    </footer>
+  </aside>
+  <div class="prawa">
+    <div id="glowna" class="glowna">{% include "analizy/_glowna.html" %}</div>
+    <aside id="panel-ioc" class="panel-ioc">{% include "analizy/_panel_ioc.html" %}</aside>
+  </div>
 </div>
 {% include "analizy/_odpytywanie.html" %}
 {% endblock %}

@@ -50,7 +50,17 @@ def test_get_405(zalogowany, analiza):
 def test_przelacznik_na_ekranie(zalogowany, analiza):
     ustaw(zalogowany, analiza, "czysty")
     t = zalogowany.get(reverse("analizy:szczegoly", args=[analiza.pk])).content.decode()
-    assert 'hx-trigger="change"' in t and '<option value="czysty" selected>' in t
+    assert 'name="werdykt" value="czysty" data-skrot="C"' in t
+    przycisk = t[t.find('value="czysty"'):t.find("</button>", t.find('value="czysty"'))]
+    assert 'aria-pressed="true"' in przycisk and " on" in przycisk
+    assert t.count('aria-pressed="true"') == 1
+
+
+def test_wyczysc_werdykt(zalogowany, analiza):
+    ustaw(zalogowany, analiza, "spam")
+    r = ustaw(zalogowany, analiza, "")
+    analiza.refresh_from_db()
+    assert analiza.werdykt == "" and 'aria-pressed="true"' not in r.content.decode()
 
 
 def test_kolumna_na_liscie(zalogowany, analiza):

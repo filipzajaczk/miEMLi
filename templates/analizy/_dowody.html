@@ -1,0 +1,19 @@
+{% load miemli %}{% with grupy=dowody|grupy %}
+<div class="podsumowanie" aria-label="Liczba dowodów według wagi">
+  {% for kod, nazwa, lista in grupy %}<span class="licznik-dowodow {{ kod }}" title="{{ nazwa }}">{{ lista|length }} <span>{{ nazwa|lower }}</span></span>{% endfor %}
+  {% if trwa %}<span class="muted pulsuje">Sprawdzanie artefaktów…</span>{% endif %}
+</div>
+{% for kod, nazwa, lista in grupy %}
+  <h2 class="grupa {{ kod }}">{{ nazwa }}</h2>
+  {% for d in lista %}
+    <a class="dowod {{ d.poziom }}" href="?sekcja={{ d.sekcja }}&wiadomosc={{ wid }}" hx-get="?sekcja={{ d.sekcja }}&wiadomosc={{ wid }}"
+       hx-target="#glowna" hx-push-url="true">
+      <span class="co">{{ d.co }}</span>
+      {% if d.gdzie %}<span class="gdzie">{{ d.gdzie }}</span>{% endif %}
+      <span class="idz">{{ d.sekcja|nazwa_sekcji }}</span>
+    </a>
+  {% endfor %}
+{% empty %}
+  <p class="brak-dowodow">{% if trwa %}Nie znaleziono sygnałów w samej wiadomości. Wyniki GTI jeszcze spływają.{% else %}Nie znaleziono sygnałów zagrożenia. To nie przesądza, że mail jest czysty: sprawdź treść i linki.{% endif %}</p>
+{% endfor %}
+{% endwith %}

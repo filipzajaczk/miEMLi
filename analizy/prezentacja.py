@@ -172,3 +172,123 @@ def inne_analizy(analiza: Analiza) -> dict[int, int]:
         .values("skrot").annotate(n=Count("analiza", distinct=True)).values_list("skrot", "n")
     )
     return {pk: liczby[s] for pk, s in wlasne.items() if liczby.get(s)}
+
+
+# --- Lista dowodów na ekranie analizy -------------------------------------------------------------
+
+POZIOMY_DOWODOW = [("krytyczne", "Krytyczne"), ("wysokie", "Wysokie"), ("srednie", "Średnie"),
+                   ("info", "Informacyjne")]
+_KOLEJNOSC = {kod: n for n, (kod, _) in enumerate(POZIOMY_DOWODOW)}
+
+# kod sygnału → (poziom, krótki opis, sekcja); szczegół to opis z analizy
+SYGNALY_DOWODOW = {
+    "DOMENA_PODOBNA": ("wysokie", "Domena podobna do znanej", "wiadomosc"),
+    "REPLY_TO_INNA_DOMENA": ("srednie", "Odpowiedzi trafią do innej domeny", "wiadomosc"),
+    "RETURN_PATH_INNA_DOMENA": ("srednie", "Return-Path z innej domeny", "naglowki"),
+    "NAZWA_Z_INNYM_ADRESEM": ("srednie", "Nazwa nadawcy udaje inną domenę", "wiadomosc"),
+    "DATA_ODLEGLA": ("srednie", "Data wysłania nie zgadza się z serwerami", "received"),
+    "DARMOWA_POCZTA": ("info", "Nadawca z darmowej poczty", "wiadomosc"),
+}
+UWAGI_HOPOW_DOWODOW = {
+    "CZAS_WSTECZ": ("srednie", "Czas serwera cofa się"),
+    "CZAS_W_PRZYSZLOSCI": ("srednie", "Czas serwera w przyszłości"),
+    "DLUGI_POSTOJ": ("info", "Długi postój na serwerze"),
+}
+_NIEUDANE = ("fail", "softfail", "permerror")
+
+
+@dataclass
+class Dowod:
+    poziom: str
+    co: str
+    gdzie: str
+    sekcja: str  # zakładka, w której są szczegóły
+
+
+def _lista_slow(slowa: list[str]) -> str:
+    return slowa[0] if len(slowa) == 1 else ", ".join(slowa[:-1]) + " i " + slowa[-1]
+
+
+def _linki_slowo(n: int) -> str:
+    if n == 1:
+        return "Link prowadzi gdzie indziej, niż mówi tekst"
+    forma = "linki prowadzą" if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14) else "linków prowadzi"
+    return f"{n} {forma} gdzie indziej, niż mówi tekst"
+
+
+def _dowody_gti(ioc, wzbogacenia) -> Iterator[Dowod]:
+    from mailcore.rozbrajanie import rozbroj
+
+    from .templatetags.miemli import nowa_domena, wiek
+
+    for i, _ in ioc:
+        g = wzbogacenia.get(i.pk, {}).get("gti")
+        if g is None or g.status != "gotowe":
+            continue
+        s = g.skrot or {}
+        nazwa = (i.etykieta or i.wartosc) if i.typ == "plik" else rozbroj(i.typ, i.wartosc)
+        wykrycia = s.get("wykrycia")
+        szczegol = [f"{wykrycia[0]}/{wykrycia[1]} wykryć"] if wykrycia else []
+        rodzic = getattr(i, "rodzic", None)
+        if i.typ == "plik" and rodzic is not None and rodzic.typ == "plik":
+            szczegol.append(f"w {rodzic.etykieta or rodzic.wartosc}")
+        gdzie = ", ".join(szczegol) or "werdykt GTI"
+        if s.get("werdykt") == "zlosliwy":
+            yield Dowod("krytyczne", f"{nazwa}: złośliwy w GTI", gdzie, "ioc")
+        elif s.get("werdykt") == "podejrzany":
+            yield Dowod("wysokie", f"{nazwa}: podejrzany w GTI", gdzie, "ioc")
+        elif wykrycia and wykrycia[0] > 0:
+            yield Dowod("srednie", f"{nazwa}: pojedyncze wykrycia w GTI", gdzie, "ioc")
+        if i.typ == "domena" and nowa_domena(s.get("utworzono")):
+            yield Dowod("wysokie", f"Domena {nazwa} ma {wiek(s['utworzono'])}", "data rejestracji z GTI", "ioc")
+
+
+def dowody(w: dict, a: dict, ioc, wzbogacenia) -> list[Dowod]:
+    """Sygnały analizy wiadomości i wyniki GTI artefaktów jako lista dowodów, od najgroźniejszego."""
+    from mailcore.rozbrajanie import rozbroj
+
+    wynik: list[Dowod] = list(_dowody_gti(ioc, wzbogacenia))
+
+    auth = a.get("uwierzytelnienie") or {}
+    nieudane = [n.upper() for n in ("spf", "dkim", "dmarc") if auth.get(n) in _NIEUDANE]
+    brak = [n.upper() for n in ("spf", "dkim", "dmarc") if auth.get(n) in (None, "", "none")]
+    if nieudane:
+        opis = ", ".join(f"{n.upper()} {auth.get(n) or 'brak'}" for n in ("spf", "dkim", "dmarc"))
+        wynik.append(Dowod("wysokie", f"{_lista_slow(nieudane)} nie {'przeszły' if len(nieudane) > 1 else 'przeszedł'}",
+                           opis, "naglowki"))
+    if brak:
+        wynik.append(Dowod("info", f"Brak wyniku: {', '.join(brak)}", "nagłówek Authentication-Results", "naglowki"))
+
+    for z in _zalaczniki(w.get("zalaczniki", [])):
+        if z.get("zaszyfrowany"):
+            wynik.append(Dowod("wysokie", "Zaszyfrowany załącznik bez hasła", z["nazwa"], "zalaczniki"))
+
+    podejrzane = [o for o in w.get("obrazki", []) if any(u["kod"] in PODEJRZANE_UWAGI for u in o.get("uwagi", []))]
+    if podejrzane:
+        wynik.append(Dowod("wysokie", "Nietypowe obrazki w wiadomości",
+                           ", ".join(o["nazwa"] for o in podejrzane), "wiadomosc"))
+
+    for s in a.get("sygnaly", []):
+        poziom, co, sekcja = SYGNALY_DOWODOW.get(s["kod"], ("srednie", s["opis"], "wiadomosc"))
+        wynik.append(Dowod(poziom, co, "" if co == s["opis"] else s["opis"], sekcja))
+
+    niezgodne = [l for l in a.get("linki", []) if l.get("niezgodny")]
+    if niezgodne:
+        wynik.append(Dowod("srednie", _linki_slowo(len(niezgodne)),
+                           ", ".join(rozbroj("url", l["docelowy"]) for l in niezgodne[:3]), "linki"))
+
+    for numer, hop in enumerate(a.get("received", []), start=1):
+        for u in hop.get("uwagi", []):
+            if u["kod"] in UWAGI_HOPOW_DOWODOW:
+                poziom, co = UWAGI_HOPOW_DOWODOW[u["kod"]]
+                wynik.append(Dowod(poziom, co, f"Serwer {numer}: {u['opis']}", "received"))
+
+    for o in w.get("ostrzezenia", []):
+        wynik.append(Dowod("info", o["opis"], "ostrzeżenie parsera", "zalaczniki"))
+
+    return sorted(wynik, key=lambda d: _KOLEJNOSC[d.poziom])
+
+
+def grupy_dowodow(lista: list[Dowod]) -> list[tuple[str, str, list[Dowod]]]:
+    return [(kod, nazwa, grupa) for kod, nazwa in POZIOMY_DOWODOW
+            if (grupa := [d for d in lista if d.poziom == kod])]

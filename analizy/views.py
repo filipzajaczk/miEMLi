@@ -152,6 +152,7 @@ def _kontekst_szczegolow(request, analiza: Analiza, sekcja: str, wid: str) -> di
     kontekst["klient_w"] = analiza_w.get("klient") or {}
     kontekst["arc"] = analiza_w.get("arc")
     kontekst["obrazki_sha"] = prezentacja.obrazki_po_sha(analiza.wynik)
+    kontekst["dowody"] = prezentacja.dowody(w, analiza_w, ioc, kontekst["wzbogacenia"])
     if sekcja == "joe":
         kontekst.update(_kontekst_joe(request, analiza))
     return kontekst
@@ -182,7 +183,8 @@ def szczegoly(request, pk):
     analiza = get_object_or_404(Analiza, pk=pk)
     kontekst = _kontekst_szczegolow(request, analiza, request.GET.get("sekcja", "wiadomosc"),
                                     request.GET.get("wiadomosc", "0"))
-    szablon = "analizy/_glowna.html" if request.headers.get("HX-Request") else "analizy/szczegoly.html"
+    # zmiana zakładki lub wiadomości: podmiana #glowna i (OOB) dowodów, bo zależą od wybranej wiadomości
+    szablon = "analizy/_glowna_hx.html" if request.headers.get("HX-Request") else "analizy/szczegoly.html"
     return render(request, szablon, kontekst)
 
 
@@ -289,12 +291,16 @@ def wzbogacenie(request, pk):
         raise Http404("Nie ma takiej wiadomości")
     wzbogacenia, trwa = prezentacja.widoki_wzbogacen(analiza)
     ioc = prezentacja.drzewo_ioc(analiza)
+    w = prezentacja.wiadomosci(analiza.wynik).get(wid)
+    if w is None:
+        raise Http404("Nie ma takiej wiadomości")
     return render(request, "analizy/_wzbogacenie_oob.html", {
         "analiza": analiza, "ioc": ioc, "wzbogacenia": wzbogacenia,
         "trwa": trwa, "wid": wid, "obrazki_sha": prezentacja.obrazki_po_sha(analiza.wynik),
         "hopy": prezentacja.hopy(analiza.wynik["analiza"][wid]["received"]),
         "geo": prezentacja.geo_ip((i for i, _ in ioc), wzbogacenia),
         "inne": prezentacja.inne_analizy(analiza),
+        "dowody": prezentacja.dowody(w, analiza.wynik["analiza"][wid], ioc, wzbogacenia),
     })
 
 

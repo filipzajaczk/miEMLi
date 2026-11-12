@@ -42,9 +42,9 @@ def wyslij(klient, a, dane):
 
 def test_menu_joe_otwiera_sekcje(zalogowany, analiza):
     t = zalogowany.get(reverse("analizy:szczegoly", args=[analiza.pk])).content.decode()
-    nav = t[t.find('<nav class="nav">'):t.find("</nav>")]
-    assert re.search(r'class="nav-joe[^"]*"[^>]*hx-get="\?sekcja=joe', nav) or \
-        re.search(r'hx-get="\?sekcja=joe[^"]*"[^>]*class="nav-joe', nav)
+    nav = t[t.find('<nav class="zakladki"'):t.find("</nav>", t.find('<nav class="zakladki"'))]
+    assert re.search(r'class="zakladka-joe[^"]*"[^>]*hx-get="\?sekcja=joe', nav) or \
+        re.search(r'hx-get="\?sekcja=joe[^"]*"[^>]*class="zakladka-joe', nav)
     assert "jbxcloud" not in nav
 
 

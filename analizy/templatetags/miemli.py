@@ -230,3 +230,26 @@ def ip_publiczny(wartosc) -> bool:
 @register.filter
 def w_innych_analizach(n) -> str:
     return "w 1 innej analizie" if n == 1 else f"w {n} innych analizach"
+
+
+SKROTY_WERDYKTOW = {"phishing": "P", "malware": "M", "bec": "B", "oszustwo": "O", "spam": "S", "test": "T",
+                    "czysty": "C", "do_weryfikacji": "W"}
+
+
+@register.filter
+def skrot_werdyktu(kod) -> str:
+    return SKROTY_WERDYKTOW.get(kod, "")
+
+
+@register.filter
+def grupy(dowody):
+    from analizy.prezentacja import grupy_dowodow
+
+    return grupy_dowodow(dowody or [])
+
+
+@register.filter
+def nazwa_sekcji(kod) -> str:
+    from analizy.prezentacja import SEKCJE, SEKCJE_DODATKOWE
+
+    return dict(SEKCJE).get(kod) or SEKCJE_DODATKOWE.get(kod, "")

@@ -241,8 +241,8 @@ def test_joe_jako_wyrozniona_zakladka_nie_kolumna(zalogowany, analiza):
     t = strona(zalogowany, analiza, sekcja="ioc")
     tabela = t[t.find('id="tabela-ioc-cialo"'):t.find("</table>")]
     assert "jbxcloud.joesecurity.org" not in tabela
-    nav = t[t.find('<nav class="nav">'):t.find("</nav>")]
-    assert 'class="nav-joe"' in nav and "Analizuj w JOE" in nav
+    nav = t[t.find('<nav class="zakladki"'):t.find("</nav>", t.find('<nav class="zakladki"'))]
+    assert 'class="zakladka-joe"' in nav and "Analizuj w JOE" in nav
     assert "sekcja=joe" in nav  # od integracji z Joe: sekcja w aplikacji zamiast linku zewnętrznego
 
 

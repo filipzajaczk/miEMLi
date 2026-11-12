@@ -46,3 +46,20 @@ document.addEventListener("submit", (zdarzenie) => {
   if (warunek && !(formularz.elements[warunek] && formularz.elements[warunek].checked)) return;
   if (pytanie && !window.confirm(pytanie)) zdarzenie.preventDefault();
 });
+
+// Skróty klawiszowe: litera werdyktu (P, M, B…) klika przycisk werdyktu, „/” przenosi do wyszukiwarki.
+// Pomijane w polach formularzy i z modyfikatorami, żeby nie przechwytywać pisania ani skrótów przeglądarki.
+document.addEventListener("keydown", (zdarzenie) => {
+  if (zdarzenie.ctrlKey || zdarzenie.metaKey || zdarzenie.altKey || zdarzenie.repeat) return;
+  const cel = zdarzenie.target;
+  if (cel instanceof Element && cel.closest("input, textarea, select, [contenteditable]")) return;
+  if (zdarzenie.key === "/") {
+    const szukaj = document.querySelector("form.szukaj input[type=search]");
+    if (szukaj) { zdarzenie.preventDefault(); szukaj.focus(); }
+    return;
+  }
+  if (zdarzenie.key.length !== 1) return;
+  const przycisk = document.querySelector(
+    `form.werdykt button[data-skrot="${CSS.escape(zdarzenie.key.toUpperCase())}"]`);
+  if (przycisk) { zdarzenie.preventDefault(); przycisk.click(); }
+});
