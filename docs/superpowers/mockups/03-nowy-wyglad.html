@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>miemli – nowy wygląd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #e9ebef; color: #1d2230; padding: 28px 16px 60px; }
+  .opis { max-width: 1280px; margin: 0 auto 18px; }
+  .opis h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .opis p { font-size: 14px; line-height: 1.55; color: #4a5263; max-width: 760px; }
+  .skok { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .skok a { font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #fff; color: #1d2230; text-decoration: none; border: 1px solid #cfd4dc; }
+  .skok a:hover { border-color: #1d2230; }
+  .wariant { max-width: 1280px; margin: 44px auto 0; }
+  .wariant > h2 { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .wariant > p { font-size: 14px; line-height: 1.55; color: #4a5263; max-width: 760px; margin-bottom: 14px; }
+  .ramka { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 2px rgba(20,25,40,.12), 0 12px 32px -12px rgba(20,25,40,.25); }
+  .ekran { min-width: 1100px; height: 700px; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Wspólna podróbka maila w podglądzie */
+  .mail { background: #fff; color: #222; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.6; padding: 22px 26px; border-radius: 6px; }
+  .mail .logo-banku { font-weight: 700; color: #003574; font-size: 15px; margin-bottom: 14px; }
+  .mail p { margin-bottom: 10px; }
+  .mail .guzik { display: inline-block; background: #003574; color: #fff; padding: 8px 18px; border-radius: 3px; font-weight: 700; margin: 4px 0 12px; }
+  .mail .stopka { color: #888; font-size: 11px; border-top: 1px solid #eee; padding-top: 10px; margin-top: 8px; }
+
+  /* ============ A: Konsola ============ */
+  .a { --bg:#16191e; --panel:#1d2127; --panel2:#232830; --line:#2e343d; --fg:#e4e7ec; --mut:#8c95a3;
+       --acc:#7aa2f7; --zle:#f2726f; --zle-bg:#3a2224; --uwaga:#e8b85c; --uwaga-bg:#3a3020; --ok:#7fcf9a; --ok-bg:#1f3529;
+       background: var(--bg); color: var(--fg); font-family: "IBM Plex Sans", sans-serif; font-size: 13px; }
+  .a .mono { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+  .a .mut { color: var(--mut); }
+  .a .gora { display: flex; align-items: center; gap: 18px; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+  .a .znak { font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+  .a .znak b { color: var(--acc); font-weight: 600; }
+  .a .szukaj { flex: 1; max-width: 460px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; color: var(--mut); display: flex; justify-content: space-between; }
+  .a .szukaj kbd { font-family: "IBM Plex Mono"; font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+  .a .sp { flex: 1; }
+  .a .awatar { width: 28px; height: 28px; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+  .a .sprawa { padding: 16px 20px 0; display: flex; align-items: flex-start; gap: 24px; }
+  .a .sprawa h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .a .werdykty { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .a .werdykty span { padding: 6px 11px; color: var(--mut); border-right: 1px solid var(--line); }
+  .a .werdykty span:last-child { border-right: 0; }
+  .a .werdykty .on { background: var(--zle-bg); color: var(--zle); font-weight: 600; }
+  .a .pasmo { margin: 14px 20px 0; display: grid; grid-template-columns: auto auto 1fr auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  .a .pasmo > div { padding: 10px 16px; border-right: 1px solid var(--line); }
+  .a .pasmo > div:last-child { border-right: 0; }
+  .a .pasmo .t { font-size: 11px; color: var(--mut); margin-bottom: 6px; }
+  .a .ch { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-right: 4px; }
+  .a .ch.zle { background: var(--zle-bg); color: var(--zle); }
+  .a .ch.uwaga { background: var(--uwaga-bg); color: var(--uwaga); }
+  .a .ch.ok { background: var(--ok-bg); color: var(--ok); }
+  .a .wynik { display: flex; align-items: baseline; gap: 6px; }
+  .a .wynik strong { font-size: 22px; font-weight: 600; color: var(--zle); }
+  .a .uklad { flex: 1; display: grid; grid-template-columns: 190px 1fr 330px; min-height: 0; margin-top: 14px; border-top: 1px solid var(--line); }
+  .a nav { padding: 12px 10px; border-right: 1px solid var(--line); }
+  .a nav a { display: flex; justify-content: space-between; padding: 7px 10px; border-radius: 6px; color: var(--mut); text-decoration: none; }
+  .a nav a.on { background: var(--panel2); color: var(--fg); box-shadow: inset 2px 0 var(--acc); }
+  .a nav .n { font-family: "IBM Plex Mono"; font-size: 11px; }
+  .a nav .joe { margin-top: 14px; border: 1px dashed var(--line); color: var(--fg); }
+  .a .srodek { padding: 16px 20px; overflow: hidden; }
+  .a .meta { display: grid; grid-template-columns: 80px 1fr; gap: 4px 12px; margin-bottom: 14px; }
+  .a .meta dt { color: var(--mut); }
+  .a .flaga { color: var(--uwaga); font-size: 12px; margin-left: 6px; }
+  .a aside { border-left: 1px solid var(--line); background: var(--panel); padding: 14px 16px; overflow: hidden; }
+  .a aside h3 { font-size: 13px; font-weight: 500; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .a .art { padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .a .art .w { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .a .art .typ { font-size: 11px; color: var(--mut); }
+  .a .detek { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .a .detek .bar { flex: 1; height: 4px; background: var(--panel2); border-radius: 2px; overflow: hidden; }
+  .a .detek .bar i { display: block; height: 100%; }
+  .a .zag { padding-left: 14px; border-left: 1px solid var(--line); margin-left: 4px; }
+
+  /* ============ B: Akta sprawy (jasny) ============ */
+  .b { --bg:#f6f7f9; --kar:#ffffff; --line:#dfe3ea; --fg:#18202e; --mut:#5f6b7d; --acc:#2450c8;
+       --zle:#c4322d; --zle-bg:#fdecea; --uwaga:#a8650a; --uwaga-bg:#fdf3e1; --ok:#23784a; --ok-bg:#e6f4ec;
+       background: var(--bg); color: var(--fg); font-family: "Source Sans 3", sans-serif; font-size: 14px; }
+  .b .mono { font-family: "Source Code Pro", monospace; font-size: 12.5px; }
+  .b .mut { color: var(--mut); }
+  .b .gora { display: flex; align-items: center; gap: 22px; padding: 12px 28px; background: var(--kar); border-bottom: 1px solid var(--line); }
+  .b .znak { font-family: "Source Serif 4", serif; font-size: 19px; font-weight: 600; }
+  .b .gora a { color: var(--mut); text-decoration: none; }
+  .b .gora a.on { color: var(--fg); font-weight: 600; }
+  .b .sp { flex: 1; }
+  .b .szukaj { width: 300px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; color: var(--mut); background: var(--bg); }
+  .b .tresc { flex: 1; overflow: hidden; display: grid; grid-template-columns: 1fr 300px; gap: 0 28px; padding: 22px 28px 0; }
+  .b .okruszki { grid-column: 1 / -1; color: var(--mut); font-size: 13px; margin-bottom: 6px; }
+  .b h1 { grid-column: 1 / -1; font-family: "Source Serif 4", serif; font-weight: 600; font-size: 27px; line-height: 1.25; margin-bottom: 16px; }
+  .b .koperta { background: var(--kar); border: 1px solid var(--line); border-radius: 10px; }
+  .b .pole { display: grid; grid-template-columns: 96px 1fr; padding: 9px 16px; border-bottom: 1px solid var(--line); position: relative; }
+  .b .pole:last-of-type { border-bottom: 0; }
+  .b .pole dt { color: var(--mut); }
+  .b .pole.zaznacz { background: linear-gradient(90deg, var(--uwaga-bg), transparent 70%); }
+  .b .pole.zaznacz.zle { background: linear-gradient(90deg, var(--zle-bg), transparent 70%); }
+  .b .pole .nr { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff; }
+  .b .nr.zle, .b .uwg .nr.zle { background: var(--zle); }
+  .b .nr.uwaga, .b .uwg .nr.uwaga { background: var(--uwaga); }
+  .b .zakladki { display: flex; gap: 22px; border-bottom: 1px solid var(--line); margin: 18px 0 14px; }
+  .b .zakladki span { padding: 8px 0; color: var(--mut); border-bottom: 2px solid transparent; }
+  .b .zakladki span.on { color: var(--fg); border-color: var(--acc); font-weight: 600; }
+  .b .zakladki sup { font-size: 11px; color: var(--mut); margin-left: 3px; }
+  .b .mail { border: 1px solid var(--line); }
+  .b .margines h3 { font-size: 13px; color: var(--mut); font-weight: 500; margin-bottom: 10px; }
+  .b .uwg { display: grid; grid-template-columns: 22px 1fr; gap: 10px; margin-bottom: 14px; }
+  .b .uwg .nr { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff; }
+  .b .uwg p { font-size: 13.5px; line-height: 1.45; }
+  .b .uwg p b { font-weight: 600; }
+  .b .werdykt { background: var(--kar); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-top: 4px; }
+  .b .werdykt .opcje { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .b .werdykt .opcje span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; font-size: 13px; }
+  .b .werdykt .opcje .on { background: var(--zle); border-color: var(--zle); color: #fff; font-weight: 600; }
+
+  /* ============ C: Triage ============ */
+  .c { --bg:#0f1420; --pan:#151b29; --pan2:#1b2233; --line:#263047; --fg:#e8ecf5; --mut:#8a94ab;
+       --acc:#a78bfa; --kr:#ff5d6c; --wy:#ff9f43; --sr:#f5d547; --in:#5ea9ff;
+       background: var(--bg); color: var(--fg); font-family: "Geist", sans-serif; font-size: 13px; }
+  .c .mono { font-family: "Geist Mono", monospace; font-size: 12px; }
+  .c .mut { color: var(--mut); }
+  .c .gora { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--line); }
+  .c .znak { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .c .znak i { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg, var(--acc), #6366f1); display: inline-block; }
+  .c .kolejka { display: flex; gap: 4px; margin-left: 10px; }
+  .c .kolejka span { padding: 5px 10px; border-radius: 6px; color: var(--mut); }
+  .c .kolejka span.on { background: var(--pan2); color: var(--fg); }
+  .c .sp { flex: 1; }
+  .c .szukaj { width: 280px; background: var(--pan); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; color: var(--mut); }
+  .c .uklad { flex: 1; display: grid; grid-template-columns: 400px 1fr; min-height: 0; }
+  .c .lewa { border-right: 1px solid var(--line); background: var(--pan); display: flex; flex-direction: column; min-height: 0; }
+  .c .naglowek { padding: 16px 18px 14px; border-bottom: 1px solid var(--line); }
+  .c .naglowek h1 { font-size: 17px; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+  .c .ocena { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .c .ocena .liczba { font-size: 34px; font-weight: 700; line-height: 1; color: var(--kr); font-variant-numeric: tabular-nums; }
+  .c .ocena .skala { flex: 1; }
+  .c .ocena .skala div { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--in), var(--sr), var(--wy), var(--kr)); position: relative; }
+  .c .ocena .skala div::after { content: ""; position: absolute; left: 86%; top: -4px; width: 3px; height: 14px; background: var(--fg); border-radius: 2px; }
+  .c .ocena .skala span { font-size: 11px; color: var(--mut); }
+  .c .dowody { flex: 1; overflow: hidden; padding: 10px 10px; }
+  .c .grupa { font-size: 12px; color: var(--mut); padding: 10px 8px 6px; display: flex; align-items: center; gap: 8px; }
+  .c .grupa i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .c .dw { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 9px 10px 9px 12px; border-radius: 8px; border-left: 3px solid; margin-bottom: 4px; background: var(--pan2); }
+  .c .dw .co { font-weight: 500; }
+  .c .dw .gdzie { font-size: 12px; color: var(--mut); }
+  .c .dw .idz { grid-row: 1 / 3; grid-column: 2; align-self: center; color: var(--mut); font-size: 12px; }
+  .c .decyzja { border-top: 1px solid var(--line); padding: 14px 18px; }
+  .c .decyzja .t { font-size: 12px; color: var(--mut); margin-bottom: 8px; }
+  .c .przyciski { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .c .przyciski span { text-align: center; padding: 7px 0; border-radius: 7px; background: var(--pan2); border: 1px solid var(--line); font-weight: 500; }
+  .c .przyciski span.on { background: var(--kr); border-color: var(--kr); color: #1a0508; }
+  .c .przyciski small { display: block; font-size: 10px; color: var(--mut); font-family: "Geist Mono"; }
+  .c .przyciski .on small { color: #4a0f16; }
+  .c .prawa { display: flex; flex-direction: column; min-height: 0; }
+  .c .zakladki { display: flex; gap: 2px; padding: 10px 18px 0; border-bottom: 1px solid var(--line); }
+  .c .zakladki span { padding: 8px 12px; color: var(--mut); border-radius: 7px 7px 0 0; }
+  .c .zakladki span.on { background: var(--pan); color: var(--fg); border: 1px solid var(--line); border-bottom-color: var(--pan); margin-bottom: -1px; }
+  .c .zakladki em { font-style: normal; font-size: 11px; color: var(--mut); margin-left: 4px; }
+  .c .widok { flex: 1; padding: 16px 18px; background: var(--pan); overflow: hidden; display: grid; grid-template-columns: 1fr 250px; gap: 18px; }
+  .c .meta { display: grid; grid-template-columns: 74px 1fr; gap: 4px 10px; margin-bottom: 12px; }
+  .c .meta dt { color: var(--mut); }
+  .c .zaznacz { background: rgba(255,159,67,.14); color: #ffc58f; border-radius: 4px; padding: 0 4px; }
+  .c .karta { background: var(--pan2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .c .karta h4 { font-size: 12px; font-weight: 500; color: var(--mut); margin-bottom: 8px; }
+  .c .wiersz { display: flex; justify-content: space-between; padding: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="opis">
+  <h1>miemli: trzy kierunki nowego wyglądu</h1>
+  <p>Każdy wariant pokazuje ten sam ekran analizy tego samego maila. Dane są przykładowe. Wszystkie da się zrobić na obecnym Django z htmx, bez skryptów inline. Czcionki będą hostowane lokalnie, tutaj są z Google Fonts tylko na potrzeby podglądu.</p>
+  <nav class="skok"><a href="#a">A: Konsola</a><a href="#b">B: Akta sprawy</a><a href="#c">C: Triage</a></nav>
+</div>
+
+<!-- ======================= A ======================= -->
+<section class="wariant" id="a">
+  <h2>A: Konsola</h2>
+  <p>Obecny układ trzech kolumn, ale gęstszy i spokojniejszy. Nad treścią jest pasmo podsumowania: uwierzytelnienie, sygnały i wynik artefaktów w jednym rzucie oka. Werdykt to przełącznik zamiast listy rozwijanej. Artefakty mają paski wykryć zamiast samych liczb. Najmniejsza zmiana przyzwyczajeń.</p>
+  <div class="ramka"><div class="ekran a">
+    <div class="gora">
+      <span class="znak">miem<b>li</b></span>
+      <span class="mut">Analizy</span><span class="mut">Audyt</span>
+      <span class="sp"></span>
+      <div class="szukaj"><span>Szukaj domeny, IP, hasha albo tematu</span><kbd>/</kbd></div>
+      <span class="awatar">MZ</span>
+    </div>
+    <div class="sprawa">
+      <div style="flex:1">
+        <h1>Zaległa płatność: faktura FV/03/2026</h1>
+        <div class="mut">faktura_marzec.eml, RTIR #48213, przesłał mzajac 12 lis 09:41</div>
+      </div>
+      <div class="werdykty"><span class="on">Phishing</span><span>Malware</span><span>BEC</span><span>Spam</span><span>Czysty</span><span>Więcej</span></div>
+    </div>
+    <div class="pasmo">
+      <div><div class="t">Uwierzytelnienie</div><span class="ch zle">SPF fail</span><span class="ch ok">DKIM pass</span><span class="ch zle">DMARC fail</span></div>
+      <div><div class="t">Nadawca</div><span class="ch uwaga">Domena podobna do pkobp.pl</span><span class="ch uwaga">Reply-To inny niż Od</span></div>
+      <div><div class="t">Artefakty</div><span class="ch zle">1 złośliwy</span><span class="ch uwaga">2 podejrzane</span><span class="ch ok">5 czystych</span></div>
+      <div><div class="t">Najgorsze wykrycie</div><div class="wynik"><strong>41/70</strong><span class="mut">faktura.exe</span></div></div>
+    </div>
+    <div class="uklad">
+      <nav>
+        <a class="on" href="#a">Wiadomość</a>
+        <a href="#a">Nagłówki <span class="n">24</span></a>
+        <a href="#a">Oś czasu <span class="n">5</span></a>
+        <a href="#a">Linki <span class="n">3</span></a>
+        <a href="#a">Załączniki <span class="n">2</span></a>
+        <a href="#a">Artefakty <span class="n">8</span></a>
+        <a class="joe" href="#a">Wyślij do Joe Sandbox</a>
+      </nav>
+      <div class="srodek">
+        <dl class="meta">
+          <dt>Od</dt><dd>Księgowość PKO &lt;ksiegowosc@pko-platnosci.com&gt;<span class="flaga">domena ma 3 dni</span></dd>
+          <dt>Reply-To</dt><dd>platnosci.pko@proton.me<span class="flaga">inny niż Od</span></dd>
+          <dt>Do</dt><dd>a.nowak@firma.pl</dd>
+          <dt>Data</dt><dd>2026-11-12 08:17:03</dd>
+        </dl>
+        <div class="mail">
+          <div class="logo-banku">PKO Bank Polski</div>
+          <p>Szanowni Państwo,</p>
+          <p>informujemy, że faktura FV/03/2026 pozostaje nieopłacona. Brak wpłaty do 14.11 spowoduje naliczenie odsetek i przekazanie sprawy do windykacji.</p>
+          <p>Szczegóły w załączniku. Hasło do archiwum: <b>2026</b></p>
+          <span class="guzik">Sprawdź płatność</span>
+          <div class="stopka">Wiadomość wygenerowana automatycznie. Prosimy na nią nie odpowiadać.</div>
+        </div>
+      </div>
+      <aside>
+        <h3>Artefakty <span class="mut">8</span></h3>
+        <div class="art">
+          <div class="w"><span class="mono">faktura.zip</span><span class="typ">plik, hasło 2026</span></div>
+          <div class="detek"><span class="bar"><i style="width:4%;background:var(--uwaga)"></i></span><span class="mono mut">3/70</span></div>
+          <div class="zag">
+            <div class="art" style="border:0;padding-bottom:0">
+              <div class="w"><span class="mono">faktura.exe</span><span class="typ">plik</span></div>
+              <div class="detek"><span class="bar"><i style="width:59%;background:var(--zle)"></i></span><span class="mono" style="color:var(--zle)">41/70</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="art">
+          <div class="w"><span class="mono">pko-platnosci[.]com</span><span class="typ">domena</span></div>
+          <div class="detek"><span class="bar"><i style="width:6%;background:var(--uwaga)"></i></span><span class="mono mut">4/94</span></div>
+        </div>
+        <div class="art">
+          <div class="w"><span class="mono">hxxps://pko-platnosci[.]com/logowanie</span></div>
+          <div class="detek"><span class="bar"><i style="width:3%;background:var(--uwaga)"></i></span><span class="mono mut">2/94</span></div>
+        </div>
+        <div class="art">
+          <div class="w"><span class="mono">185.243.115[.]20</span><span class="typ">IP, NL, AS49981</span></div>
+          <div class="detek"><span class="bar"><i style="width:0"></i></span><span class="mono mut">0/94</span></div>
+        </div>
+        <div class="art" style="border:0">
+          <div class="w"><span class="mono">proton[.]me</span><span class="typ">domena, w 14 innych analizach</span></div>
+        </div>
+      </aside>
+    </div>
+  </div></div>
+</section>
+
+<!-- ======================= B ======================= -->
+<section class="wariant" id="b">
+  <h2>B: Akta sprawy</h2>
+  <p>Jasny motyw, czytelny jak dokument. Mail jest pokazany jak dowód w aktach, a podejrzane pola są podświetlone i ponumerowane. Na marginesie są uwagi, które tłumaczą, co jest nie tak. Dobre, gdy analizy czytają też osoby spoza SOC albo gdy ekran trafia do raportu.</p>
+  <div class="ramka"><div class="ekran b">
+    <div class="gora">
+      <span class="znak">miemli</span>
+      <a class="on" href="#b">Analizy</a><a href="#b">Szukaj</a><a href="#b">Audyt</a>
+      <span class="sp"></span>
+      <span class="szukaj">Domena, IP, hash, temat</span>
+      <a href="#b">mzajac</a>
+    </div>
+    <div class="tresc">
+      <div class="okruszki">Analizy / RTIR #48213 / faktura_marzec.eml</div>
+      <h1>Zaległa płatność: faktura FV/03/2026</h1>
+      <div>
+        <dl class="koperta">
+          <div class="pole zaznacz"><dt>Od</dt><dd>Księgowość PKO &lt;ksiegowosc@pko-platnosci.com&gt;</dd><span class="nr uwaga">1</span></div>
+          <div class="pole zaznacz"><dt>Odpowiedź do</dt><dd>platnosci.pko@proton.me</dd><span class="nr uwaga">2</span></div>
+          <div class="pole"><dt>Do</dt><dd>a.nowak@firma.pl</dd></div>
+          <div class="pole"><dt>Data</dt><dd>12 listopada 2026, 08:17</dd></div>
+          <div class="pole zaznacz zle"><dt>Załącznik</dt><dd><span class="mono">faktura.zip</span> <span class="mut">zawiera</span> <span class="mono">faktura.exe</span></dd><span class="nr zle">3</span></div>
+        </dl>
+        <div class="zakladki">
+          <span class="on">Treść</span><span>Nagłówki<sup>24</sup></span><span>Oś czasu<sup>5</sup></span><span>Linki<sup>3</sup></span><span>Artefakty<sup>8</sup></span><span>Joe Sandbox</span>
+        </div>
+        <div class="mail">
+          <div class="logo-banku">PKO Bank Polski</div>
+          <p>Szanowni Państwo,</p>
+          <p>informujemy, że faktura FV/03/2026 pozostaje nieopłacona. Brak wpłaty do 14.11 spowoduje naliczenie odsetek i przekazanie sprawy do windykacji.</p>
+          <p>Szczegóły w załączniku. Hasło do archiwum: <b>2026</b></p>
+        </div>
+      </div>
+      <div class="margines">
+        <h3>Co zwraca uwagę</h3>
+        <div class="uwg"><span class="nr uwaga">1</span><p><b>Domena udaje bank.</b> pko-platnosci.com jest podobna do pkobp.pl i istnieje od 3 dni. SPF i DMARC nie przeszły.</p></div>
+        <div class="uwg"><span class="nr uwaga">2</span><p><b>Odpowiedzi idą gdzie indziej.</b> Adres zwrotny jest w proton.me, a nie w domenie nadawcy.</p></div>
+        <div class="uwg"><span class="nr zle">3</span><p><b>Złośliwy plik w archiwum.</b> faktura.exe ma 41 wykryć na 70 w GTI. Archiwum otwiera hasło podane w treści.</p></div>
+        <div class="werdykt">
+          <div class="mut" style="font-size:13px">Twój werdykt</div>
+          <div class="opcje"><span class="on">Phishing</span><span>Malware</span><span>BEC</span><span>Oszustwo</span><span>Spam</span><span>Test</span><span>Czysty</span><span>Do weryfikacji</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ======================= C ======================= -->
+<section class="wariant" id="c">
+  <h2>C: Triage</h2>
+  <p>Ekran układa się wokół decyzji. Lewa kolumna to lista dowodów posortowana od najgroźniejszego, a każdy dowód prowadzi do miejsca w mailu. Na dole są duże przyciski werdyktu ze skrótami klawiszowymi. Szczegóły są po prawej w zakładkach. Najszybsze przy dużej liczbie zgłoszeń.</p>
+  <div class="ramka"><div class="ekran c">
+    <div class="gora">
+      <span class="znak"><i></i>miemli</span>
+      <div class="kolejka"><span class="on">Wszystkie</span><span>Bez werdyktu 7</span><span>Moje</span></div>
+      <span class="sp"></span>
+      <span class="szukaj">Szukaj w analizach</span>
+      <span class="mut">mzajac</span>
+    </div>
+    <div class="uklad">
+      <div class="lewa">
+        <div class="naglowek">
+          <h1>Zaległa płatność: faktura FV/03/2026</h1>
+          <div class="mut">faktura_marzec.eml, RTIR #48213</div>
+          <div class="ocena">
+            <span class="liczba">86</span>
+            <div class="skala"><div></div><span>Ryzyko wyliczone z dowodów poniżej</span></div>
+          </div>
+        </div>
+        <div class="dowody">
+          <div class="grupa"><i style="background:var(--kr)"></i>Krytyczne</div>
+          <div class="dw" style="border-color:var(--kr)"><span class="co">faktura.exe: 41/70 wykryć w GTI</span><span class="gdzie">w faktura.zip, hasło z treści maila</span><span class="idz">Załączniki</span></div>
+          <div class="grupa"><i style="background:var(--wy)"></i>Wysokie</div>
+          <div class="dw" style="border-color:var(--wy)"><span class="co">SPF i DMARC nie przeszły</span><span class="gdzie">nadawca nie jest uprawniony dla domeny</span><span class="idz">Nagłówki</span></div>
+          <div class="dw" style="border-color:var(--wy)"><span class="co">Domena podobna do pkobp.pl</span><span class="gdzie">pko-platnosci.com, zarejestrowana 3 dni temu</span><span class="idz">Artefakty</span></div>
+          <div class="grupa"><i style="background:var(--sr)"></i>Średnie</div>
+          <div class="dw" style="border-color:var(--sr)"><span class="co">Reply-To w innej domenie</span><span class="gdzie">platnosci.pko@proton.me</span><span class="idz">Wiadomość</span></div>
+          <div class="dw" style="border-color:var(--sr)"><span class="co">Presja czasu w treści</span><span class="gdzie">termin 14.11, groźba windykacji</span><span class="idz">Wiadomość</span></div>
+        </div>
+        <div class="decyzja">
+          <div class="t">Werdykt</div>
+          <div class="przyciski">
+            <span class="on">Phishing<small>P</small></span><span>Malware<small>M</small></span><span>Spam<small>S</small></span><span>Czysty<small>C</small></span>
+          </div>
+        </div>
+      </div>
+      <div class="prawa">
+        <div class="zakladki"><span class="on">Wiadomość</span><span>Nagłówki<em>24</em></span><span>Oś czasu<em>5</em></span><span>Linki<em>3</em></span><span>Załączniki<em>2</em></span><span>Artefakty<em>8</em></span><span>Joe Sandbox</span></div>
+        <div class="widok">
+          <div>
+            <dl class="meta">
+              <dt>Od</dt><dd>Księgowość PKO &lt;ksiegowosc@<span class="zaznacz">pko-platnosci.com</span>&gt;</dd>
+              <dt>Reply-To</dt><dd><span class="zaznacz">platnosci.pko@proton.me</span></dd>
+              <dt>Do</dt><dd>a.nowak@firma.pl</dd>
+              <dt>Data</dt><dd>2026-11-12 08:17:03</dd>
+            </dl>
+            <div class="mail">
+              <div class="logo-banku">PKO Bank Polski</div>
+              <p>Szanowni Państwo,</p>
+              <p>informujemy, że faktura FV/03/2026 pozostaje nieopłacona. Brak wpłaty do 14.11 spowoduje naliczenie odsetek i przekazanie sprawy do windykacji.</p>
+              <p>Szczegóły w załączniku. Hasło do archiwum: <b>2026</b></p>
+              <span class="guzik">Sprawdź płatność</span>
+            </div>
+          </div>
+          <div>
+            <div class="karta">
+              <h4>Najgroźniejsze artefakty</h4>
+              <div class="wiersz"><span class="mono">faktura.exe</span><span class="mono" style="color:var(--kr)">41/70</span></div>
+              <div class="wiersz"><span class="mono">pko-platnosci[.]com</span><span class="mono" style="color:var(--wy)">4/94</span></div>
+              <div class="wiersz"><span class="mono">faktura.zip</span><span class="mono" style="color:var(--sr)">3/70</span></div>
+            </div>
+            <div class="karta">
+              <h4>Widziane wcześniej</h4>
+              <div class="wiersz"><span class="mono">proton[.]me</span><span class="mut">14 analiz</span></div>
+              <div class="wiersz"><span class="mono">185.243.115[.]20</span><span class="mut">2 analizy</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+</body>
+</html>
