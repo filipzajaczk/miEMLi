@@ -39,6 +39,11 @@
 - 2026-10-29: etap B (branch `etap-b`): oś czasu nagłówków (anomalie przeskoków, `DATA_ODLEGLA`, kraj/ASN
   z wzbogacenia, klient, ARC; `X-Originating-IP` jako artefakt), wyszukiwarka `/szukaj/`, odznaki
   „w N innych analizach” (`IOC.skrot`). Nowe pola analizy mają tylko analizy utworzone po zmianie.
+- 2026-11-12: nowy wygląd „Triage” (branch `wyglad-triage`, makiety w `docs/superpowers/mockups/03-nowy-wyglad.html`,
+  wybrany wariant C): lista dowodów według wagi (`prezentacja.dowody`), przyciski werdyktu ze skrótami klawiszowymi,
+  zakładki zamiast menu bocznego, czcionki Geist lokalnie, `miemli.css` zamiast `nord.css`. Decyzja: bez liczbowego
+  wyniku ryzyka (wymagałby wag), zamiast niego liczniki dowodów. Do zrobienia: przejrzeć na prawdziwych mailach,
+  potem `git merge wyglad-triage` do `main`. Pomysły na dalej: wynik ryzyka z wagami, filtr „Moje” na liście.
 - Plan dalej: etap C — proxy wychodzące workera (tinyproxy, ~2–5 MB RAM). RTIR później.
 - Do zrobienia na serwerze produkcyjnym: instalacja gVisor, `PARSER_RUNTIME=runsc`, `PARSER_WYMAGA_GVISOR=1`.
 
